@@ -46,6 +46,7 @@
     "@types/react": "^19.2.14",
     "@types/react-native": "^0.72.8",
     "babel-preset-expo": "^54.0.1",
+    "baseline-browser-mapping": "^2.10.9",
     "typescript": "^5.9.3"
   }
 }
