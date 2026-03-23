@@ -1,9 +1,14 @@
 import ScreenHeader from "@/src/components/Menu/ScreenHeader";
-import { View, Text } from "react-native";
+import { router } from "expo-router";
+import { useEffect } from "react";
+import { Text, View } from "react-native";
 
-export default function Home() {
+export default function IndexScreen() {
+  useEffect(() => {
+    router.replace("/login");
+  }, []);
   return (
-    <View className="flex-1 bg-white justify-center items-center">
+    <View>
 
       <ScreenHeader
         titleParts={[
