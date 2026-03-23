@@ -10,7 +10,7 @@ export default function Layout() {
 
         <View className="flex-1 bg-black" style={{ paddingBottom: insets.bottom, backgroundColor:'black' }}>
           <StatusBar style="light" />
-          <Stack />
+          <Stack screenOptions={{ headerShown: false }} />
         </View>
 
   );

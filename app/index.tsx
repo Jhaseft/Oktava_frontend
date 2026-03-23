@@ -7,9 +7,9 @@ export default function Home() {
 
       <ScreenHeader
         titleParts={[
-          { text: "OK", color: "text-red-500" },
-          { text: "TA", color: "text-yellow-400" },
-          { text: "VA", color: "text-green-500" },
+          { text: "OK", color: "text-[#CB0000]" },
+          { text: "TA", color: "text-[#FFFFFF]" },
+          { text: "VA", color: "text-[#FF0000]" },
         ]}
       />
 
