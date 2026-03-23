@@ -53,7 +53,7 @@ export default function HeaderTitle({ title = "OKTAVA", titleParts }: Props) {
 
   return (
     <>
-      <View className="flex-1 pt-10 mb-4 flex-row items-center bg-black px-2">
+      <View className="flex-1 pt-8 mb-4 flex-row items-center bg-black px-2">
         <TouchableOpacity onPress={() => setMenuVisible(true)} activeOpacity={0.7} className="mr-4">
           <Menu color="white" size={35} />
         </TouchableOpacity>
@@ -118,7 +118,7 @@ export default function HeaderTitle({ title = "OKTAVA", titleParts }: Props) {
           </View>
 
           <Pressable className="flex-1" onPress={() => setMenuVisible(false)} />
-            
+
         </View>
       </Modal>
     </>

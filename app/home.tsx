@@ -19,6 +19,11 @@ export default function Home() {
       <Pressable onPress={() => router.push("/complete-profile")}>
         <Text className="text-white">Go to Complete Profile</Text>
       </Pressable>
+
+      <Pressable onPress={() => router.push("/(cliente)")}>
+        <Text className="text-white">Go to Home</Text>
+      </Pressable>
+
     </View>
   );
 }
