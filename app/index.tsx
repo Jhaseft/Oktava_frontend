@@ -9,7 +9,7 @@ export default function IndexScreen() {
   useEffect(() => {
     if (isLoading) return;
     if (token) {
-      router.replace("/home");
+      router.replace("/(cliente)/");
     } else {
       router.replace("/login");
     }

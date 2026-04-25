@@ -118,7 +118,7 @@ export default function RegisterScreen() {
       });
 
       await signIn(accessToken, user);
-      router.replace("/home");
+      router.replace("/(cliente)/");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(

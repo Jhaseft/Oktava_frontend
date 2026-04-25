@@ -50,7 +50,7 @@ export default function LoginScreen() {
     try {
       const { accessToken, user } = await authApi.signIn(email.trim(), password);
       await signIn(accessToken, user);
-      router.replace("/home");
+      router.replace("/(cliente)/");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(

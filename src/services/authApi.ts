@@ -14,6 +14,10 @@ export function clearUnauthorizedHandler(): void {
   unauthorizedHandler = null;
 }
 
+export function callUnauthorizedHandler(): void {
+  unauthorizedHandler?.();
+}
+
 // ─── Tipos ────────────────────────────────────────────
 
 export type AuthUser = {
