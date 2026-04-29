@@ -9,43 +9,45 @@ type ProductCardProps = {
 
 export function ProductCard({ product, onAdd }: ProductCardProps) {
   return (
-    <View className="bg-zinc-900 rounded-2xl overflow-hidden border border-white/5">
+    <View style={{ backgroundColor: '#111111', borderRadius: 12, overflow: 'hidden' }}>
       {product.imageUrl ? (
         <Image
           source={{ uri: product.imageUrl }}
-          className="w-full h-36"
+          style={{ width: '100%', aspectRatio: 1 }}
           resizeMode="cover"
         />
       ) : (
-        <View className="w-full h-36 bg-zinc-800 items-center justify-center">
-          <Ionicons name="restaurant-outline" size={32} color="#52525b" />
+        <View style={{ width: '100%', aspectRatio: 1, backgroundColor: '#1a1a1a', alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="restaurant-outline" size={36} color="#333333" />
         </View>
       )}
 
-      <View className="p-3 gap-1">
-        <Text className="text-white font-semibold text-sm" numberOfLines={1}>
+      <View style={{ padding: 10, gap: 4 }}>
+        <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 13, lineHeight: 18 }} numberOfLines={2}>
           {product.name}
         </Text>
-        {product.description && (
-          <Text className="text-zinc-400 text-xs" numberOfLines={2}>
+
+        {product.description ? (
+          <Text style={{ color: '#888888', fontSize: 11, lineHeight: 16 }} numberOfLines={2}>
             {product.description}
           </Text>
-        )}
+        ) : null}
 
-        <View className="flex-row items-center justify-between mt-1">
-          <Text className="text-red-400 font-bold text-base">
-            S/ {product.price.toFixed(2)}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+          <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 14 }}>
+            {product.price.toFixed(2)} Bs.
           </Text>
+
           {product.isAvailable ? (
             <TouchableOpacity
               onPress={() => onAdd(product)}
               activeOpacity={0.7}
-              className="bg-red-500 rounded-full w-8 h-8 items-center justify-center"
+              style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
             >
-              <Ionicons name="add" size={20} color="#fff" />
+              <Ionicons name="add" size={20} color="#ffffff" />
             </TouchableOpacity>
           ) : (
-            <Text className="text-zinc-600 text-xs">Agotado</Text>
+            <Text style={{ color: '#555555', fontSize: 11 }}>Agotado</Text>
           )}
         </View>
       </View>

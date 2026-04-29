@@ -1,29 +1,65 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, TouchableOpacity, FlatList } from 'react-native';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, ScrollView, RefreshControl, Text } from 'react-native';
 import { router } from 'expo-router';
-import { useAuth } from '@/src/context/AuthContext';
 import { productService } from '@/src/services/product.service';
 import { LoadingState } from '@/src/components/ui/LoadingState';
-import { ProductCard } from '@/src/components/Menu/ProductCard';
 import { useCart } from '@/src/context/CartContext';
 import type { Product, Category } from '@/src/types/product.types';
+import { HomeHeader } from '@/src/components/home/HomeHeader';
+import { SectionTitle } from '@/src/components/home/SectionTitle';
+import { OrderStatusBanner } from '@/src/components/home/OrderStatusBanner';
+import { PromoProductCard } from '@/src/components/home/PromoProductCard';
+import { MenuCategoryCard } from '@/src/components/home/MenuCategoryCard';
+import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
+
+const PROMO_COUNT = 4;
+
+function shuffle<T>(arr: T[]): T[] {
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function toPairs<T>(arr: T[]): [T, T | null][] {
+  const pairs: [T, T | null][] = [];
+  for (let i = 0; i < arr.length; i += 2) {
+    pairs.push([arr[i], arr[i + 1] ?? null]);
+  }
+  return pairs;
+}
+
+function getProductCategoryId(product: Product): string | null {
+  if (typeof product.category === 'object' && product.category?.id) {
+    return product.category.id;
+  }
+  if (typeof product.categoryId === 'string' && product.categoryId) {
+    return product.categoryId;
+  }
+  return null;
+}
 
 export default function HomeScreen() {
-  const { user } = useAuth();
-  const { addItem } = useCart();
+  const { addItem, totalItems } = useCart();
+
   const [categories, setCategories] = useState<Category[]>([]);
-  const [featured, setFeatured] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [shuffled, setShuffled] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      const [cats, products] = await Promise.all([
+      const [cats, prods] = await Promise.all([
         productService.getCategories(),
         productService.getProducts(),
       ]);
       setCategories(cats);
-      setFeatured(products.filter((p) => p.isAvailable).slice(0, 6));
+      setProducts(prods);
+      setShuffled(shuffle(prods));
     } catch {}
   }, []);
 
@@ -37,67 +73,102 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, [load]);
 
+  const promos = useMemo(
+    () => shuffled.filter((p) => p.isAvailable).slice(0, PROMO_COUNT),
+    [shuffled],
+  );
+  const promoPairs = useMemo(() => toPairs(promos), [promos]);
+
+  // Use first product image per category as representative image
+  const categoryImageMap = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const cat of categories) {
+      const rep = products.find((p) => getProductCategoryId(p) === cat.id && p.imageUrl);
+      map.set(cat.id, rep?.imageUrl ?? null);
+    }
+    return map;
+  }, [categories, products]);
+
+  const categoryPairs = useMemo(() => toPairs(categories), [categories]);
+
   if (loading) return <LoadingState message="Cargando..." />;
 
   return (
-    <ScrollView
-      className="flex-1 bg-black"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#ef4444" />}
-    >
-      {/* Header */}
-      <View className="px-5 pt-14 pb-6 gap-1">
-        <Text className="text-zinc-400 text-sm">Hola,</Text>
-        <Text className="text-white text-2xl font-bold">{user?.firstName} {user?.lastName}</Text>
-      </View>
+    <View style={{ flex: 1, backgroundColor: '#000000' }}>
+      <HomeHeader totalItems={totalItems} onMenuPress={() => setDrawerOpen(true)} />
+      <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
-      {/* Hero banner */}
-      <View className="mx-5 rounded-2xl bg-red-500/20 border border-red-500/30 p-5 mb-6">
-        <Text className="text-white font-bold text-xl mb-1">Menú del día</Text>
-        <Text className="text-zinc-300 text-sm mb-4">Descubre lo mejor de nuestra cocina</Text>
-        <TouchableOpacity
-          onPress={() => router.push('/(cliente)/menu')}
-          activeOpacity={0.7}
-          className="bg-red-500 self-start rounded-xl px-4 py-2"
-        >
-          <Text className="text-white font-semibold text-sm">Ver menú completo</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Categories strip */}
-      {categories.length > 0 && (
-        <View className="mb-6">
-          <Text className="text-white font-bold text-lg px-5 mb-3">Categorías</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
-            {categories.map((cat) => (
-              <TouchableOpacity
-                key={cat.id}
-                onPress={() => router.push('/(cliente)/menu')}
-                activeOpacity={0.7}
-                className="bg-zinc-900 border border-white/10 rounded-2xl px-4 py-3 items-center justify-center min-w-[80px]"
-              >
-                <Text className="text-white text-xs font-semibold text-center">{cat.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#e50909"
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
+        {/* Order status banner */}
+        <View style={{ paddingTop: 16 }}>
+          <OrderStatusBanner />
         </View>
-      )}
 
-      {/* Featured products */}
-      {featured.length > 0 && (
-        <View className="px-5 pb-8">
-          <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-white font-bold text-lg">Destacados</Text>
-            <TouchableOpacity onPress={() => router.push('/(cliente)/menu')} activeOpacity={0.7}>
-              <Text className="text-red-400 text-sm">Ver todos</Text>
-            </TouchableOpacity>
+        {/* Promotions */}
+        {promoPairs.length > 0 && (
+          <View style={{ marginBottom: 28 }}>
+            <SectionTitle title="Promociones" />
+            <View style={{ paddingHorizontal: 16, gap: 12 }}>
+              {promoPairs.map(([left, right], idx) => (
+                <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
+                  <PromoProductCard product={left} onAdd={addItem} />
+                  {right ? (
+                    <PromoProductCard product={right} onAdd={addItem} />
+                  ) : (
+                    <View style={{ flex: 1 }} />
+                  )}
+                </View>
+              ))}
+            </View>
           </View>
-          <View className="gap-3">
-            {featured.map((product) => (
-              <ProductCard key={product.id} product={product} onAdd={addItem} />
-            ))}
+        )}
+
+        {/* Explore menu */}
+        {categoryPairs.length > 0 && (
+          <View style={{ marginBottom: 16 }}>
+            <SectionTitle title="Explora Nuestro Menú" />
+            <View style={{ paddingHorizontal: 16, gap: 12 }}>
+              {categoryPairs.map(([left, right], idx) => (
+                <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
+                  <MenuCategoryCard
+                    category={left}
+                    imageUrl={categoryImageMap.get(left.id) ?? null}
+                    onPress={() => router.push('/(cliente)/menu')}
+                  />
+                  {right ? (
+                    <MenuCategoryCard
+                      category={right}
+                      imageUrl={categoryImageMap.get(right.id) ?? null}
+                      onPress={() => router.push('/(cliente)/menu')}
+                    />
+                  ) : (
+                    <View style={{ flex: 1 }} />
+                  )}
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
-      )}
-    </ScrollView>
+        )}
+
+        {/* Empty state if backend returns nothing */}
+        {promoPairs.length === 0 && categoryPairs.length === 0 && (
+          <View style={{ alignItems: 'center', paddingTop: 60 }}>
+            <Text style={{ color: '#666666', fontSize: 15 }}>
+              Sin productos disponibles
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
