@@ -11,7 +11,15 @@ import { EmptyState } from '@/src/components/ui/EmptyState';
 import type { Address, CreateAddressDto, UpdateAddressDto } from '@/src/types/address.types';
 import { TouchableOpacity } from 'react-native';
 
-const EMPTY_FORM: CreateAddressDto = { street: '', city: '', reference: undefined, isDefault: false };
+const EMPTY_FORM: CreateAddressDto = {
+  label: '',
+  direction: '',
+  departament: '',
+  latitude: NaN,
+  longitude: NaN,
+  reference: undefined,
+  contact: undefined,
+};
 
 export default function AddressesScreen() {
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -47,12 +55,22 @@ export default function AddressesScreen() {
 
   const openEdit = (addr: Address) => {
     setEditingId(addr.id);
-    setForm({ street: addr.street, city: addr.city, reference: addr.reference ?? undefined, isDefault: addr.isDefault });
+    setForm({
+      label: addr.label,
+      direction: addr.direction,
+      departament: addr.departament,
+      latitude: addr.latitude,
+      longitude: addr.longitude,
+      placeId: addr.placeId ?? undefined,
+      reference: addr.reference ?? undefined,
+      contact: addr.contact ?? undefined,
+    });
     setModalVisible(true);
   };
 
   const handleSave = async () => {
-    if (!form.street.trim() || !form.city.trim()) return;
+    if (!form.label.trim() || !form.direction.trim() || !form.departament.trim()) return;
+    if (isNaN(form.latitude) || isNaN(form.longitude)) return;
     setSaving(true);
     try {
       if (editingId) {
@@ -64,7 +82,8 @@ export default function AddressesScreen() {
       }
       setModalVisible(false);
     } catch (e: any) {
-      Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo guardar la dirección.');
+      const msg = e?.response?.data?.message;
+      Alert.alert('Error', Array.isArray(msg) ? msg.join('\n') : msg ?? 'No se pudo guardar la dirección.');
     } finally {
       setSaving(false);
     }

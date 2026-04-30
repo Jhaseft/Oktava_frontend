@@ -26,6 +26,7 @@ export type AuthUser = {
   lastName: string;
   email: string;
   phone: string | null;
+  phoneVerified: boolean;
   role: string;
   isActive: boolean;
 };

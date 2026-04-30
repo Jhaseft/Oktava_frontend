@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import type { AuthUser } from '@/src/services/authApi';
 import { registerUnauthorizedHandler, clearUnauthorizedHandler } from '@/src/services/authApi';
+import { api } from '@/src/services/api';
 
 const TOKEN_KEY = '@oktava:token';
 const USER_KEY = '@oktava:user';
@@ -12,12 +13,11 @@ const USER_KEY = '@oktava:user';
 type AuthState = {
   token: string | null;
   user: AuthUser | null;
-  /** true mientras se hidrata la sesión desde AsyncStorage */
   isLoading: boolean;
-  /** Guarda sesión en AsyncStorage y actualiza estado */
   signIn: (token: string, user: AuthUser) => Promise<void>;
-  /** Borra sesión de AsyncStorage y limpia estado */
   signOut: () => Promise<void>;
+  updateUser: (partial: Partial<AuthUser>) => Promise<void>;
+  refreshMe: () => Promise<void>;
 };
 
 // ─── Contexto ─────────────────────────────────────────
@@ -85,8 +85,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function updateUser(partial: Partial<AuthUser>) {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...partial };
+      AsyncStorage.setItem(USER_KEY, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  }
+
+  async function refreshMe() {
+    try {
+      const fresh = await api.get<AuthUser>('/auth/me');
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(fresh));
+      setUser(fresh);
+    } catch {
+      // silencioso — si falla, el user local sigue siendo válido
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ token, user, isLoading, signIn, signOut }}>
+    <AuthContext.Provider value={{ token, user, isLoading, signIn, signOut, updateUser, refreshMe }}>
       {children}
     </AuthContext.Provider>
   );

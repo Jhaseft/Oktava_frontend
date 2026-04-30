@@ -24,17 +24,18 @@ export function AddressCard({ address, onEdit, onDelete, onSelect, selected }: A
           <View className="flex-row items-center gap-2">
             <Ionicons name="location-outline" size={16} color="#f87171" />
             <Text className="text-white font-semibold text-sm flex-1" numberOfLines={1}>
-              {address.street}
+              {address.label}
             </Text>
-            {address.isDefault && (
-              <View className="bg-red-500/20 rounded-full px-2 py-0.5">
-                <Text className="text-red-400 text-xs">Principal</Text>
-              </View>
-            )}
           </View>
-          <Text className="text-zinc-400 text-xs ml-6">{address.city}</Text>
+          <Text className="text-zinc-300 text-xs ml-6" numberOfLines={2}>
+            {address.direction}
+          </Text>
+          <Text className="text-zinc-400 text-xs ml-6">{address.departament}</Text>
           {address.reference && (
             <Text className="text-zinc-500 text-xs ml-6">{address.reference}</Text>
+          )}
+          {address.contact && (
+            <Text className="text-zinc-500 text-xs ml-6">{address.contact}</Text>
           )}
         </View>
 

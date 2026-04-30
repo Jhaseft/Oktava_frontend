@@ -2,30 +2,33 @@ import { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useCart } from '@/src/context/CartContext';
+import { useAuth } from '@/src/context/AuthContext';
 import { orderService } from '@/src/services/order.service';
 import { addressService } from '@/src/services/address.service';
 import { AddressCard } from '@/src/components/address/AddressCard';
 import { Button } from '@/src/components/ui/Button';
 import { LoadingState } from '@/src/components/ui/LoadingState';
+import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerificationModal';
 import type { OrderType } from '@/src/types/order.types';
 import type { Address } from '@/src/types/address.types';
 
 export default function CheckoutScreen() {
   const { items, totalAmount, clearCart } = useCart();
+  const { user } = useAuth();
   const [orderType, setOrderType] = useState<OrderType>('PICKUP');
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [notes, setNotes] = useState('');
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [placing, setPlacing] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [phoneJustVerified, setPhoneJustVerified] = useState(false);
 
   const loadAddresses = useCallback(async () => {
     setLoadingAddresses(true);
     try {
       const data = await addressService.getAddresses();
       setAddresses(data);
-      const def = data.find((a) => a.isDefault);
-      if (def) setSelectedAddressId(def.id);
     } catch {}
     finally { setLoadingAddresses(false); }
   }, []);
@@ -40,6 +43,13 @@ export default function CheckoutScreen() {
 
   const handlePlace = async () => {
     if (!canPlace) return;
+
+    // Validación frontend para UX limpia — la seguridad real está en el backend
+    if (!user?.phoneVerified) {
+      setShowOtpModal(true);
+      return;
+    }
+
     setPlacing(true);
     try {
       await orderService.createOrder({
@@ -51,16 +61,42 @@ export default function CheckoutScreen() {
       clearCart();
       router.replace('/(cliente)/orders');
     } catch (e: any) {
+      // Defensa secundaria: si el backend devuelve PHONE_NOT_VERIFIED, abrir modal
+      if (e?.response?.data?.code === 'PHONE_NOT_VERIFIED') {
+        setShowOtpModal(true);
+        return;
+      }
       Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo crear el pedido.');
     } finally {
       setPlacing(false);
     }
   };
 
+  const handlePhoneVerified = () => {
+    setShowOtpModal(false);
+    setPhoneJustVerified(true);
+    setTimeout(() => setPhoneJustVerified(false), 5000);
+  };
+
   return (
+    <>
+    <PhoneVerificationModal
+      visible={showOtpModal}
+      onVerified={handlePhoneVerified}
+      onClose={() => setShowOtpModal(false)}
+    />
     <ScrollView className="flex-1 bg-black" keyboardShouldPersistTaps="handled">
       <View className="px-5 pt-14 pb-8 gap-6">
         <Text className="text-white text-2xl font-bold">Checkout</Text>
+
+        {/* Aviso de verificación exitosa */}
+        {phoneJustVerified && (
+          <View className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
+            <Text className="text-green-400 text-sm font-medium">
+              ✓ Número verificado. Ya puedes confirmar tu pedido.
+            </Text>
+          </View>
+        )}
 
         {/* Order type */}
         <View className="gap-2">
@@ -148,5 +184,6 @@ export default function CheckoutScreen() {
         <Button label="Confirmar pedido" onPress={handlePlace} loading={placing} disabled={!canPlace} />
       </View>
     </ScrollView>
+    </>
   );
 }

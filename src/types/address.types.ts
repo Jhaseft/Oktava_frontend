@@ -1,16 +1,24 @@
 export type Address = {
   id: string;
-  street: string;
-  city: string;
-  reference: string | null;
-  isDefault: boolean;
+  label: string;
+  direction: string;
+  latitude: number;
+  longitude: number;
+  placeId?: string | null;
+  departament: string;
+  reference?: string | null;
+  contact?: string | null;
 };
 
 export type CreateAddressDto = {
-  street: string;
-  city: string;
+  label: string;
+  direction: string;
+  latitude: number;
+  longitude: number;
+  placeId?: string;
+  departament: string;
   reference?: string;
-  isDefault?: boolean;
+  contact?: string;
 };
 
 export type UpdateAddressDto = Partial<CreateAddressDto>;
