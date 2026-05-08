@@ -90,7 +90,7 @@ export function AddressForm({ value, onChange, onSubmit, loading, submitLabel = 
                     {value.direction}
                   </Text>
                   <Text className="text-zinc-500 text-xs mt-0.5">
-                    {value.latitude.toFixed(5)}, {value.longitude.toFixed(5)}
+                    {Number(value.latitude).toFixed(5)}, {Number(value.longitude).toFixed(5)}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={16} color="#52525b" />
@@ -120,32 +120,6 @@ export function AddressForm({ value, onChange, onSubmit, loading, submitLabel = 
               placeholderTextColor="#52525b"
               className={inputClass}
             />
-          </View>
-
-          {/* Coordenadas (editables manualmente o pre-llenadas por el picker) */}
-          <View className="flex-row gap-3">
-            <View className="flex-1 gap-1">
-              <Text className={labelClass}>Latitud *</Text>
-              <TextInput
-                value={isNaN(value.latitude) ? '' : String(value.latitude)}
-                onChangeText={(t) => onChange({ ...value, latitude: parseFloat(t) })}
-                placeholder="-17.3895"
-                placeholderTextColor="#52525b"
-                keyboardType="numbers-and-punctuation"
-                className={inputClass}
-              />
-            </View>
-            <View className="flex-1 gap-1">
-              <Text className={labelClass}>Longitud *</Text>
-              <TextInput
-                value={isNaN(value.longitude) ? '' : String(value.longitude)}
-                onChangeText={(t) => onChange({ ...value, longitude: parseFloat(t) })}
-                placeholder="-66.1568"
-                placeholderTextColor="#52525b"
-                keyboardType="numbers-and-punctuation"
-                className={inputClass}
-              />
-            </View>
           </View>
 
           {/* Referencia */}

@@ -41,7 +41,15 @@ function getProductCategoryName(product: Product): string {
 }
 
 export default function MenuScreen() {
-  const { addItem, totalItems } = useCart();
+  const { addItem, updateQuantity, items, totalItems } = useCart();
+
+  const handleRemove = useCallback(
+    (p: Product) => {
+      const current = items.find((i) => i.productId === p.id)?.quantity ?? 1;
+      updateQuantity(p.id, current - 1);
+    },
+    [items, updateQuantity],
+  );
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -235,11 +243,21 @@ export default function MenuScreen() {
                 {toPairs(section.products).map(([left, right], idx) => (
                   <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
                     <View style={{ flex: 1 }}>
-                      <ProductCard product={left} onAdd={addItem} />
+                      <ProductCard
+                        product={left}
+                        quantity={items.find((i) => i.productId === left.id)?.quantity ?? 0}
+                        onAdd={addItem}
+                        onRemove={(p) => updateQuantity(p.id, (items.find((i) => i.productId === p.id)?.quantity ?? 1) - 1)}
+                      />
                     </View>
                     <View style={{ flex: 1 }}>
                       {right ? (
-                        <ProductCard product={right} onAdd={addItem} />
+                        <ProductCard
+                          product={right}
+                          quantity={items.find((i) => i.productId === right.id)?.quantity ?? 0}
+                          onAdd={addItem}
+                          onRemove={handleRemove}
+                        />
                       ) : (
                         <View style={{ flex: 1 }} />
                       )}

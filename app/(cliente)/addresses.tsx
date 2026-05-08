@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, RefreshControl, Alert, Modal } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { setPendingAddressSelect } from '@/src/lib/pendingAddressSelect';
 import { addressService } from '@/src/services/address.service';
 import { AddressCard } from '@/src/components/address/AddressCard';
 import { AddressForm } from '@/src/components/address/AddressForm';
@@ -22,6 +23,7 @@ const EMPTY_FORM: CreateAddressDto = {
 };
 
 export default function AddressesScreen() {
+  const { from } = useLocalSearchParams<{ from?: string }>();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,8 +61,8 @@ export default function AddressesScreen() {
       label: addr.label,
       direction: addr.direction,
       departament: addr.departament,
-      latitude: addr.latitude,
-      longitude: addr.longitude,
+      latitude: Number(addr.latitude),
+      longitude: Number(addr.longitude),
       placeId: addr.placeId ?? undefined,
       reference: addr.reference ?? undefined,
       contact: addr.contact ?? undefined,
@@ -76,11 +78,16 @@ export default function AddressesScreen() {
       if (editingId) {
         const updated = await addressService.updateAddress(editingId, form as UpdateAddressDto);
         setAddresses((prev) => prev.map((a) => (a.id === editingId ? updated : a)));
+        setModalVisible(false);
       } else {
         const created = await addressService.createAddress(form);
         setAddresses((prev) => [...prev, created]);
+        setModalVisible(false);
+        if (from === 'checkout') {
+          setPendingAddressSelect(created.id);
+          router.back();
+        }
       }
-      setModalVisible(false);
     } catch (e: any) {
       const msg = e?.response?.data?.message;
       Alert.alert('Error', Array.isArray(msg) ? msg.join('\n') : msg ?? 'No se pudo guardar la dirección.');

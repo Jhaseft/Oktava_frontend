@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -12,23 +14,42 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { Eye, EyeOff } from "lucide-react-native";
+import { ChevronDown, Eye, EyeOff, Search } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { useAuth } from "@/src/context/AuthContext";
-import { authApi, ApiError } from "@/src/services/authApi";
+import { authApi, ApiError, setPendingSignUp } from "@/src/services/authApi";
+
+// ─── Códigos de país ──────────────────────────────────────────────────────────
+
+type CountryCode = { flag: string; name: string; dial: string };
+
+const COUNTRY_CODES: CountryCode[] = [
+  { flag: "🇨🇴", name: "Colombia",          dial: "+57"  },
+  { flag: "🇲🇽", name: "México",            dial: "+52"  },
+  { flag: "🇦🇷", name: "Argentina",         dial: "+54"  },
+  { flag: "🇨🇱", name: "Chile",             dial: "+56"  },
+  { flag: "🇵🇪", name: "Perú",              dial: "+51"  },
+  { flag: "🇻🇪", name: "Venezuela",         dial: "+58"  },
+  { flag: "🇪🇨", name: "Ecuador",           dial: "+593" },
+  { flag: "🇧🇴", name: "Bolivia",           dial: "+591" },
+  { flag: "🇵🇾", name: "Paraguay",          dial: "+595" },
+  { flag: "🇺🇾", name: "Uruguay",           dial: "+598" },
+  { flag: "🇵🇦", name: "Panamá",            dial: "+507" },
+  { flag: "🇨🇷", name: "Costa Rica",        dial: "+506" },
+  { flag: "🇬🇹", name: "Guatemala",         dial: "+502" },
+  { flag: "🇭🇳", name: "Honduras",          dial: "+504" },
+  { flag: "🇸🇻", name: "El Salvador",       dial: "+503" },
+  { flag: "🇳🇮", name: "Nicaragua",         dial: "+505" },
+  { flag: "🇩🇴", name: "Rep. Dominicana",   dial: "+1"   },
+  { flag: "🇺🇸", name: "Estados Unidos",    dial: "+1"   },
+  { flag: "🇨🇦", name: "Canadá",            dial: "+1"   },
+  { flag: "🇪🇸", name: "España",            dial: "+34"  },
+  { flag: "🇧🇷", name: "Brasil",            dial: "+55"  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function isValidEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email.trim());
-}
-
-function isStrongPassword(password: string) {
-  return (
-    password.length >= 8 &&
-    /[A-Z]/.test(password) &&
-    /[a-z]/.test(password) &&
-    /[0-9]/.test(password) &&
-    /[!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~;']/.test(password)
-  );
 }
 
 function field(hasError: boolean) {
@@ -44,18 +65,21 @@ function field(hasError: boolean) {
   };
 }
 
-export default function RegisterScreen() {
-  const { signIn } = useAuth();
+// ─── Componente ───────────────────────────────────────────────────────────────
 
+export default function RegisterScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [dialCode, setDialCode] = useState<CountryCode>(COUNTRY_CODES[0]);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerSearch, setPickerSearch] = useState("");
 
   const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastNameTouched, setLastNameTouched] = useState(false);
@@ -68,12 +92,22 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const filteredCountries = useMemo(
+    () =>
+      COUNTRY_CODES.filter(
+        (c) =>
+          c.name.toLowerCase().includes(pickerSearch.toLowerCase()) ||
+          c.dial.includes(pickerSearch),
+      ),
+    [pickerSearch],
+  );
+
   const firstNameIsValid = useMemo(() => firstName.trim().length > 0, [firstName]);
-  const lastNameIsValid = useMemo(() => lastName.trim().length > 0, [lastName]);
-  const emailIsValid = useMemo(() => isValidEmail(email), [email]);
-  const phoneIsValid = useMemo(() => phone.trim().length >= 8, [phone]);
-  const passwordIsValid = useMemo(() => isStrongPassword(password), [password]);
-  const confirmIsValid = useMemo(
+  const lastNameIsValid  = useMemo(() => lastName.trim().length > 0, [lastName]);
+  const emailIsValid     = useMemo(() => isValidEmail(email), [email]);
+  const phoneIsValid     = useMemo(() => phone.trim().length >= 7, [phone]);
+  const passwordIsValid  = useMemo(() => password.length >= 8, [password]);
+  const confirmIsValid   = useMemo(
     () => confirmPassword.length > 0 && confirmPassword === password,
     [confirmPassword, password],
   );
@@ -88,14 +122,14 @@ export default function RegisterScreen() {
     acceptedTerms;
 
   const showFirstNameError = firstNameTouched && !firstNameIsValid;
-  const showLastNameError = lastNameTouched && !lastNameIsValid;
-  const showEmailError = emailTouched && email.length > 0 && !emailIsValid;
-  const showPhoneError = phoneTouched && phone.length > 0 && !phoneIsValid;
-  const showPasswordError = passwordTouched && password.length > 0 && !passwordIsValid;
-  const showConfirmError = confirmTouched && confirmPassword.length > 0 && !confirmIsValid;
-  const showTermsError = termsTouched && !acceptedTerms;
+  const showLastNameError  = lastNameTouched  && !lastNameIsValid;
+  const showEmailError     = emailTouched     && email.length > 0    && !emailIsValid;
+  const showPhoneError     = phoneTouched     && phone.length > 0    && !phoneIsValid;
+  const showPasswordError  = passwordTouched  && password.length > 0 && !passwordIsValid;
+  const showConfirmError   = confirmTouched   && confirmPassword.length > 0 && !confirmIsValid;
+  const showTermsError     = termsTouched     && !acceptedTerms;
 
-  const handleRegister = async () => {
+  const handleContinue = async () => {
     setFirstNameTouched(true);
     setLastNameTouched(true);
     setEmailTouched(true);
@@ -109,16 +143,15 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
-      const { accessToken, user } = await authApi.signUp({
+      await authApi.sendVerification(email.trim());
+      setPendingSignUp({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
-        phone: phone.trim(),
+        phone: `${dialCode.dial}${phone.trim()}`,
         password,
       });
-
-      await signIn(accessToken, user);
-      router.replace("/(cliente)/");
+      router.push("/verify-code");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(
@@ -166,16 +199,13 @@ export default function RegisterScreen() {
 
               <Text className="text-center text-3xl font-bold text-white">Crear Cuenta</Text>
 
+              {/* Nombre / Apellido */}
               <View className="flex-row gap-3">
                 <View className="flex-1 gap-2">
                   <Text className="text-sm font-medium text-gray-400">Nombre</Text>
                   <TextInput
                     value={firstName}
-                    onChangeText={(text) => {
-                      setFirstName(text);
-                      setError(null);
-                      if (!firstNameTouched) setFirstNameTouched(true);
-                    }}
+                    onChangeText={(t) => { setFirstName(t); setError(null); if (!firstNameTouched) setFirstNameTouched(true); }}
                     placeholder="Tu nombre"
                     placeholderTextColor="#4b5563"
                     editable={!isLoading}
@@ -188,11 +218,7 @@ export default function RegisterScreen() {
                   <Text className="text-sm font-medium text-gray-400">Apellido</Text>
                   <TextInput
                     value={lastName}
-                    onChangeText={(text) => {
-                      setLastName(text);
-                      setError(null);
-                      if (!lastNameTouched) setLastNameTouched(true);
-                    }}
+                    onChangeText={(t) => { setLastName(t); setError(null); if (!lastNameTouched) setLastNameTouched(true); }}
                     placeholder="Tu apellido"
                     placeholderTextColor="#4b5563"
                     editable={!isLoading}
@@ -203,15 +229,12 @@ export default function RegisterScreen() {
                 </View>
               </View>
 
+              {/* Email */}
               <View className="gap-2">
                 <Text className="text-sm font-medium text-gray-400">Correo electronico</Text>
                 <TextInput
                   value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    setError(null);
-                    if (!emailTouched) setEmailTouched(true);
-                  }}
+                  onChangeText={(t) => { setEmail(t); setError(null); if (!emailTouched) setEmailTouched(true); }}
                   placeholder="tu@ejemplo.com"
                   placeholderTextColor="#4b5563"
                   keyboardType="email-address"
@@ -228,39 +251,61 @@ export default function RegisterScreen() {
                 )}
               </View>
 
+              {/* Teléfono con selector de código */}
               <View className="gap-2">
                 <Text className="text-sm font-medium text-gray-400">Numero de telefono</Text>
-                <TextInput
-                  value={phone}
-                  onChangeText={(text) => {
-                    setPhone(text.replace(/[^0-9]/g, ""));
-                    setError(null);
-                    if (!phoneTouched) setPhoneTouched(true);
-                  }}
-                  placeholder="Ej: 3001234567"
-                  placeholderTextColor="#4b5563"
-                  keyboardType="phone-pad"
-                  editable={!isLoading}
-                  maxLength={15}
-                  style={field(showPhoneError)}
-                />
+                <View style={{ flexDirection: "row", gap: 8 }}>
+                  {/* Dial code picker */}
+                  <Pressable
+                    onPress={() => { setShowPicker(true); setPickerSearch(""); }}
+                    disabled={isLoading}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                      backgroundColor: "#000",
+                      borderWidth: 1,
+                      borderColor: "#374151",
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      paddingVertical: 12,
+                    }}
+                  >
+                    <Text style={{ fontSize: 18 }}>{dialCode.flag}</Text>
+                    <Text style={{ color: "#d1d5db", fontSize: 15, marginLeft: 2 }}>{dialCode.dial}</Text>
+                    <ChevronDown size={14} color="#6b7280" style={{ marginLeft: 2 }} />
+                  </Pressable>
+
+                  {/* Number input */}
+                  <TextInput
+                    value={phone}
+                    onChangeText={(t) => {
+                      setPhone(t.replaceAll(/\D/g, ""));
+                      setError(null);
+                      if (!phoneTouched) setPhoneTouched(true);
+                    }}
+                    placeholder="3001234567"
+                    placeholderTextColor="#4b5563"
+                    keyboardType="phone-pad"
+                    editable={!isLoading}
+                    maxLength={15}
+                    style={[field(showPhoneError), { flex: 1 }]}
+                  />
+                </View>
                 {showPhoneError && (
                   <Text className="text-sm text-red-500">
-                    Ingresa un numero valido (min. 8 digitos).
+                    Ingresa un numero valido (min. 7 digitos).
                   </Text>
                 )}
               </View>
 
+              {/* Contraseña */}
               <View className="gap-2">
                 <Text className="text-sm font-medium text-gray-400">Contrasena</Text>
                 <View style={{ position: "relative" }}>
                   <TextInput
                     value={password}
-                    onChangeText={(text) => {
-                      setPassword(text);
-                      setError(null);
-                      if (!passwordTouched) setPasswordTouched(true);
-                    }}
+                    onChangeText={(t) => { setPassword(t); setError(null); if (!passwordTouched) setPasswordTouched(true); }}
                     placeholder="**********"
                     placeholderTextColor="#4b5563"
                     secureTextEntry={!showPassword}
@@ -274,34 +319,23 @@ export default function RegisterScreen() {
                   />
                   <TouchableOpacity
                     onPress={() => setShowPassword((v) => !v)}
-                    style={{
-                      position: "absolute",
-                      right: 12,
-                      top: 0,
-                      bottom: 0,
-                      justifyContent: "center",
-                    }}
+                    style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
                   >
                     {showPassword ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
                   </TouchableOpacity>
                 </View>
                 {showPasswordError && (
-                  <Text className="text-sm text-red-500">
-                    Usa 8+ caracteres con mayuscula, minuscula, numero y simbolo.
-                  </Text>
+                  <Text className="text-sm text-red-500">Minimo 8 caracteres.</Text>
                 )}
               </View>
 
+              {/* Confirmar contraseña */}
               <View className="gap-2">
                 <Text className="text-sm font-medium text-gray-400">Confirmar contrasena</Text>
                 <View style={{ position: "relative" }}>
                   <TextInput
                     value={confirmPassword}
-                    onChangeText={(text) => {
-                      setConfirmPassword(text);
-                      setError(null);
-                      if (!confirmTouched) setConfirmTouched(true);
-                    }}
+                    onChangeText={(t) => { setConfirmPassword(t); setError(null); if (!confirmTouched) setConfirmTouched(true); }}
                     placeholder="**********"
                     placeholderTextColor="#4b5563"
                     secureTextEntry={!showConfirm}
@@ -315,13 +349,7 @@ export default function RegisterScreen() {
                   />
                   <TouchableOpacity
                     onPress={() => setShowConfirm((v) => !v)}
-                    style={{
-                      position: "absolute",
-                      right: 12,
-                      top: 0,
-                      bottom: 0,
-                      justifyContent: "center",
-                    }}
+                    style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
                   >
                     {showConfirm ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
                   </TouchableOpacity>
@@ -331,12 +359,9 @@ export default function RegisterScreen() {
                 )}
               </View>
 
+              {/* Términos */}
               <Pressable
-                onPress={() => {
-                  setAcceptedTerms((prev) => !prev);
-                  setTermsTouched(true);
-                  setError(null);
-                }}
+                onPress={() => { setAcceptedTerms((p) => !p); setTermsTouched(true); setError(null); }}
                 disabled={isLoading}
                 className="flex-row items-start gap-3"
               >
@@ -353,16 +378,9 @@ export default function RegisterScreen() {
                     justifyContent: "center",
                   }}
                 >
-                  {acceptedTerms ? (
-                    <View
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 2,
-                        backgroundColor: "white",
-                      }}
-                    />
-                  ) : null}
+                  {acceptedTerms && (
+                    <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: "white" }} />
+                  )}
                 </View>
                 <Text className="flex-1 text-sm text-gray-400">
                   Acepto los terminos y condiciones y las politicas de privacidad.
@@ -372,8 +390,9 @@ export default function RegisterScreen() {
                 <Text className="text-sm text-red-500">Debes aceptar los terminos para continuar.</Text>
               )}
 
+              {/* Continuar */}
               <Pressable
-                onPress={handleRegister}
+                onPress={handleContinue}
                 disabled={!canSubmit || isLoading}
                 style={{
                   backgroundColor: canSubmit && !isLoading ? "#b91c1c" : "#7f1d1d",
@@ -386,10 +405,11 @@ export default function RegisterScreen() {
                 {isLoading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text className="text-base font-semibold text-white">Crear cuenta</Text>
+                  <Text className="text-base font-semibold text-white">Continuar</Text>
                 )}
               </Pressable>
 
+              {/* Divider */}
               <View className="relative my-2">
                 <View className="absolute inset-0 flex-row items-center">
                   <View className="flex-1 border-t border-[#4b5563]" />
@@ -401,6 +421,7 @@ export default function RegisterScreen() {
                 </View>
               </View>
 
+              {/* Google */}
               <Pressable
                 disabled={isLoading}
                 style={{
@@ -429,6 +450,93 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* ── Modal selector de código de país ── */}
+      <Modal visible={showPicker} animationType="slide" transparent>
+        <Pressable
+          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}
+          onPress={() => setShowPicker(false)}
+        >
+          <Pressable
+            onPress={(e) => e.stopPropagation()}
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: "#111",
+              borderTopLeftRadius: 16,
+              borderTopRightRadius: 16,
+              maxHeight: "70%",
+              paddingTop: 12,
+            }}
+          >
+            {/* Handle */}
+            <View style={{ alignItems: "center", marginBottom: 12 }}>
+              <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "#374151" }} />
+            </View>
+
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700", marginHorizontal: 16, marginBottom: 12 }}>
+              Codigo de pais
+            </Text>
+
+            {/* Búsqueda */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginHorizontal: 16,
+                marginBottom: 8,
+                backgroundColor: "#1f2937",
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                gap: 8,
+              }}
+            >
+              <Search size={16} color="#6b7280" />
+              <TextInput
+                value={pickerSearch}
+                onChangeText={setPickerSearch}
+                placeholder="Buscar pais o codigo..."
+                placeholderTextColor="#4b5563"
+                style={{ flex: 1, color: "#d1d5db", fontSize: 14, paddingVertical: 10 }}
+              />
+            </View>
+
+            {/* Lista */}
+            <FlatList
+              data={filteredCountries}
+              keyExtractor={(item) => `${item.name}-${item.dial}`}
+              keyboardShouldPersistTaps="handled"
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => { setDialCode(item); setShowPicker(false); }}
+                  style={({ pressed }) => {
+                    let bg = "transparent";
+                    if (pressed) bg = "#1f2937";
+                    else if (item.name === dialCode.name) bg = "#1c1c1e";
+                    return {
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 12,
+                      paddingHorizontal: 16,
+                      paddingVertical: 14,
+                      backgroundColor: bg,
+                    };
+                  }}
+                >
+                  <Text style={{ fontSize: 22 }}>{item.flag}</Text>
+                  <Text style={{ flex: 1, color: "#d1d5db", fontSize: 15 }}>{item.name}</Text>
+                  <Text style={{ color: "#6b7280", fontSize: 14 }}>{item.dial}</Text>
+                  {item.name === dialCode.name && (
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#ef4444" }} />
+                  )}
+                </Pressable>
+              )}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </LinearGradient>
   );
 }

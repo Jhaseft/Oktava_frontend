@@ -19,7 +19,7 @@ type Props = {
 const CODE_LENGTH = 6;
 
 export function PhoneVerificationModal({ visible, onVerified, onClose }: Props) {
-  const { user, updateUser, refreshMe } = useAuth();
+  const { user, updateUser } = useAuth();
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -81,11 +81,7 @@ export function PhoneVerificationModal({ visible, onVerified, onClose }: Props) 
     setError(null);
     try {
       const res = await phoneVerificationService.verifyCode(code);
-      if (res.user) {
-        await updateUser(res.user);
-      } else {
-        await refreshMe();
-      }
+      await updateUser(res.user ?? { phoneVerified: true });
       reset();
       onVerified();
     } catch (e: any) {

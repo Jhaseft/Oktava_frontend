@@ -132,6 +132,7 @@ export default function ClienteLayout() {
       {/* Hidden screens */}
       <Tabs.Screen name="checkout" options={{ href: null }} />
       <Tabs.Screen name="addresses" options={{ href: null }} />
+      <Tabs.Screen name="qr-payment" options={{ href: null }} />
     </Tabs>
   );
 }

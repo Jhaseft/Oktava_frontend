@@ -42,7 +42,15 @@ function getProductCategoryId(product: Product): string | null {
 }
 
 export default function HomeScreen() {
-  const { addItem, totalItems } = useCart();
+  const { addItem, updateQuantity, items, totalItems } = useCart();
+
+  const handleRemove = useCallback(
+    (p: Product) => {
+      const current = items.find((i) => i.productId === p.id)?.quantity ?? 1;
+      updateQuantity(p.id, current - 1);
+    },
+    [items, updateQuantity],
+  );
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -121,9 +129,19 @@ export default function HomeScreen() {
             <View style={{ paddingHorizontal: 16, gap: 12 }}>
               {promoPairs.map(([left, right], idx) => (
                 <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
-                  <PromoProductCard product={left} onAdd={addItem} />
+                  <PromoProductCard
+                    product={left}
+                    quantity={items.find((i) => i.productId === left.id)?.quantity ?? 0}
+                    onAdd={addItem}
+                    onRemove={handleRemove}
+                  />
                   {right ? (
-                    <PromoProductCard product={right} onAdd={addItem} />
+                    <PromoProductCard
+                      product={right}
+                      quantity={items.find((i) => i.productId === right.id)?.quantity ?? 0}
+                      onAdd={addItem}
+                      onRemove={handleRemove}
+                    />
                   ) : (
                     <View style={{ flex: 1 }} />
                   )}

@@ -4,19 +4,19 @@ import type { Order, OrderStatus } from '@/src/types/order.types';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING: 'Pendiente',
-  CONFIRMED: 'Confirmado',
   PREPARING: 'Preparando',
-  READY: 'Listo',
-  DELIVERED: 'Entregado',
+  ON_THE_WAY: 'En camino',
+  PICKED_UP: 'Listo para recoger',
+  COMPLETED: 'Completado',
   CANCELLED: 'Cancelado',
 };
 
 const STATUS_VARIANT: Record<OrderStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
   PENDING: 'warning',
-  CONFIRMED: 'info',
   PREPARING: 'info',
-  READY: 'success',
-  DELIVERED: 'success',
+  ON_THE_WAY: 'info',
+  PICKED_UP: 'success',
+  COMPLETED: 'success',
   CANCELLED: 'danger',
 };
 
@@ -27,7 +27,7 @@ type OrderCardProps = {
 };
 
 export function OrderCard({ order, onConfirmReceived, confirming }: OrderCardProps) {
-  const canConfirm = order.status === 'DELIVERED' || order.status === 'READY';
+  const canConfirm = order.status === 'ON_THE_WAY' || order.status === 'PICKED_UP';
 
   return (
     <View className="bg-zinc-900 rounded-2xl p-4 gap-3 border border-white/5">
@@ -44,7 +44,7 @@ export function OrderCard({ order, onConfirmReceived, confirming }: OrderCardPro
             <Text className="text-zinc-300 text-sm">
               {item.quantity}× {item.productName}
             </Text>
-            <Text className="text-zinc-400 text-sm">S/ {item.subtotal.toFixed(2)}</Text>
+            <Text className="text-zinc-400 text-sm">Bs. {item.subtotal.toFixed(2)}</Text>
           </View>
         ))}
       </View>
@@ -53,9 +53,9 @@ export function OrderCard({ order, onConfirmReceived, confirming }: OrderCardPro
 
       <View className="flex-row justify-between items-center">
         <Text className="text-zinc-400 text-xs">
-          {order.type === 'DELIVERY' ? 'Delivery' : 'Recojo en tienda'}
+          {order.orderType === 'DELIVERY' ? 'Delivery' : 'Recojo en tienda'}
         </Text>
-        <Text className="text-white font-bold">S/ {order.total.toFixed(2)}</Text>
+        <Text className="text-white font-bold">Bs. {order.total.toFixed(2)}</Text>
       </View>
 
       {canConfirm && onConfirmReceived && (

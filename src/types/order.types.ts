@@ -1,9 +1,9 @@
 export type OrderStatus =
   | 'PENDING'
-  | 'CONFIRMED'
   | 'PREPARING'
-  | 'READY'
-  | 'DELIVERED'
+  | 'ON_THE_WAY'
+  | 'PICKED_UP'
+  | 'COMPLETED'
   | 'CANCELLED';
 
 export type OrderType = 'DELIVERY' | 'PICKUP';
@@ -19,8 +19,11 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
+  orderNumber: string;
   status: OrderStatus;
-  type: OrderType;
+  orderType: OrderType;
+  subtotal: number;
+  deliveryFee: number;
   total: number;
   notes: string | null;
   createdAt: string;
@@ -40,7 +43,7 @@ export type CreateOrderItem = {
 };
 
 export type CreateOrderDto = {
-  type: OrderType;
+  orderType: OrderType;
   items: CreateOrderItem[];
   addressId?: string;
   notes?: string;

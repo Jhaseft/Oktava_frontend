@@ -2,12 +2,49 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { Product } from '@/src/types/product.types';
 
-type Props = {
+type Props = Readonly<{
   product: Product;
+  quantity: number;
   onAdd: (product: Product) => void;
-};
+  onRemove: (product: Product) => void;
+}>;
 
-export function PromoProductCard({ product, onAdd }: Props) {
+function QuantityControl({ product, quantity, onAdd, onRemove }: Props) {
+  if (quantity > 0) {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <TouchableOpacity
+          onPress={() => onRemove(product)}
+          activeOpacity={0.7}
+          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Ionicons name="remove" size={16} color="#ffffff" />
+        </TouchableOpacity>
+        <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14, minWidth: 16, textAlign: 'center' }}>
+          {quantity}
+        </Text>
+        <TouchableOpacity
+          onPress={() => onAdd(product)}
+          activeOpacity={0.7}
+          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Ionicons name="add" size={16} color="#ffffff" />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  return (
+    <TouchableOpacity
+      onPress={() => onAdd(product)}
+      activeOpacity={0.7}
+      style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <Ionicons name="add" size={22} color="#ffffff" />
+    </TouchableOpacity>
+  );
+}
+
+export function PromoProductCard({ product, quantity, onAdd, onRemove }: Props) {
   return (
     <View style={{ flex: 1, backgroundColor: '#111111', borderRadius: 14, overflow: 'hidden' }}>
       {product.imageUrl ? (
@@ -59,24 +96,10 @@ export function PromoProductCard({ product, onAdd }: Props) {
             {product.price.toFixed(2)} Bs.
           </Text>
 
-          {product.isAvailable ? (
-            <TouchableOpacity
-              onPress={() => onAdd(product)}
-              activeOpacity={0.7}
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                backgroundColor: '#e50909',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Ionicons name="add" size={22} color="#ffffff" />
-            </TouchableOpacity>
-          ) : (
-            <Text style={{ color: '#555555', fontSize: 11 }}>Agotado</Text>
-          )}
+          {product.isAvailable
+            ? <QuantityControl product={product} quantity={quantity} onAdd={onAdd} onRemove={onRemove} />
+            : <Text style={{ color: '#555555', fontSize: 11 }}>Agotado</Text>
+          }
         </View>
       </View>
     </View>

@@ -20,7 +20,7 @@ export function CartSummary({ totalItems, totalAmount, onCheckout, loading }: Ca
         <Text className="text-white font-bold text-base">Total</Text>
         <Text className="text-red-400 font-bold text-base">S/ {totalAmount.toFixed(2)}</Text>
       </View>
-      <Button label="Ir al checkout" onPress={onCheckout} loading={loading} />
+      <Button label="Proceder con el pedido" onPress={onCheckout} loading={loading} />
     </View>
   );
 }

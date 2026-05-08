@@ -98,7 +98,7 @@ export default function CartScreen() {
                 }}
               >
                 <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>
-                  Ir al checkout
+                  Proceder con el pedido
                 </Text>
               </TouchableOpacity>
             </View>

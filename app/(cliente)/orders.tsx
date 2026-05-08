@@ -7,7 +7,7 @@ import { OrderCard } from '@/src/components/order/OrderCard';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import type { Order } from '@/src/types/order.types';
 
-const ACTIVE_STATUSES = new Set(['PENDING', 'CONFIRMED', 'PREPARING', 'READY']);
+const ACTIVE_STATUSES = new Set(['PENDING', 'PREPARING', 'ON_THE_WAY', 'PICKED_UP']);
 const POLL_INTERVAL_MS = 8000;
 
 export default function OrdersScreen() {
@@ -47,7 +47,7 @@ export default function OrdersScreen() {
   }, []);
 
   const active = orders.filter((o) => ACTIVE_STATUSES.has(o.status));
-  const history = orders.filter((o) => o.status === 'DELIVERED' || o.status === 'CANCELLED');
+  const history = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'CANCELLED');
 
   if (loading) return <LoadingState message="Cargando pedidos..." />;
 

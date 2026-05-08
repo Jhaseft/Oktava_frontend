@@ -42,6 +42,7 @@ export type SignUpRequest = {
   email: string;
   phone: string;
   password: string;
+  verificationCode: string;
 };
 
 // ─── Error tipado ─────────────────────────────────────
@@ -89,19 +90,23 @@ async function post<T>(path: string, body: object): Promise<T> {
   return data as T;
 }
 
+// ─── Registro pendiente (en memoria, solo durante el flujo OTP) ──────────────
+
+type PendingSignUp = Omit<SignUpRequest, 'verificationCode'>;
+let pendingSignUp: PendingSignUp | null = null;
+
+export function setPendingSignUp(data: PendingSignUp) { pendingSignUp = data; }
+export function getPendingSignUp(): PendingSignUp | null { return pendingSignUp; }
+export function clearPendingSignUp() { pendingSignUp = null; }
+
 // ─── Servicios de auth ────────────────────────────────
 
 export const authApi = {
-  /**
-   * Login con email y contraseña.
-   * POST /auth/sign-in
-   */
   signIn: (email: string, password: string) =>
     post<AuthResponse>('/auth/sign-in', { email, password }),
 
-  /**
-   * Registro directo con perfil completo.
-   * POST /auth/sign-up
-   */
+  sendVerification: (email: string) =>
+    post<{ message: string }>('/auth/send-verification', { email }),
+
   signUp: (data: SignUpRequest) => post<AuthResponse>('/auth/sign-up', data),
 };
