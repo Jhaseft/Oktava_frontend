@@ -446,6 +446,16 @@ export default function RegisterScreen() {
                   Ya tienes cuenta? <Text className="text-red-400">Inicia sesion</Text>
                 </Text>
               </Pressable>
+
+              <Pressable
+                onPress={() => router.replace("/(cliente)/")}
+                disabled={isLoading}
+                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+              >
+                <Text className="text-center text-sm text-gray-600  ">
+                  Ver menú sin cuenta →
+                </Text>
+              </Pressable>
             </View>
           </View>
         </ScrollView>

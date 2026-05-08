@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { router, useFocusEffect } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { consumePendingAddressSelect } from '@/src/lib/pendingAddressSelect';
 import { haversineKm, calcDeliveryFee, STORE_LAT, STORE_LNG, MAX_DELIVERY_KM } from '@/src/lib/maps';
@@ -21,7 +22,12 @@ const PAYMENT_OPTIONS: { method: PaymentMethod; label: string; icon: string }[] 
 ];
 
 export default function CheckoutScreen() {
+  const { token } = useAuth();
   const { items, totalAmount, clearCart } = useCart();
+
+  useEffect(() => {
+    if (!token) router.replace('/login');
+  }, [token]);
 
   const [orderType, setOrderType] = useState<OrderType>('PICKUP');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');

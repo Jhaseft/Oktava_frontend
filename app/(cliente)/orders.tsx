@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useAuth } from '@/src/context/AuthContext';
 import { orderService } from '@/src/services/order.service';
 import { OrderCard } from '@/src/components/order/OrderCard';
 import { LoadingState } from '@/src/components/ui/LoadingState';
@@ -12,6 +14,7 @@ const POLL_INTERVAL_MS = 8000;
 
 export default function OrdersScreen() {
   const insets = useSafeAreaInsets();
+  const { token } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -48,6 +51,24 @@ export default function OrdersScreen() {
 
   const active = orders.filter((o) => ACTIVE_STATUSES.has(o.status));
   const history = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'CANCELLED');
+
+  if (!token) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 }}>
+        <Ionicons name="receipt-outline" size={64} color="#333333" />
+        <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700', textAlign: 'center' }}>
+          Inicia sesión para ver tus pedidos
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push('/login')}
+          activeOpacity={0.8}
+          style={{ backgroundColor: '#e50909', borderRadius: 10, height: 50, alignItems: 'center', justifyContent: 'center', width: '100%' }}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>Iniciar sesión</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (loading) return <LoadingState message="Cargando pedidos..." />;
 

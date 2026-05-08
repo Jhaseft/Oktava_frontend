@@ -16,31 +16,13 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "@/src/context/AuthContext";
 import { authApi, ApiError } from "@/src/services/authApi";
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
 function isValidEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email.trim());
 }
 
-const INPUT_BASE = {
-  backgroundColor: "#1a1a1a",
-  borderWidth: 1,
-  borderColor: "#3a3a3a",
-  borderRadius: 6,
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  color: "#ffffff",
-  fontSize: 15,
-} as const;
-
-const INPUT_ERROR = { ...INPUT_BASE, borderColor: "#e50909" } as const;
-
-// ─── Screen ──────────────────────────────────────────────────────────────────
-
 export default function LoginScreen() {
   const { signIn } = useAuth();
 
-  // ── State (sin cambios) ────────────────────────────────────────────────────
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +38,6 @@ export default function LoginScreen() {
   const showEmailError = emailTouched && email.length > 0 && !emailIsValid;
   const showPasswordError = passwordTouched && password.length > 0 && !passwordIsValid;
 
-  // ── Handler (sin cambios) ──────────────────────────────────────────────────
   const handleLogin = async () => {
     setEmailTouched(true);
     setPasswordTouched(true);
@@ -80,44 +61,50 @@ export default function LoginScreen() {
     }
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  const inputBase = "bg-[#1a1a1a] border border-[#3a3a3a] rounded-md px-4 py-3.5 text-white text-[15px]";
+  const inputErr  = "bg-[#1a1a1a] border border-[#e50909] rounded-md px-4 py-3.5 text-white text-[15px]";
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#000000" }}>
+    <View className="flex-1 bg-black">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingHorizontal: 24, paddingVertical: 32 }}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+          className="px-6 py-8"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View>
 
-            {/* ── Logo ── */}
-            <View style={{ alignItems: "center", marginBottom: 12 }}>
-              <View style={{ flexDirection: "row" }}>
-                <Text style={{ fontSize: 48, fontWeight: "900", color: "#e50909", letterSpacing: -1 }}>OK</Text>
-                <Text style={{ fontSize: 48, fontWeight: "900", color: "#ffffff", letterSpacing: -1 }}>TA</Text>
-                <Text style={{ fontSize: 48, fontWeight: "900", color: "#e50909", letterSpacing: -1 }}>VA</Text>
+            {/* Logo */}
+            <View className="items-center mb-3">
+              <View className="flex-row">
+                <Text className="text-5xl font-black text-[#e50909]">OK</Text>
+                <Text className="text-5xl font-black text-white">TA</Text>
+                <Text className="text-5xl font-black text-[#e50909]">VA</Text>
               </View>
             </View>
 
-            {/* ── Subtítulo ── */}
-            <Text style={{ color: "#ffffff", textAlign: "center", fontSize: 12, fontWeight: "700", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 28, lineHeight: 18 }}>
+            {/* Subtítulo */}
+            <Text
+              className="text-white text-center text-[12px] font-bold uppercase mb-7 leading-[18px]"
+              style={{ letterSpacing: 0.8 }}
+            >
               INICIA SESIÓN O CREA UNA CUENTA CON{"\n"}TU CORREO ELECTRÓNICO
             </Text>
 
-            {/* ── Error global ── */}
+            {/* Error global */}
             {error && (
-              <View style={{ backgroundColor: "#1a0000", borderWidth: 1, borderColor: "#e50909", borderRadius: 6, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 16 }}>
-                <Text style={{ color: "#ff4444", fontSize: 13 }}>{error}</Text>
+              <View className="bg-[#1a0000] border border-[#e50909] rounded-md px-3.5 py-2.5 mb-4">
+                <Text className="text-[#ff4444] text-[13px]">{error}</Text>
               </View>
             )}
 
-            {/* ── Email ── */}
-            <View style={{ marginBottom: 16 }}>
-              <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "600", marginBottom: 8 }}>
+            {/* Email */}
+            <View className="mb-4">
+              <Text className="text-white text-[13px] font-semibold mb-2">
                 Dirección de correo electrónico *
               </Text>
               <TextInput
@@ -137,21 +124,21 @@ export default function LoginScreen() {
                 editable={!isLoading}
                 maxLength={254}
                 onSubmitEditing={handleLogin}
-                style={showEmailError ? INPUT_ERROR : INPUT_BASE}
+                className={showEmailError ? inputErr : inputBase}
               />
               {showEmailError && (
-                <Text style={{ color: "#e50909", fontSize: 12, marginTop: 4 }}>
+                <Text className="text-[#e50909] text-[12px] mt-1">
                   Ingresa un correo electrónico válido.
                 </Text>
               )}
             </View>
 
-            {/* ── Contraseña ── */}
-            <View style={{ marginBottom: 8 }}>
-              <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "600", marginBottom: 8 }}>
+            {/* Contraseña */}
+            <View className="mb-2">
+              <Text className="text-white text-[13px] font-semibold mb-2">
                 Contraseña *
               </Text>
-              <View style={{ position: "relative" }}>
+              <View className="relative">
                 <TextInput
                   value={password}
                   onChangeText={(text) => {
@@ -169,11 +156,11 @@ export default function LoginScreen() {
                   editable={!isLoading}
                   maxLength={128}
                   onSubmitEditing={handleLogin}
-                  style={showPasswordError ? { ...INPUT_ERROR, paddingRight: 48 } : { ...INPUT_BASE, paddingRight: 48 }}
+                  className={`${showPasswordError ? inputErr : inputBase} pr-12`}
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword((v) => !v)}
-                  style={{ position: "absolute", right: 14, top: 0, bottom: 0, justifyContent: "center" }}
+                  className="absolute right-3.5 top-0 bottom-0 justify-center"
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                   {showPassword
@@ -183,78 +170,72 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
               {showPasswordError && (
-                <Text style={{ color: "#e50909", fontSize: 12, marginTop: 4 }}>
+                <Text className="text-[#e50909] text-[12px] mt-1">
                   La contraseña debe tener al menos 6 caracteres.
                 </Text>
               )}
             </View>
 
-            {/* ── Texto legal ── */}
-            <Text style={{ color: "#888888", fontSize: 11, lineHeight: 16, marginBottom: 24 }}>
+            {/* Texto legal */}
+            <Text className="text-[#888888] text-[11px] leading-4 mb-6">
               Al registro o inicio de sesión, aceptas nuestras{" "}
-              <Text style={{ color: "#e50909", textDecorationLine: "underline" }}>Políticas de privacidad</Text>
+              <Text className="text-[#e50909] underline">Políticas de privacidad</Text>
               {" "}y{" "}
-              <Text style={{ color: "#e50909", textDecorationLine: "underline" }}>Términos y condiciones</Text>
+              <Text className="text-[#e50909] underline">Términos y condiciones</Text>
             </Text>
 
-            {/* ── Botón principal ── */}
+            {/* Botón principal */}
             <Pressable
               onPress={handleLogin}
               disabled={!canSubmit || isLoading}
-              style={{
-                backgroundColor: canSubmit && !isLoading ? "#b91c1c" : "#7f1d1d",
-                borderRadius: 8,
-                height: 48,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 24,
-              }}
+              className={`${canSubmit && !isLoading ? "bg-[#b91c1c]" : "bg-[#7f1d1d]"} rounded-lg h-12 items-center justify-center mb-6`}
             >
               {isLoading
                 ? <ActivityIndicator color="#ffffff" />
-                : <Text style={{ color: "#ffffff", fontSize: 16, fontWeight: "600" }}>
-                    Iniciar Sesión
-                  </Text>
+                : <Text className="text-white text-base font-semibold">Iniciar Sesión</Text>
               }
             </Pressable>
 
-            {/* ── Divisor ── */}
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: "#333333" }} />
-              <Text style={{ color: "#888888", fontSize: 13, marginHorizontal: 14 }}>O</Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: "#333333" }} />
+            {/* Divisor */}
+            <View className="flex-row items-center mb-5">
+              <View className="flex-1 h-px bg-[#333333]" />
+              <Text className="text-[#888888] text-[13px] mx-3.5">O</Text>
+              <View className="flex-1 h-px bg-[#333333]" />
             </View>
 
-            {/* ── Google ── */}
+            {/* Google */}
             <Pressable
               disabled={isLoading}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                borderWidth: 1,
-                borderColor: "#333333",
-                borderRadius: 999,
-                height: 50,
-                marginBottom: 20,
-                opacity: isLoading ? 0.5 : 1,
-              }}
+              className={`flex-row items-center justify-center gap-2.5 border border-[#333333] rounded-full h-[50px] mb-5 ${isLoading ? "opacity-50" : ""}`}
             >
               <FontAwesome name="google" size={18} color="#ffffff" />
-              <Text style={{ color: "#ffffff", fontSize: 13, fontWeight: "600" }}>
+              <Text className="text-white text-[13px] font-semibold">
                 Continuar con Google
               </Text>
             </Pressable>
 
-            {/* ── Link a registro ── */}
+            {/* Link a registro */}
             <Pressable
               onPress={() => router.push("/register")}
               disabled={isLoading}
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+              className="active:opacity-60"
             >
-              <Text style={{ color: "#e50909", textAlign: "center", fontSize: 12, fontWeight: "700", letterSpacing: 0.8, textTransform: "uppercase" }}>
+              <Text
+                className="text-[#e50909] text-center text-[12px] font-bold uppercase"
+                style={{ letterSpacing: 0.8 }}
+              >
                 ¿NO TIENES CUENTA? REGÍSTRATE
+              </Text>
+            </Pressable>
+
+            {/* Ver menú sin cuenta */}
+            <Pressable
+              onPress={() => router.replace("/(cliente)/")}
+              disabled={isLoading}
+              className="mt-4 active:opacity-60"
+            >
+              <Text className="text-[#555555] text-center text-[12px] font-semibold">
+                Ver menú sin cuenta →
               </Text>
             </Pressable>
 

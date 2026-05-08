@@ -2,11 +2,13 @@ import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/src/context/AuthContext';
 import { useCart } from '@/src/context/CartContext';
 import { CartItemCard } from '@/src/components/cart/CartItemCard';
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
+  const { token } = useAuth();
   const { items, totalItems, totalAmount, updateQuantity, removeItem } = useCart();
 
   return (
@@ -86,7 +88,7 @@ export default function CartScreen() {
 
               {/* Checkout button */}
               <TouchableOpacity
-                onPress={() => router.push('/(cliente)/checkout')}
+                onPress={() => token ? router.push('/(cliente)/checkout') : router.push('/login')}
                 activeOpacity={0.8}
                 style={{
                   backgroundColor: '#e50909',

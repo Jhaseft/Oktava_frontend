@@ -37,7 +37,32 @@ function Row({ icon, label, onPress, danger }: RowProps) {
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, signOut } = useAuth();
+  const { user, token, signOut } = useAuth();
+
+  if (!token) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 }}>
+        <Ionicons name="person-outline" size={64} color="#333333" />
+        <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700', textAlign: 'center' }}>
+          Inicia sesión para ver tu perfil
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push('/login')}
+          activeOpacity={0.8}
+          style={{ backgroundColor: '#e50909', borderRadius: 10, height: 50, alignItems: 'center', justifyContent: 'center', width: '100%' }}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>Iniciar sesión</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push('/register')}
+          activeOpacity={0.8}
+          style={{ borderWidth: 1, borderColor: '#333333', borderRadius: 10, height: 50, alignItems: 'center', justifyContent: 'center', width: '100%' }}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 15 }}>Crear cuenta</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const handleLogout = () => {
     Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [

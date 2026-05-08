@@ -1,7 +1,6 @@
 import { Tabs } from 'expo-router';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRequireAuth } from '@/src/hooks/useRequireAuth';
 import { useCart } from '@/src/context/CartContext';
 
 // ─── Tab bar icon helper ───────────────────────────────────────────────────────
@@ -63,12 +62,7 @@ function CartTabButton({ onPress, totalItems }: CartButtonProps) {
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 export default function ClienteLayout() {
-  const { isLoading, isAuthenticated } = useRequireAuth();
   const { totalItems } = useCart();
-
-  if (isLoading || !isAuthenticated) {
-    return <View style={{ flex: 1, backgroundColor: '#000000' }} />;
-  }
 
   return (
     <Tabs
