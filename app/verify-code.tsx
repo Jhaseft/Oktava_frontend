@@ -31,12 +31,10 @@ export default function VerifyCodeScreen() {
 
   const inputRefs = useRef<(TextInput | null)[]>(new Array(CODE_LENGTH).fill(null));
 
-  // If user lands here without pending data, redirect back
   useEffect(() => {
     if (!pending) router.replace("/register");
   }, []);
 
-  // Countdown timer
   useEffect(() => {
     if (cooldown <= 0) return;
     const id = setInterval(() => setCooldown((c) => c - 1), 1000);
@@ -49,7 +47,6 @@ export default function VerifyCodeScreen() {
     const cleaned = text.replaceAll(/\D/g, "");
     if (!cleaned) return;
 
-    // Handle paste: distribute across remaining slots
     if (cleaned.length > 1) {
       const newDigits = [...digits];
       let slot = index;
@@ -130,58 +127,35 @@ export default function VerifyCodeScreen() {
   if (!pending) return null;
 
   return (
-    <LinearGradient colors={["#450a0a", "#000000"]} style={{ flex: 1 }}>
+    <LinearGradient colors={["#450a0a", "#000000"]} className="flex-1">
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }}>
+        <View className="flex-1 justify-center items-center px-6">
 
           {/* Icon */}
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 32,
-              backgroundColor: "rgba(239,68,68,0.1)",
-              borderWidth: 1,
-              borderColor: "rgba(239,68,68,0.3)",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 24,
-            }}
-          >
+          <View className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 items-center justify-center mb-6">
             <Mail size={28} color="#ef4444" />
           </View>
 
-          <Text style={{ color: "#fff", fontSize: 28, fontWeight: "800", marginBottom: 8 }}>
+          <Text className="text-white text-[28px] font-extrabold mb-2">
             Verifica tu correo
           </Text>
-          <Text style={{ color: "#9ca3af", fontSize: 14, textAlign: "center", marginBottom: 32 }}>
+          <Text className="text-gray-400 text-sm text-center mb-8">
             Enviamos un codigo de 6 digitos a{"\n"}
-            <Text style={{ color: "#d1d5db", fontWeight: "600" }}>{pending.email}</Text>
+            <Text className="text-gray-300 font-semibold">{pending.email}</Text>
           </Text>
 
           {/* Error */}
           {error && (
-            <View
-              style={{
-                width: "100%",
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: "rgba(239,68,68,0.5)",
-                backgroundColor: "rgba(239,68,68,0.1)",
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                marginBottom: 20,
-              }}
-            >
-              <Text style={{ color: "#fff", fontSize: 13 }}>{error}</Text>
+            <View className="w-full rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3 mb-5">
+              <Text className="text-white text-[13px]">{error}</Text>
             </View>
           )}
 
           {/* OTP inputs */}
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 32 }}>
+          <View className="flex-row gap-2.5 mb-8">
             {SLOT_IDS.map((id, i) => (
               <TextInput
                 key={id}
@@ -192,19 +166,7 @@ export default function VerifyCodeScreen() {
                 keyboardType="number-pad"
                 maxLength={CODE_LENGTH}
                 editable={!isLoading}
-                style={{
-                  width: 44,
-                  height: 56,
-                  borderRadius: 10,
-                  borderWidth: 1,
-                  borderColor: digits[i] ? "#ef4444" : "#374151",
-                  backgroundColor: "#111",
-                  color: "#fff",
-                  fontSize: 22,
-                  fontWeight: "700",
-                  textAlign: "center",
-                  opacity: isLoading ? 0.5 : 1,
-                }}
+                className={`w-11 h-14 rounded-[10px] border bg-[#111] text-white text-[22px] font-bold text-center ${digits[i] ? 'border-[#ef4444]' : 'border-[#374151]'} ${isLoading ? 'opacity-50' : ''}`}
               />
             ))}
           </View>
@@ -213,36 +175,28 @@ export default function VerifyCodeScreen() {
           <Pressable
             onPress={handleConfirm}
             disabled={code.length !== CODE_LENGTH || isLoading}
-            style={{
-              width: "100%",
-              height: 48,
-              borderRadius: 8,
-              backgroundColor: code.length === CODE_LENGTH && !isLoading ? "#b91c1c" : "#7f1d1d",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 20,
-            }}
+            className={`w-full h-12 rounded-lg items-center justify-center mb-5 ${code.length === CODE_LENGTH && !isLoading ? 'bg-[#b91c1c]' : 'bg-[#7f1d1d]'}`}
           >
             {isLoading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "600" }}>
+              <Text className="text-white text-base font-semibold">
                 Confirmar codigo
               </Text>
             )}
           </Pressable>
 
           {/* Resend */}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Text style={{ color: "#6b7280", fontSize: 13 }}>No recibiste el codigo?</Text>
+          <View className="flex-row items-center gap-1.5">
+            <Text className="text-gray-500 text-[13px]">No recibiste el codigo?</Text>
             {cooldown > 0 ? (
-              <Text style={{ color: "#6b7280", fontSize: 13 }}>Reenviar en {cooldown}s</Text>
+              <Text className="text-gray-500 text-[13px]">Reenviar en {cooldown}s</Text>
             ) : (
               <Pressable onPress={handleResend} disabled={isResending}>
                 {isResending ? (
                   <ActivityIndicator size="small" color="#ef4444" />
                 ) : (
-                  <Text style={{ color: "#ef4444", fontSize: 13, fontWeight: "600" }}>
+                  <Text className="text-red-500 text-[13px] font-semibold">
                     Reenviar codigo
                   </Text>
                 )}
@@ -253,9 +207,9 @@ export default function VerifyCodeScreen() {
           {/* Back */}
           <Pressable
             onPress={() => { clearPendingSignUp(); router.back(); }}
-            style={{ marginTop: 24 }}
+            className="mt-6"
           >
-            <Text style={{ color: "#6b7280", fontSize: 13 }}>Volver al registro</Text>
+            <Text className="text-gray-500 text-[13px]">Volver al registro</Text>
           </Pressable>
 
         </View>

@@ -16,18 +16,10 @@ function Row({ icon, label, onPress, danger }: RowProps) {
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 14,
-        backgroundColor: '#111111',
-        borderRadius: 14,
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-      }}
+      className="flex-row items-center gap-3.5 bg-[#111111] rounded-2xl px-4 py-4"
     >
       <Ionicons name={icon} size={20} color={danger ? '#e50909' : '#888888'} />
-      <Text style={{ flex: 1, color: danger ? '#e50909' : '#ffffff', fontWeight: '600', fontSize: 14 }}>
+      <Text className={`flex-1 font-semibold text-sm ${danger ? 'text-[#e50909]' : 'text-white'}`}>
         {label}
       </Text>
       {!danger && <Ionicons name="chevron-forward" size={16} color="#333333" />}
@@ -41,24 +33,24 @@ export default function ProfileScreen() {
 
   if (!token) {
     return (
-      <View style={{ flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 }}>
+      <View className="flex-1 bg-black items-center justify-center gap-4 px-8">
         <Ionicons name="person-outline" size={64} color="#333333" />
-        <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700', textAlign: 'center' }}>
+        <Text className="text-white text-lg font-bold text-center">
           Inicia sesión para ver tu perfil
         </Text>
         <TouchableOpacity
           onPress={() => router.push('/login')}
           activeOpacity={0.8}
-          style={{ backgroundColor: '#e50909', borderRadius: 10, height: 50, alignItems: 'center', justifyContent: 'center', width: '100%' }}
+          className="bg-[#e50909] rounded-[10px] h-[50px] items-center justify-center w-full"
         >
-          <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>Iniciar sesión</Text>
+          <Text className="text-white font-bold text-[15px]">Iniciar sesión</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => router.push('/register')}
           activeOpacity={0.8}
-          style={{ borderWidth: 1, borderColor: '#333333', borderRadius: 10, height: 50, alignItems: 'center', justifyContent: 'center', width: '100%' }}
+          className="border border-[#333333] rounded-[10px] h-[50px] items-center justify-center w-full"
         >
-          <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 15 }}>Crear cuenta</Text>
+          <Text className="text-white font-semibold text-[15px]">Crear cuenta</Text>
         </TouchableOpacity>
       </View>
     );
@@ -73,34 +65,28 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: '#000000' }}
+      className="flex-1 bg-black"
       contentContainerStyle={{ paddingBottom: 32 }}
       showsVerticalScrollIndicator={false}
     >
       {/* Avatar */}
-      <View style={{ alignItems: 'center', paddingTop: insets.top + 24, paddingBottom: 32 }}>
-        <View style={{
-          width: 80, height: 80, borderRadius: 40,
-          backgroundColor: '#1a1a1a',
-          borderWidth: 2, borderColor: '#e50909',
-          alignItems: 'center', justifyContent: 'center',
-          marginBottom: 14,
-        }}>
-          <Text style={{ color: '#ffffff', fontSize: 26, fontWeight: '900' }}>
+      <View className="items-center pb-8" style={{ paddingTop: insets.top + 24 }}>
+        <View className="w-20 h-20 rounded-full bg-[#1a1a1a] border-2 border-[#e50909] items-center justify-center mb-3.5">
+          <Text className="text-white text-[26px] font-black">
             {user?.firstName?.[0]}{user?.lastName?.[0]}
           </Text>
         </View>
-        <Text style={{ color: '#ffffff', fontSize: 20, fontWeight: '800' }}>
+        <Text className="text-white text-xl font-extrabold">
           {user?.firstName} {user?.lastName}
         </Text>
-        <Text style={{ color: '#666666', fontSize: 13, marginTop: 4 }}>{user?.email}</Text>
+        <Text className="text-[#666666] text-[13px] mt-1">{user?.email}</Text>
         {user?.phone && (
-          <Text style={{ color: '#555555', fontSize: 13, marginTop: 2 }}>{user.phone}</Text>
+          <Text className="text-[#555555] text-[13px] mt-0.5">{user.phone}</Text>
         )}
       </View>
 
       {/* Menu rows */}
-      <View style={{ paddingHorizontal: 16, gap: 10 }}>
+      <View className="px-4 gap-2.5">
         <Row
           icon="location-outline"
           label="Mis direcciones"
@@ -111,7 +97,7 @@ export default function ProfileScreen() {
           label="Mis pedidos"
           onPress={() => router.push('/(cliente)/orders')}
         />
-        <View style={{ height: 1, backgroundColor: '#1a1a1a', marginVertical: 4 }} />
+        <View className="h-px bg-[#1a1a1a] my-1" />
         <Row
           icon="log-out-outline"
           label="Cerrar sesión"

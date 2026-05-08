@@ -15,7 +15,6 @@ function buildQRPattern(): boolean[][] {
     new Array(QR_SIZE).fill(false),
   );
 
-  // Finder pattern (7×7): borde negro, anillo blanco, centro negro 3×3
   const finder = (row: number, col: number) => {
     for (let r = 0; r < 7; r++) {
       for (let c = 0; c < 7; c++) {
@@ -26,26 +25,23 @@ function buildQRPattern(): boolean[][] {
     }
   };
 
-  finder(0, 0);   // esquina superior-izquierda
-  finder(0, 14);  // esquina superior-derecha
-  finder(14, 0);  // esquina inferior-izquierda
+  finder(0, 0);
+  finder(0, 14);
+  finder(14, 0);
 
-  // Timing patterns (fila 6 / columna 6 entre finders)
   for (let i = 8; i <= 12; i++) {
     g[6][i] = i % 2 === 0;
     g[i][6] = i % 2 === 0;
   }
 
-  // Módulo oscuro obligatorio
   g[13][8] = true;
 
-  // Datos simulados: patrón determinista que parece aleatorio
   for (let r = 0; r < QR_SIZE; r++) {
     for (let c = 0; c < QR_SIZE; c++) {
-      if (r <= 7 && c <= 7)  continue; // finder TL + separador
-      if (r <= 7 && c >= 13) continue; // finder TR + separador
-      if (r >= 13 && c <= 7) continue; // finder BL + separador
-      if (r === 6 || c === 6) continue; // timing
+      if (r <= 7 && c <= 7)  continue;
+      if (r <= 7 && c >= 13) continue;
+      if (r >= 13 && c <= 7) continue;
+      if (r === 6 || c === 6) continue;
       g[r][c] = ((r * 13 + c * 7 + r * c * 3 + r ^ c) % 11) < 5;
     }
   }
@@ -58,7 +54,7 @@ const QR_PX = QR_SIZE * MODULE_PX;
 
 function QRCode() {
   return (
-    <View style={{ backgroundColor: '#fff', padding: 16, borderRadius: 12 }}>
+    <View className="bg-white p-4 rounded-xl">
       <Svg width={QR_PX} height={QR_PX}>
         <Rect x={0} y={0} width={QR_PX} height={QR_PX} fill="white" />
         {QR_PATTERN.map((row, r) =>
@@ -82,7 +78,7 @@ function QRCode() {
 
 // ─── Pantalla ─────────────────────────────────────────────────────────────────
 
-const EXPIRE_SECONDS = 5 * 60; // 5 minutos
+const EXPIRE_SECONDS = 5 * 60;
 
 export default function QRPaymentScreen() {
   const { orderId, total } = useLocalSearchParams<{ orderId: string; total: string }>();
@@ -105,68 +101,58 @@ export default function QRPaymentScreen() {
   };
 
   return (
-    <LinearGradient colors={['#0a0a0a', '#000000']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#0a0a0a', '#000000']} className="flex-1">
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Badge simulación */}
-        <View style={{
-          backgroundColor: 'rgba(234,179,8,0.15)',
-          borderWidth: 1,
-          borderColor: 'rgba(234,179,8,0.4)',
-          borderRadius: 20,
-          paddingHorizontal: 12,
-          paddingVertical: 4,
-          marginBottom: 24,
-        }}>
-          <Text style={{ color: '#facc15', fontSize: 11, fontWeight: '700', letterSpacing: 1 }}>
+        <View className="bg-[rgba(234,179,8,0.15)] border border-[rgba(234,179,8,0.4)] rounded-full px-3 py-1 mb-6">
+          <Text
+            className="text-yellow-300 text-[11px] font-bold"
+            style={{ letterSpacing: 1 }}
+          >
             SIMULACIÓN — SIN API BANCARIA
           </Text>
         </View>
 
         {/* Título */}
-        <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: '800', marginBottom: 4 }}>
+        <Text className="text-white text-2xl font-extrabold mb-1">
           Pago por QR
         </Text>
-        <Text style={{ color: '#71717a', fontSize: 13, marginBottom: 8 }}>
+        <Text className="text-zinc-500 text-[13px] mb-2">
           Pedido #{orderId?.slice(-8).toUpperCase()}
         </Text>
 
         {/* Monto */}
-        <Text style={{ color: '#ef4444', fontSize: 36, fontWeight: '900', marginBottom: 28 }}>
+        <Text className="text-red-500 text-4xl font-black mb-7">
           Bs. {total}
         </Text>
 
         {/* QR */}
         {expired ? (
-          <View style={{
-            width: QR_PX + 32,
-            height: QR_PX + 32,
-            borderRadius: 12,
-            backgroundColor: '#1c1c1e',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-          }}>
+          <View
+            className="bg-[#1c1c1e] rounded-xl items-center justify-center gap-2.5"
+            style={{ width: QR_PX + 32, height: QR_PX + 32 }}
+          >
             <Ionicons name="time-outline" size={40} color="#ef4444" />
-            <Text style={{ color: '#ef4444', fontWeight: '700', fontSize: 14 }}>QR expirado</Text>
+            <Text className="text-red-500 font-bold text-sm">QR expirado</Text>
           </View>
         ) : (
           <QRCode />
         )}
 
         {/* Countdown */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 16, marginBottom: 28 }}>
+        <View className="flex-row items-center gap-1.5 mt-4 mb-7">
           <Ionicons name="time-outline" size={14} color={expired ? '#ef4444' : '#71717a'} />
-          <Text style={{ color: expired ? '#ef4444' : '#71717a', fontSize: 13 }}>
+          <Text className={`text-[13px] ${expired ? 'text-red-500' : 'text-zinc-500'}`}>
             {expired ? 'El código expiró' : `Expira en ${minutes}:${seconds}`}
           </Text>
         </View>
 
         {/* Instrucción */}
         {!expired && (
-          <Text style={{ color: '#52525b', fontSize: 12, textAlign: 'center', marginBottom: 32, lineHeight: 18 }}>
+          <Text className="text-zinc-600 text-xs text-center mb-8 leading-[18px]">
             Escanea este código con tu aplicación bancaria{'\n'}para completar el pago
           </Text>
         )}
@@ -175,20 +161,10 @@ export default function QRPaymentScreen() {
         {!expired && (
           <Pressable
             onPress={handleSimulatePaid}
-            style={({ pressed }) => ({
-              width: '100%',
-              height: 50,
-              borderRadius: 12,
-              backgroundColor: pressed ? '#15803d' : '#16a34a',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexDirection: 'row',
-              gap: 8,
-              marginBottom: 12,
-            })}
+            className="w-full h-[50px] rounded-xl bg-green-600 active:bg-green-700 items-center justify-center flex-row gap-2 mb-3"
           >
             <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+            <Text className="text-white font-bold text-[15px]">
               Simular pago completado
             </Text>
           </Pressable>
@@ -196,7 +172,7 @@ export default function QRPaymentScreen() {
 
         {/* Volver a pedidos */}
         <Pressable onPress={() => router.replace('/(cliente)/orders')}>
-          <Text style={{ color: '#71717a', fontSize: 13, textDecorationLine: 'underline' }}>
+          <Text className="text-zinc-500 text-[13px] underline">
             Ver mis pedidos
           </Text>
         </Pressable>
