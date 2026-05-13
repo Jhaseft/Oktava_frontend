@@ -1,6 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { CartItem } from '@/types/cart.types';
+import type { CartItem } from '@/src/types/cart.types';
 
 type CartItemCardProps = {
   item: CartItem;
@@ -25,7 +25,7 @@ export function CartItemCard({ item, onIncrease, onDecrease, onRemove }: CartIte
           {item.name}
         </Text>
         <Text className="text-red-400 font-bold text-sm">
-          S/ {(item.price * item.quantity).toFixed(2)}
+          BOB/ {(item.price * item.quantity).toFixed(2)}
         </Text>
       </View>
 

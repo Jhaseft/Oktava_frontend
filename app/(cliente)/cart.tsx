@@ -76,13 +76,13 @@ export default function CartScreen() {
               {/* Summary rows */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={{ color: '#888888', fontSize: 14 }}>Productos ({totalItems})</Text>
-                <Text style={{ color: '#ffffff', fontSize: 14 }}>S/ {totalAmount.toFixed(2)}</Text>
+                <Text style={{ color: '#ffffff', fontSize: 14 }}>BOB/ {totalAmount.toFixed(2)}</Text>
               </View>
               <View style={{ height: 1, backgroundColor: '#2a2a2a' }} />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 16 }}>Total</Text>
                 <Text style={{ color: '#e50909', fontWeight: '700', fontSize: 16 }}>
-                  S/ {totalAmount.toFixed(2)}
+                  BOB/ {totalAmount.toFixed(2)}
                 </Text>
               </View>
 
