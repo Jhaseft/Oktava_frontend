@@ -109,4 +109,10 @@ export const authApi = {
     post<{ message: string }>('/auth/send-verification', { email }),
 
   signUp: (data: SignUpRequest) => post<AuthResponse>('/auth/sign-up', data),
+
+  forgotPassword: (email: string) =>
+    post<{ message: string }>('/auth/forgot-password', { email }),
+
+  resetPassword: (email: string, code: string, newPassword: string) =>
+    post<{ message: string }>('/auth/reset-password', { email, code, newPassword }),
 };

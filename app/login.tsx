@@ -176,6 +176,17 @@ export default function LoginScreen() {
               )}
             </View>
 
+            {/* Olvidé mi contraseña */}
+            <Pressable
+              onPress={() => router.push("/forgot-password")}
+              disabled={isLoading}
+              className="self-end mt-1 mb-3 active:opacity-60"
+            >
+              <Text className="text-[#e50909] text-[12px]">
+                ¿Olvidaste tu contraseña?
+              </Text>
+            </Pressable>
+
             {/* Texto legal */}
             <Text className="text-[#888888] text-[11px] leading-4 mb-6">
               Al registro o inicio de sesión, aceptas nuestras{" "}
