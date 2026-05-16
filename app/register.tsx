@@ -17,6 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { ChevronDown, Eye, EyeOff, Search } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { authApi, ApiError, setPendingSignUp } from "@/src/services/authApi";
+import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
 
 // ─── Códigos de país ──────────────────────────────────────────────────────────
 
@@ -91,6 +92,10 @@ export default function RegisterScreen() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { handleGoogleSignIn, isGoogleLoading, googleError } = useGoogleSignIn();
+  const displayError = error ?? googleError;
+  const anyLoading = isLoading || isGoogleLoading;
 
   const filteredCountries = useMemo(
     () =>
@@ -191,9 +196,9 @@ export default function RegisterScreen() {
             </View>
 
             <View className="w-full gap-5">
-              {error && (
+              {displayError && (
                 <View className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3">
-                  <Text className="text-sm text-white">{error}</Text>
+                  <Text className="text-sm text-white">{displayError}</Text>
                 </View>
               )}
 
@@ -423,7 +428,8 @@ export default function RegisterScreen() {
 
               {/* Google */}
               <Pressable
-                disabled={isLoading}
+                onPress={handleGoogleSignIn}
+                disabled={anyLoading}
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
@@ -434,11 +440,17 @@ export default function RegisterScreen() {
                   borderRadius: 8,
                   height: 48,
                   backgroundColor: "transparent",
-                  opacity: isLoading ? 0.5 : 1,
+                  opacity: anyLoading ? 0.5 : 1,
                 }}
               >
-                <FontAwesome name="google" size={20} color="white" />
-                <Text className="text-base font-medium text-white">Continuar con Google</Text>
+                {isGoogleLoading ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <>
+                    <FontAwesome name="google" size={20} color="white" />
+                    <Text className="text-base font-medium text-white">Continuar con Google</Text>
+                  </>
+                )}
               </Pressable>
 
               <Pressable onPress={() => router.push("/login")} disabled={isLoading}>

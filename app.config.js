@@ -31,5 +31,6 @@ module.exports = ({ config }) => ({
           'Usamos tu ubicación para encontrar la dirección de entrega.',
       },
     ],
+    '@react-native-google-signin/google-signin',
   ],
 });

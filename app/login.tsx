@@ -15,6 +15,7 @@ import { Eye, EyeOff } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "@/src/context/AuthContext";
 import { authApi, ApiError } from "@/src/services/authApi";
+import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
 
 function isValidEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email.trim());
@@ -22,6 +23,7 @@ function isValidEmail(email: string) {
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
+  const { handleGoogleSignIn, isGoogleLoading, googleError, clearGoogleError } = useGoogleSignIn();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +32,9 @@ export default function LoginScreen() {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const displayError = error ?? googleError;
+  const anyLoading = isLoading || isGoogleLoading;
 
   const emailIsValid = useMemo(() => isValidEmail(email), [email]);
   const passwordIsValid = useMemo(() => password.trim().length >= 6, [password]);
@@ -95,10 +100,10 @@ export default function LoginScreen() {
               INICIA SESIÓN O CREA UNA CUENTA CON{"\n"}TU CORREO ELECTRÓNICO
             </Text>
 
-            {/* Error global */}
-            {error && (
+            {/* Error global (email/password o Google) */}
+            {displayError && (
               <View className="bg-[#1a0000] border border-[#e50909] rounded-md px-3.5 py-2.5 mb-4">
-                <Text className="text-[#ff4444] text-[13px]">{error}</Text>
+                <Text className="text-[#ff4444] text-[13px]">{displayError}</Text>
               </View>
             )}
 
@@ -112,6 +117,7 @@ export default function LoginScreen() {
                 onChangeText={(text) => {
                   setEmail(text);
                   setError(null);
+                  clearGoogleError();
                   if (!emailTouched) setEmailTouched(true);
                 }}
                 placeholder="tu@ejemplo.com"
@@ -144,6 +150,7 @@ export default function LoginScreen() {
                   onChangeText={(text) => {
                     setPassword(text);
                     setError(null);
+                    clearGoogleError();
                     if (!passwordTouched) setPasswordTouched(true);
                   }}
                   placeholder="••••••••••"
@@ -216,13 +223,20 @@ export default function LoginScreen() {
 
             {/* Google */}
             <Pressable
-              disabled={isLoading}
-              className={`flex-row items-center justify-center gap-2.5 border border-[#333333] rounded-full h-[50px] mb-5 ${isLoading ? "opacity-50" : ""}`}
+              onPress={handleGoogleSignIn}
+              disabled={anyLoading}
+              className={`flex-row items-center justify-center gap-2.5 border border-[#333333] rounded-full h-[50px] mb-5 ${anyLoading ? "opacity-50" : ""}`}
             >
-              <FontAwesome name="google" size={18} color="#ffffff" />
-              <Text className="text-white text-[13px] font-semibold">
-                Continuar con Google
-              </Text>
+              {isGoogleLoading ? (
+                <ActivityIndicator color="#ffffff" size="small" />
+              ) : (
+                <>
+                  <FontAwesome name="google" size={18} color="#ffffff" />
+                  <Text className="text-white text-[13px] font-semibold">
+                    Continuar con Google
+                  </Text>
+                </>
+              )}
             </Pressable>
 
             {/* Link a registro */}
