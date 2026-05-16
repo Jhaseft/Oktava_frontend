@@ -110,6 +110,9 @@ export const authApi = {
 
   signUp: (data: SignUpRequest) => post<AuthResponse>('/auth/sign-up', data),
 
+  googleSignIn: (idToken: string) =>
+    post<AuthResponse>('/auth/google/mobile', { idToken }),
+
   forgotPassword: (email: string) =>
     post<{ message: string }>('/auth/forgot-password', { email }),
 
