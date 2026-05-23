@@ -7,6 +7,7 @@ import { consumePendingAddressSelect } from '@/src/lib/pendingAddressSelect';
 import { haversineKm, calcDeliveryFee, STORE_LAT, STORE_LNG, MAX_DELIVERY_KM } from '@/src/lib/maps';
 import { useCart } from '@/src/context/CartContext';
 import { orderService } from '@/src/services/order.service';
+import { paymentService } from '@/src/services/payment.service';
 import { addressService } from '@/src/services/address.service';
 import { AddressCard } from '@/src/components/address/AddressCard';
 import { Button } from '@/src/components/ui/Button';
@@ -14,11 +15,19 @@ import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerification
 import type { OrderType } from '@/src/types/order.types';
 import type { Address } from '@/src/types/address.types';
 
-type PaymentMethod = 'CASH' | 'QR';
+type PaymentMethod = 'CASH' | 'QR' | 'NIUBIZ';
+
+// Niubiz solo disponible cuando el flag sandbox está activo explícitamente.
+// Para habilitar: EXPO_PUBLIC_ENABLE_NIUBIZ_SANDBOX=true en .env
+// Para deshabilitar (o en producción): eliminar o poner en false la variable.
+const NIUBIZ_SANDBOX_ENABLED = process.env.EXPO_PUBLIC_ENABLE_NIUBIZ_SANDBOX === 'true';
 
 const PAYMENT_OPTIONS: { method: PaymentMethod; label: string; icon: string }[] = [
-  { method: 'CASH', label: 'Al recoger', icon: 'cash-outline' },
+  { method: 'CASH', label: 'Al recoger', icon: 'cash-outline'    },
   { method: 'QR',   label: 'Por QR',     icon: 'qr-code-outline' },
+  ...(NIUBIZ_SANDBOX_ENABLED
+    ? [{ method: 'NIUBIZ' as PaymentMethod, label: 'Tarjeta', icon: 'card-outline' }]
+    : []),
 ];
 
 export default function CheckoutScreen() {
@@ -89,6 +98,39 @@ export default function CheckoutScreen() {
   const handlePlace = async () => {
     if (!canPlace) return;
 
+    // ─── NIUBIZ: el backend crea la orden (PENDING_PAYMENT) + Payment (pending) ──
+    // El frontend NO envía amount ni crea la orden después de autorizar el pago.
+    // El carrito NO se limpia aquí; se limpia solo si el pago es exitoso (en niubiz-payment.tsx).
+    if (paymentMethod === 'NIUBIZ') {
+      setPlacing(true);
+      try {
+        const session = await paymentService.createNiubizSession({
+          orderType,
+          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          ...(orderType === 'DELIVERY' && selectedAddressId ? { addressId: selectedAddressId } : {}),
+          ...(notes.trim() ? { notes: notes.trim() } : {}),
+        });
+        router.push({
+          pathname: '/(cliente)/niubiz-payment',
+          params: {
+            orderId: session.orderId,
+            orderNumber: session.orderNumber,
+            sessionKey: session.sessionKey,
+            merchantId: session.merchantId,
+            purchaseNumber: session.purchaseNumber,
+            amount: session.amount.toFixed(2),
+            currency: session.currency,
+          },
+        });
+      } catch (e: any) {
+        Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo iniciar el pago con tarjeta.');
+      } finally {
+        setPlacing(false);
+      }
+      return;
+    }
+
+    // ─── CASH / QR: flujo original sin cambios ─────────────────────────────
     setPlacing(true);
     try {
       const order = await orderService.createOrder({
@@ -197,6 +239,15 @@ export default function CheckoutScreen() {
             </View>
           )}
 
+          {/* Aviso sandbox Niubiz */}
+          {paymentMethod === 'NIUBIZ' && NIUBIZ_SANDBOX_ENABLED && (
+            <View className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3">
+              <Text className="text-yellow-300 text-xs font-medium">
+                Niubiz en modo sandbox. Flujo temporal de desarrollo — no usar en producción.
+              </Text>
+            </View>
+          )}
+
           {/* Método de pago */}
           <View className="gap-2">
             <Text className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Método de pago</Text>
@@ -271,7 +322,9 @@ export default function CheckoutScreen() {
             )}
             <View className="flex-row justify-between">
               <Text className="text-zinc-400 text-sm">Método de pago</Text>
-              <Text className="text-zinc-300 text-sm">{paymentMethod === 'CASH' ? 'Al recoger' : 'Por QR'}</Text>
+              <Text className="text-zinc-300 text-sm">
+                {paymentMethod === 'CASH' ? 'Al recoger' : paymentMethod === 'QR' ? 'Por QR' : 'Tarjeta (Niubiz)'}
+              </Text>
             </View>
             <View className="h-px bg-white/10 my-1" />
             <View className="flex-row justify-between">
