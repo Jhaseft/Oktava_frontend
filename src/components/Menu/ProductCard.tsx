@@ -7,9 +7,12 @@ type ProductCardProps = Readonly<{
   quantity: number;
   onAdd: (product: Product) => void;
   onRemove: (product: Product) => void;
+  onOpenOptions: (product: Product) => void;
 }>;
 
-function QuantityControl({ product, quantity, onAdd, onRemove }: ProductCardProps) {
+function QuantityControl({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
+  const hasOptions = (product.optionGroups?.length ?? 0) > 0;
+
   if (quantity > 0) {
     return (
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -24,7 +27,7 @@ function QuantityControl({ product, quantity, onAdd, onRemove }: ProductCardProp
           {quantity}
         </Text>
         <TouchableOpacity
-          onPress={() => onAdd(product)}
+          onPress={() => hasOptions ? onOpenOptions(product) : onAdd(product)}
           activeOpacity={0.7}
           style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
         >
@@ -35,7 +38,7 @@ function QuantityControl({ product, quantity, onAdd, onRemove }: ProductCardProp
   }
   return (
     <TouchableOpacity
-      onPress={() => onAdd(product)}
+      onPress={() => hasOptions ? onOpenOptions(product) : onAdd(product)}
       activeOpacity={0.7}
       style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
     >
@@ -44,7 +47,7 @@ function QuantityControl({ product, quantity, onAdd, onRemove }: ProductCardProp
   );
 }
 
-export function ProductCard({ product, quantity, onAdd, onRemove }: ProductCardProps) {
+export function ProductCard({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
   return (
     <View style={{ backgroundColor: '#111111', borderRadius: 12, overflow: 'hidden' }}>
       {product.imageUrl ? (
@@ -76,7 +79,7 @@ export function ProductCard({ product, quantity, onAdd, onRemove }: ProductCardP
           </Text>
 
           {product.isAvailable
-            ? <QuantityControl product={product} quantity={quantity} onAdd={onAdd} onRemove={onRemove} />
+            ? <QuantityControl product={product} quantity={quantity} onAdd={onAdd} onRemove={onRemove} onOpenOptions={onOpenOptions} />
             : <Text style={{ color: '#555555', fontSize: 11 }}>Agotado</Text>
           }
         </View>

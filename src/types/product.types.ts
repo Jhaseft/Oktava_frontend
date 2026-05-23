@@ -7,6 +7,21 @@ export type Category = {
   isActive?: boolean;
 };
 
+export type OptionItem = {
+  id: string;
+  name: string;
+  extraPrice: number;
+  imageUrl?: string | null;
+};
+
+export type OptionGroup = {
+  id: string;
+  name: string;
+  isRequired: boolean;
+  isMultiple: boolean;
+  options: OptionItem[];
+};
+
 export type Product = {
   id: string;
   name: string;
@@ -17,4 +32,6 @@ export type Product = {
   categoryId?: string | null;
   category?: Category | string | null;
   status?: string;
+  includes?: string[] | null;
+  optionGroups?: OptionGroup[];
 };

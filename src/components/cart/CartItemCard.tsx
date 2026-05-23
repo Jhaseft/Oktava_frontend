@@ -2,14 +2,17 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { CartItem } from '@/src/types/cart.types';
 
-type CartItemCardProps = {
+type CartItemCardProps = Readonly<{
   item: CartItem;
   onIncrease: () => void;
   onDecrease: () => void;
   onRemove: () => void;
-};
+}>;
 
 export function CartItemCard({ item, onIncrease, onDecrease, onRemove }: CartItemCardProps) {
+  const allOptions = item.selectedOptions.flatMap((g) => g.items);
+  const linePrice = (item.unitPrice + item.extraPrice) * item.quantity;
+
   return (
     <View className="flex-row items-center gap-3 bg-zinc-900 rounded-2xl p-3 border border-white/5">
       {item.imageUrl ? (
@@ -20,12 +23,17 @@ export function CartItemCard({ item, onIncrease, onDecrease, onRemove }: CartIte
         </View>
       )}
 
-      <View className="flex-1 gap-1">
+      <View className="flex-1 gap-0.5">
         <Text className="text-white font-semibold text-sm" numberOfLines={1}>
           {item.name}
         </Text>
+        {allOptions.map((opt) => (
+          <Text key={opt.optionId} style={{ color: '#888', fontSize: 11 }}>
+            + {opt.name}{opt.extraPrice > 0 ? ` (Bs. ${opt.extraPrice.toFixed(2)})` : ''}
+          </Text>
+        ))}
         <Text className="text-red-400 font-bold text-sm">
-          BOB/ {(item.price * item.quantity).toFixed(2)}
+          BOB/ {linePrice.toFixed(2)}
         </Text>
       </View>
 

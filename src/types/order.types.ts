@@ -37,9 +37,16 @@ export type Order = {
   } | null;
 };
 
+export type CreateOrderItemOption = {
+  optionId: string;
+  optionName: string;
+  extraPrice: number;
+};
+
 export type CreateOrderItem = {
   productId: string;
   quantity: number;
+  selectedOptions?: CreateOrderItemOption[];
 };
 
 export type CreateOrderDto = {

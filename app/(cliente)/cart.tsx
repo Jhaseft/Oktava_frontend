@@ -54,15 +54,15 @@ export default function CartScreen() {
       ) : (
         <FlatList
           data={items}
-          keyExtractor={(item) => item.productId}
+          keyExtractor={(item) => item._cartId}
           contentContainerStyle={{ gap: 10, paddingHorizontal: 16, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <CartItemCard
               item={item}
-              onIncrease={() => updateQuantity(item.productId, item.quantity + 1)}
-              onDecrease={() => updateQuantity(item.productId, item.quantity - 1)}
-              onRemove={() => removeItem(item.productId)}
+              onIncrease={() => updateQuantity(item._cartId, item.quantity + 1)}
+              onDecrease={() => updateQuantity(item._cartId, item.quantity - 1)}
+              onRemove={() => removeItem(item._cartId)}
             />
           )}
           ListFooterComponent={

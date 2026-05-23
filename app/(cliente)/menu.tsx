@@ -5,8 +5,10 @@ import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
 import { productService } from '@/src/services/product.service';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import { ProductCard } from '@/src/components/Menu/ProductCard';
+import { ProductOptionsModal } from '@/src/components/Menu/ProductOptionsModal';
 import { useCart } from '@/src/context/CartContext';
 import type { Product, Category } from '@/src/types/product.types';
+import type { SelectedOptionGroup } from '@/src/types/cart.types';
 import { MenuHeader } from '@/src/components/Menu/MenuHeader';
 import { MenuSearchBar } from '@/src/components/Menu/MenuSearchBar';
 import { CategoryChipList } from '@/src/components/Menu/CategoryChipList';
@@ -40,17 +42,64 @@ function getProductCategoryName(product: Product): string {
   return 'Categoría';
 }
 
+type Section = { category: Category; products: Product[] };
+
+function buildActiveCategorySection(
+  filtered: Product[],
+  categories: Category[],
+  activeCategory: string,
+): Section[] {
+  if (filtered.length === 0) return [];
+  const found = categories.find((c) => c.id === activeCategory);
+  if (found) return [{ category: found, products: filtered }];
+  return [{
+    category: { id: activeCategory, name: getProductCategoryName(filtered[0]), description: null },
+    products: filtered,
+  }];
+}
+
+function mapKnownCategories(categories: Category[], filtered: Product[]): Section[] {
+  return categories
+    .map((c) => ({ category: c, products: filtered.filter((p) => getProductCategoryId(p) === c.id) }))
+    .filter((s) => s.products.length > 0);
+}
+
+function groupProductsIntoMap(products: Product[], excludeIds?: Set<string>): Section[] {
+  const map = new Map<string, Section>();
+  for (const p of products) {
+    const categoryId = getProductCategoryId(p);
+    if (!categoryId || excludeIds?.has(categoryId)) continue;
+    if (!map.has(categoryId)) {
+      map.set(categoryId, {
+        category: { id: categoryId, name: getProductCategoryName(p), description: null },
+        products: [],
+      });
+    }
+    map.get(categoryId)!.products.push(p);
+  }
+  return Array.from(map.values());
+}
+
+function buildSections(
+  filtered: Product[],
+  categories: Category[],
+  activeCategory: string,
+): Section[] {
+  if (activeCategory !== 'all') {
+    return buildActiveCategorySection(filtered, categories, activeCategory);
+  }
+  if (categories.length > 0) {
+    const byKnown = mapKnownCategories(categories, filtered);
+    const knownIds = new Set(categories.map((c) => c.id));
+    return [...byKnown, ...groupProductsIntoMap(filtered, knownIds)];
+  }
+  return groupProductsIntoMap(filtered);
+}
+
 export default function MenuScreen() {
   const { addItem, updateQuantity, items, totalItems } = useCart();
 
-  const handleRemove = useCallback(
-    (p: Product) => {
-      const current = items.find((i) => i.productId === p.id)?.quantity ?? 1;
-      updateQuantity(p.id, current - 1);
-    },
-    [items, updateQuantity],
-  );
-
+  const [optionsProduct, setOptionsProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +134,40 @@ export default function MenuScreen() {
     setRefreshing(false);
   }, [load]);
 
+  const handleAdd = useCallback(
+    (product: Product) => {
+      if (product.optionGroups?.length) {
+        setOptionsProduct(product);
+      } else {
+        addItem(product);
+      }
+    },
+    [addItem],
+  );
+
+  const handleOptionsConfirm = useCallback(
+    (product: Product, selectedOptions: SelectedOptionGroup[]) => {
+      addItem(product, selectedOptions);
+      setOptionsProduct(null);
+    },
+    [addItem],
+  );
+
+  const handleRemoveProduct = useCallback(
+    (product: Product) => {
+      const slot = items.find((i) => i.productId === product.id);
+      if (!slot) return;
+      updateQuantity(slot._cartId, slot.quantity - 1);
+    },
+    [items, updateQuantity],
+  );
+
+  const getProductQuantity = useCallback(
+    (productId: string) =>
+      items.filter((i) => i.productId === productId).reduce((s, i) => s + i.quantity, 0),
+    [items],
+  );
+
   const filtered = useMemo(() => {
     let list = products;
     if (activeCategory !== 'all') {
@@ -101,72 +184,15 @@ export default function MenuScreen() {
     return list;
   }, [products, activeCategory, search]);
 
-  const sections = useMemo(() => {
-    if (activeCategory !== 'all') {
-      if (filtered.length === 0) return [];
-      const selectedCategory = categories.find((c) => c.id === activeCategory);
-      if (selectedCategory) {
-        return [{ category: selectedCategory, products: filtered }];
-      }
-      return [
-        {
-          category: {
-            id: activeCategory,
-            name: getProductCategoryName(filtered[0]),
-            description: null,
-          },
-          products: filtered,
-        },
-      ];
-    }
+  const sections = useMemo(
+    () => buildSections(filtered, categories, activeCategory),
+    [filtered, categories, activeCategory],
+  );
 
-    if (categories.length > 0) {
-      const byKnownCategories = categories
-        .map((c) => ({
-          category: c,
-          products: filtered.filter((p) => getProductCategoryId(p) === c.id),
-        }))
-        .filter((s) => s.products.length > 0);
-
-      const knownIds = new Set(categories.map((c) => c.id));
-      const extrasById = new Map<string, { category: Category; products: Product[] }>();
-      for (const p of filtered) {
-        const categoryId = getProductCategoryId(p);
-        if (!categoryId || knownIds.has(categoryId)) continue;
-        if (!extrasById.has(categoryId)) {
-          extrasById.set(categoryId, {
-            category: {
-              id: categoryId,
-              name: getProductCategoryName(p),
-              description: null,
-            },
-            products: [],
-          });
-        }
-        extrasById.get(categoryId)!.products.push(p);
-      }
-      return [...byKnownCategories, ...Array.from(extrasById.values())];
-    }
-
-    // Fallback: agrupar por categoria embebida en cada producto
-    const seen = new Map<string, { category: Category; products: Product[] }>();
-    for (const p of filtered) {
-      const categoryId = getProductCategoryId(p);
-      if (!categoryId) continue;
-      if (!seen.has(categoryId)) {
-        seen.set(categoryId, {
-          category: {
-            id: categoryId,
-            name: getProductCategoryName(p),
-            description: null,
-          },
-          products: [],
-        });
-      }
-      seen.get(categoryId)!.products.push(p);
-    }
-    return Array.from(seen.values());
-  }, [filtered, categories, activeCategory]);
+  const handleRetry = useCallback(() => {
+    setLoading(true);
+    load().finally(() => setLoading(false));
+  }, [load]);
 
   if (loading) return <LoadingState message="Cargando menú..." />;
 
@@ -174,6 +200,12 @@ export default function MenuScreen() {
     <View style={{ flex: 1, backgroundColor: '#000000' }}>
       <MenuHeader totalItems={totalItems} onMenuPress={() => setDrawerOpen(true)} />
       <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <ProductOptionsModal
+        visible={!!optionsProduct}
+        product={optionsProduct}
+        onConfirm={handleOptionsConfirm}
+        onClose={() => setOptionsProduct(null)}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -208,7 +240,7 @@ export default function MenuScreen() {
               {error}
             </Text>
             <TouchableOpacity
-              onPress={() => { setLoading(true); load().finally(() => setLoading(false)); }}
+              onPress={handleRetry}
               activeOpacity={0.75}
               style={{
                 backgroundColor: '#e50909',
@@ -240,23 +272,25 @@ export default function MenuScreen() {
             <View key={section.category.id} style={{ marginBottom: 24 }}>
               <SectionTitle title={section.category.name} />
               <View style={{ paddingHorizontal: 16, gap: 12 }}>
-                {toPairs(section.products).map(([left, right], idx) => (
-                  <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
+                {toPairs(section.products).map(([left, right]) => (
+                  <View key={left.id} style={{ flexDirection: 'row', gap: 12 }}>
                     <View style={{ flex: 1 }}>
                       <ProductCard
                         product={left}
-                        quantity={items.find((i) => i.productId === left.id)?.quantity ?? 0}
-                        onAdd={addItem}
-                        onRemove={(p) => updateQuantity(p.id, (items.find((i) => i.productId === p.id)?.quantity ?? 1) - 1)}
+                        quantity={getProductQuantity(left.id)}
+                        onAdd={handleAdd}
+                        onRemove={handleRemoveProduct}
+                        onOpenOptions={setOptionsProduct}
                       />
                     </View>
                     <View style={{ flex: 1 }}>
                       {right ? (
                         <ProductCard
                           product={right}
-                          quantity={items.find((i) => i.productId === right.id)?.quantity ?? 0}
-                          onAdd={addItem}
-                          onRemove={handleRemove}
+                          quantity={getProductQuantity(right.id)}
+                          onAdd={handleAdd}
+                          onRemove={handleRemoveProduct}
+                          onOpenOptions={setOptionsProduct}
                         />
                       ) : (
                         <View style={{ flex: 1 }} />
@@ -271,4 +305,3 @@ export default function MenuScreen() {
     </View>
   );
 }
-

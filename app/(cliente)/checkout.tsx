@@ -12,8 +12,29 @@ import { addressService } from '@/src/services/address.service';
 import { AddressCard } from '@/src/components/address/AddressCard';
 import { Button } from '@/src/components/ui/Button';
 import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerificationModal';
-import type { OrderType } from '@/src/types/order.types';
+import type { OrderType, CreateOrderItemOption } from '@/src/types/order.types';
+import type { CartItem } from '@/src/types/cart.types';
 import type { Address } from '@/src/types/address.types';
+
+function paymentMethodLabel(method: PaymentMethod): string {
+  if (method === 'CASH') return 'Al recoger';
+  if (method === 'QR') return 'Por QR';
+  return 'Tarjeta (Niubiz)';
+}
+
+function cartItemToOrderItem(i: CartItem): { productId: string; quantity: number; selectedOptions: CreateOrderItemOption[] } {
+  return {
+    productId: i.productId,
+    quantity: i.quantity,
+    selectedOptions: i.selectedOptions.flatMap((group) =>
+      group.items.map((opt) => ({
+        optionId: opt.optionId,
+        optionName: opt.name,
+        extraPrice: opt.extraPrice,
+      }))
+    ),
+  };
+}
 
 type PaymentMethod = 'CASH' | 'QR' | 'NIUBIZ';
 
@@ -95,57 +116,44 @@ export default function CheckoutScreen() {
     !outOfRange &&
     (orderType === 'PICKUP' || (orderType === 'DELIVERY' && !!selectedAddressId));
 
-  const handlePlace = async () => {
-    if (!canPlace) return;
+  const buildPayload = () => ({
+    orderType,
+    items: items.map(cartItemToOrderItem),
+    ...(orderType === 'DELIVERY' && selectedAddressId ? { addressId: selectedAddressId } : {}),
+    ...(notes.trim() ? { notes: notes.trim() } : {}),
+  });
 
-    // ─── NIUBIZ: el backend crea la orden (PENDING_PAYMENT) + Payment (pending) ──
-    // El frontend NO envía amount ni crea la orden después de autorizar el pago.
-    // El carrito NO se limpia aquí; se limpia solo si el pago es exitoso (en niubiz-payment.tsx).
-    if (paymentMethod === 'NIUBIZ') {
-      setPlacing(true);
-      try {
-        const session = await paymentService.createNiubizSession({
-          orderType,
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-          ...(orderType === 'DELIVERY' && selectedAddressId ? { addressId: selectedAddressId } : {}),
-          ...(notes.trim() ? { notes: notes.trim() } : {}),
-        });
-        router.push({
-          pathname: '/(cliente)/niubiz-payment',
-          params: {
-            orderId: session.orderId,
-            orderNumber: session.orderNumber,
-            sessionKey: session.sessionKey,
-            merchantId: session.merchantId,
-            purchaseNumber: session.purchaseNumber,
-            amount: session.amount.toFixed(2),
-            currency: session.currency,
-          },
-        });
-      } catch (e: any) {
-        Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo iniciar el pago con tarjeta.');
-      } finally {
-        setPlacing(false);
-      }
-      return;
-    }
-
-    // ─── CASH / QR: flujo original sin cambios ─────────────────────────────
+  // El carrito NO se limpia aquí; se limpia solo si el pago es exitoso (en niubiz-payment.tsx).
+  const handleNiubizPayment = async () => {
     setPlacing(true);
     try {
-      const order = await orderService.createOrder({
-        orderType: orderType,
-        items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-        ...(orderType === 'DELIVERY' && selectedAddressId ? { addressId: selectedAddressId } : {}),
-        ...(notes.trim() ? { notes: notes.trim() } : {}),
+      const session = await paymentService.createNiubizSession(buildPayload());
+      router.push({
+        pathname: '/(cliente)/niubiz-payment',
+        params: {
+          orderId: session.orderId,
+          orderNumber: session.orderNumber,
+          sessionKey: session.sessionKey,
+          merchantId: session.merchantId,
+          purchaseNumber: session.purchaseNumber,
+          amount: session.amount.toFixed(2),
+          currency: session.currency,
+        },
       });
-      clearCart();
+    } catch (e: any) {
+      Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo iniciar el pago con tarjeta.');
+    } finally {
+      setPlacing(false);
+    }
+  };
 
+  const handleCashQrOrder = async () => {
+    setPlacing(true);
+    try {
+      const order = await orderService.createOrder(buildPayload());
+      clearCart();
       if (paymentMethod === 'QR') {
-        router.replace({
-          pathname: '/(cliente)/qr-payment',
-          params: { orderId: order.id, total: grandTotal.toFixed(2) },
-        });
+        router.replace({ pathname: '/(cliente)/qr-payment', params: { orderId: order.id, total: grandTotal.toFixed(2) } });
       } else {
         router.replace('/(cliente)/orders');
       }
@@ -157,6 +165,15 @@ export default function CheckoutScreen() {
       Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo crear el pedido.');
     } finally {
       setPlacing(false);
+    }
+  };
+
+  const handlePlace = async () => {
+    if (!canPlace) return;
+    if (paymentMethod === 'NIUBIZ') {
+      await handleNiubizPayment();
+    } else {
+      await handleCashQrOrder();
     }
   };
 
@@ -302,9 +319,9 @@ export default function CheckoutScreen() {
           <View className="bg-zinc-900 rounded-2xl p-4 gap-2 border border-white/5">
             <Text className="text-white font-semibold mb-1">Resumen</Text>
             {items.map((item) => (
-              <View key={item.productId} className="flex-row justify-between">
+              <View key={item._cartId} className="flex-row justify-between">
                 <Text className="text-zinc-300 text-sm">{item.quantity}× {item.name}</Text>
-                <Text className="text-zinc-400 text-sm">Bs. {(item.price * item.quantity).toFixed(2)}</Text>
+                <Text className="text-zinc-400 text-sm">Bs. {((item.unitPrice + item.extraPrice) * item.quantity).toFixed(2)}</Text>
               </View>
             ))}
             <View className="h-px bg-white/10 my-1" />
@@ -323,7 +340,7 @@ export default function CheckoutScreen() {
             <View className="flex-row justify-between">
               <Text className="text-zinc-400 text-sm">Método de pago</Text>
               <Text className="text-zinc-300 text-sm">
-                {paymentMethod === 'CASH' ? 'Al recoger' : paymentMethod === 'QR' ? 'Por QR' : 'Tarjeta (Niubiz)'}
+                {paymentMethodLabel(paymentMethod)}
               </Text>
             </View>
             <View className="h-px bg-white/10 my-1" />
