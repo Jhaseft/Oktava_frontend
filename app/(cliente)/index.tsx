@@ -6,9 +6,10 @@ import { LoadingState } from '@/src/components/ui/LoadingState';
 import { useCart } from '@/src/context/CartContext';
 import type { Product, Category } from '@/src/types/product.types';
 import { HomeHeader } from '@/src/components/home/HomeHeader';
+import { HomeHero } from '@/src/components/home/HomeHero';
 import { SectionTitle } from '@/src/components/home/SectionTitle';
+import { CategoryStrip } from '@/src/components/home/CategoryStrip';
 import { PromoProductCard } from '@/src/components/home/PromoProductCard';
-import { MenuCategoryCard } from '@/src/components/home/MenuCategoryCard';
 import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
 
 const PROMO_COUNT = 4;
@@ -30,16 +31,6 @@ function toPairs<T>(arr: T[]): [T, T | null][] {
   return pairs;
 }
 
-function getProductCategoryId(product: Product): string | null {
-  if (typeof product.category === 'object' && product.category?.id) {
-    return product.category.id;
-  }
-  if (typeof product.categoryId === 'string' && product.categoryId) {
-    return product.categoryId;
-  }
-  return null;
-}
-
 export default function HomeScreen() {
   const { addItem, updateQuantity, items, totalItems } = useCart();
 
@@ -52,7 +43,6 @@ export default function HomeScreen() {
   );
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [shuffled, setShuffled] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,7 +55,6 @@ export default function HomeScreen() {
         productService.getProducts(),
       ]);
       setCategories(cats);
-      setProducts(prods);
       setShuffled(shuffle(prods));
     } catch {}
   }, []);
@@ -86,18 +75,6 @@ export default function HomeScreen() {
   );
   const promoPairs = useMemo(() => toPairs(promos), [promos]);
 
-  // Use first product image per category as representative image
-  const categoryImageMap = useMemo(() => {
-    const map = new Map<string, string | null>();
-    for (const cat of categories) {
-      const rep = products.find((p) => getProductCategoryId(p) === cat.id && p.imageUrl);
-      map.set(cat.id, rep?.imageUrl ?? null);
-    }
-    return map;
-  }, [categories, products]);
-
-  const categoryPairs = useMemo(() => toPairs(categories), [categories]);
-
   if (loading) return <LoadingState message="Cargando..." />;
 
   return (
@@ -108,21 +85,30 @@ export default function HomeScreen() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#e50909"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e50909" />
         }
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {/* Promotions */}
+        {/* Hero */}
+        <HomeHero
+          onOrderNow={() => router.push('/(cliente)/menu')}
+          onViewMenu={() => router.push('/(cliente)/menu')}
+        />
+
+        {/* Category strip */}
+        {categories.length > 0 && (
+          <View style={{ marginTop: 28, marginBottom: 28 }}>
+            <CategoryStrip categories={categories} />
+          </View>
+        )}
+
+        {/* Selección del día */}
         {promoPairs.length > 0 && (
           <View style={{ marginBottom: 28 }}>
-            <SectionTitle title="Promociones" />
+            <SectionTitle title="Selección del día" />
             <View style={{ paddingHorizontal: 16, gap: 12 }}>
-              {promoPairs.map(([left, right], idx) => (
-                <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
+              {promoPairs.map(([left, right]) => (
+                <View key={left.id} style={{ flexDirection: 'row', gap: 12 }}>
                   <PromoProductCard
                     product={left}
                     quantity={items.find((i) => i.productId === left.id)?.quantity ?? 0}
@@ -145,35 +131,8 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Explore menu */}
-        {categoryPairs.length > 0 && (
-          <View style={{ marginBottom: 16 }}>
-            <SectionTitle title="Explora Nuestro Menú" />
-            <View style={{ paddingHorizontal: 16, gap: 12 }}>
-              {categoryPairs.map(([left, right], idx) => (
-                <View key={idx} style={{ flexDirection: 'row', gap: 12 }}>
-                  <MenuCategoryCard
-                    category={left}
-                    imageUrl={categoryImageMap.get(left.id) ?? null}
-                    onPress={() => router.push('/(cliente)/menu')}
-                  />
-                  {right ? (
-                    <MenuCategoryCard
-                      category={right}
-                      imageUrl={categoryImageMap.get(right.id) ?? null}
-                      onPress={() => router.push('/(cliente)/menu')}
-                    />
-                  ) : (
-                    <View style={{ flex: 1 }} />
-                  )}
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Empty state if backend returns nothing */}
-        {promoPairs.length === 0 && categoryPairs.length === 0 && (
+        {/* Empty state */}
+        {categories.length === 0 && promoPairs.length === 0 && (
           <View style={{ alignItems: 'center', paddingTop: 60 }}>
             <Text style={{ color: '#666666', fontSize: 15 }}>
               Sin productos disponibles
