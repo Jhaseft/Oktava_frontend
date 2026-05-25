@@ -7,7 +7,6 @@ import { useCart } from '@/src/context/CartContext';
 import type { Product, Category } from '@/src/types/product.types';
 import { HomeHeader } from '@/src/components/home/HomeHeader';
 import { SectionTitle } from '@/src/components/home/SectionTitle';
-import { OrderStatusBanner } from '@/src/components/home/OrderStatusBanner';
 import { PromoProductCard } from '@/src/components/home/PromoProductCard';
 import { MenuCategoryCard } from '@/src/components/home/MenuCategoryCard';
 import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
@@ -117,11 +116,6 @@ export default function HomeScreen() {
         }
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {/* Order status banner */}
-        <View style={{ paddingTop: 16 }}>
-          <OrderStatusBanner />
-        </View>
-
         {/* Promotions */}
         {promoPairs.length > 0 && (
           <View style={{ marginBottom: 28 }}>

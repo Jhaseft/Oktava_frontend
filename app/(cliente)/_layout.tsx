@@ -1,7 +1,9 @@
 import { Tabs } from 'expo-router';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomTabBar } from '@react-navigation/bottom-tabs';
 import { useCart } from '@/src/context/CartContext';
+import { ActiveOrderBar } from '@/src/components/order/ActiveOrderBar';
 
 // ─── Tab bar icon helper ───────────────────────────────────────────────────────
 
@@ -59,6 +61,17 @@ function CartTabButton({ onPress, totalItems }: CartButtonProps) {
   );
 }
 
+// ─── Custom tab bar with persistent order bar ─────────────────────────────────
+
+function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
+  return (
+    <View>
+      <ActiveOrderBar />
+      <BottomTabBar {...props} />
+    </View>
+  );
+}
+
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 export default function ClienteLayout() {
@@ -66,6 +79,7 @@ export default function ClienteLayout() {
 
   return (
     <Tabs
+      tabBar={CustomTabBar}
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
