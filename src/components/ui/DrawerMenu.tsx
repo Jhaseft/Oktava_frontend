@@ -4,7 +4,6 @@ import {
   Dimensions,
   Modal,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -126,40 +125,27 @@ export function DrawerMenu({ visible, onClose }: Props) {
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View style={StyleSheet.absoluteFill}>
+      <View className="absolute inset-0">
         {/* Backdrop */}
         <Animated.View
-          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.65)', opacity: fadeAnim }]}
+          className="absolute inset-0 bg-[rgba(0,0,0,0.65)]"
+          style={{ opacity: fadeAnim }}
         >
-          <TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={onClose} />
+          <TouchableOpacity className="flex-1" activeOpacity={1} onPress={onClose} />
         </Animated.View>
 
         {/* Drawer panel */}
         <Animated.View
+          className="absolute left-0 top-0 bottom-0 bg-[#111111]"
           style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
             width: DRAWER_WIDTH,
-            backgroundColor: '#111111',
             transform: [{ translateX: slideAnim }],
             paddingTop: insets.top,
             paddingBottom: insets.bottom + 8,
           }}
         >
           {/* Drawer header */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              borderBottomWidth: 1,
-              borderBottomColor: '#1e1e1e',
-            }}
-          >
+          <View className="flex-row items-center justify-between px-4 py-3.5 border-b border-[#1e1e1e]">
             <TouchableOpacity
               onPress={onClose}
               activeOpacity={0.7}
@@ -168,48 +154,31 @@ export function DrawerMenu({ visible, onClose }: Props) {
               <Ionicons name="close" size={26} color="#ffffff" />
             </TouchableOpacity>
 
-            <View style={{ flexDirection: 'row' }}>
-              <Text style={{ fontSize: 22, fontWeight: '900', color: '#e50909', letterSpacing: -0.5 }}>
+            <View className="flex-row">
+              <Text className="text-[22px] font-black text-[#e50909] tracking-tight">
                 OK
               </Text>
-              <Text style={{ fontSize: 22, fontWeight: '900', color: '#ffffff', letterSpacing: -0.5 }}>
+              <Text className="text-[22px] font-black text-white tracking-tight">
                 TA
               </Text>
-              <Text style={{ fontSize: 22, fontWeight: '900', color: '#e50909', letterSpacing: -0.5 }}>
+              <Text className="text-[22px] font-black text-[#e50909] tracking-tight">
                 VA
               </Text>
             </View>
-
-            <TouchableOpacity
-              onPress={() => navigate('/(cliente)/cart')}
-              activeOpacity={0.7}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Ionicons name="cart-outline" size={26} color="#ffffff" />
-            </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+          <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
             {/* Accordion items */}
             {accordionItems.map((item) => {
               const isOpen = openAccordion === item.key;
               return (
-                <View
-                  key={item.key}
-                  style={{ borderBottomWidth: 1, borderBottomColor: '#1e1e1e' }}
-                >
+                <View key={item.key} className="border-b border-[#1e1e1e]">
                   <TouchableOpacity
                     onPress={() => toggleAccordion(item.key)}
                     activeOpacity={0.7}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingHorizontal: 20,
-                      paddingVertical: 20,
-                    }}
+                    className="flex-row items-center justify-between px-5 py-5"
                   >
-                    <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>
+                    <Text className="text-white text-base font-semibold">
                       {item.label}
                     </Text>
                     <Ionicons
@@ -220,15 +189,15 @@ export function DrawerMenu({ visible, onClose }: Props) {
                   </TouchableOpacity>
 
                   {isOpen && (
-                    <View style={{ paddingBottom: 10, paddingHorizontal: 20 }}>
+                    <View className="pb-2.5 px-5">
                       {item.children.map((child) => (
                         <TouchableOpacity
                           key={child.label}
                           onPress={child.onPress}
                           activeOpacity={0.7}
-                          style={{ paddingVertical: 12 }}
+                          className="py-3"
                         >
-                          <Text style={{ color: '#aaaaaa', fontSize: 14 }}>
+                          <Text className="text-[#aaaaaa] text-sm">
                             {child.label}
                           </Text>
                         </TouchableOpacity>
@@ -243,18 +212,9 @@ export function DrawerMenu({ visible, onClose }: Props) {
             <TouchableOpacity
               onPress={onClose}
               activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 20,
-                borderBottomWidth: 1,
-                borderBottomColor: '#1e1e1e',
-                marginTop: 8,
-              }}
+              className="flex-row items-center justify-between px-5 py-5 border-b border-[#1e1e1e] mt-2"
             >
-              <Text style={{ color: '#e50909', fontSize: 16, fontWeight: '700' }}>
+              <Text className="text-[#e50909] text-base font-bold">
                 Ubica la Oktava
               </Text>
               <Ionicons name="chevron-forward" size={20} color="#e50909" />
@@ -263,17 +223,9 @@ export function DrawerMenu({ visible, onClose }: Props) {
             <TouchableOpacity
               onPress={() => navigate('/(cliente)/menu')}
               activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingHorizontal: 20,
-                paddingVertical: 20,
-                borderBottomWidth: 1,
-                borderBottomColor: '#1e1e1e',
-              }}
+              className="flex-row items-center justify-between px-5 py-5 border-b border-[#1e1e1e]"
             >
-              <Text style={{ color: '#e50909', fontSize: 16, fontWeight: '700' }}>
+              <Text className="text-[#e50909] text-base font-bold">
                 Nuestro Menú
               </Text>
               <Ionicons name="chevron-forward" size={20} color="#e50909" />
@@ -281,28 +233,13 @@ export function DrawerMenu({ visible, onClose }: Props) {
           </ScrollView>
 
           {/* Social icons */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'center',
-              gap: 14,
-              paddingVertical: 22,
-              borderTopWidth: 1,
-              borderTopColor: '#1e1e1e',
-            }}
-          >
+          <View className="flex-row justify-center gap-3.5 py-[22px] border-t border-[#1e1e1e]">
             {socialLinks.map(({ icon, bg }, idx) => (
               <TouchableOpacity
                 key={idx}
                 activeOpacity={0.8}
-                style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: 23,
-                  backgroundColor: bg,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="w-[46px] h-[46px] rounded-full items-center justify-center"
+                style={{ backgroundColor: bg }}
               >
                 <Ionicons name={icon} size={22} color="#ffffff" />
               </TouchableOpacity>
