@@ -25,7 +25,7 @@ function CartTabButton({ onPress, totalItems }: CartButtonProps) {
       onPress={onPress}
       activeOpacity={0.85}
       style={{
-        top: -18,
+        top: -30,
         width: 58,
         height: 58,
         borderRadius: 29,
@@ -45,7 +45,7 @@ function CartTabButton({ onPress, totalItems }: CartButtonProps) {
         <View style={{
           position: 'absolute',
           top: 6,
-          right: 6,
+          right: 8,
           backgroundColor: '#ffffff',
           borderRadius: 8,
           minWidth: 16,
@@ -137,10 +137,11 @@ export default function ClienteLayout() {
           tabBarIcon: ({ color }) => <TabIcon name="person-outline" color={color} />,
         }}
       />
-      {/* Hidden screens */}
+
       <Tabs.Screen name="checkout" options={{ href: null }} />
       <Tabs.Screen name="addresses" options={{ href: null }} />
       <Tabs.Screen name="qr-payment" options={{ href: null }} />
+      <Tabs.Screen name="niubiz-payment" options={{ href: null }} />
     </Tabs>
   );
 }

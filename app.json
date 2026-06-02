@@ -40,13 +40,20 @@
     "plugins": [
       "expo-dev-client",
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+       [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.269848220574-lsoamkckpg0tleiu8o3u469sgr3bpt04"
+        }
+      ]
     ],
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c896182e-bb15-4c0e-96ca-1037184c0576"
+        "projectId": "bc853f7a-a996-4692-ba5b-27e46a257b28"
       }
-    }
+    },
+    "owner": "jhaseft"
   }
 }

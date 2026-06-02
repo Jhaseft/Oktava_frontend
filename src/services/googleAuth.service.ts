@@ -1,34 +1,40 @@
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
-// Configurar una sola vez al importar el módulo
-GoogleSignin.configure({
-  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-});
-
-/**
- * Abre el selector de cuentas de Google y devuelve el idToken.
- * Lanza:
- *   - { code: statusCodes.SIGN_IN_CANCELLED }  → usuario canceló
- *   - { code: statusCodes.PLAY_SERVICES_NOT_AVAILABLE } → sin Play Services
- *   - { code: statusCodes.IN_PROGRESS } → ya hay un intento en curso
- *   - Error genérico → idToken ausente u otro fallo
- */
 export async function signInWithGoogle(): Promise<string> {
-  await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 
+  console.log('[GoogleSignIn] webClientId:', webClientId);
+  console.log('[GoogleSignIn] iosClientId:', iosClientId);
+
+  GoogleSignin.configure({ 
+    webClientId,
+    offlineAccess: false,
+    iosClientId,
+  });
+
+  console.log('[GoogleSignIn] hasPlayServices...');
+  await GoogleSignin.hasPlayServices();
+
+  console.log('[GoogleSignIn] signOut previo...');
+  await GoogleSignin.signOut();
+
+  console.log('[GoogleSignIn] llamando signIn...');
   const response = await GoogleSignin.signIn();
+  console.log('[GoogleSignIn] response.type:', response.type);
 
-  // En v13+, signIn devuelve { type: 'success' | 'cancelled', data }
-  if (response.type === 'cancelled') {
-    const err = new Error('Inicio de sesión cancelado por el usuario.');
-    (err as any).code = statusCodes.SIGN_IN_CANCELLED;
+  if (response.type !== 'success') {
+    if (response.type !== 'cancelled') {
+      throw new Error('No se pudo completar el inicio de sesión con Google');
+    }
+    const err = new Error('Cancelado');
+    (err as any).cancelled = true;
     throw err;
   }
 
   const idToken = response.data?.idToken;
+  console.log('[GoogleSignIn] idToken recibido:', idToken ? `${idToken.slice(0, 20)}...` : 'NINGUNO');
+
   if (!idToken) {
     throw new Error('Google no devolvió un idToken. Inténtalo nuevamente.');
   }
