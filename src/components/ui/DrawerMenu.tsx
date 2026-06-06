@@ -95,15 +95,16 @@ export function DrawerMenu({ visible, onClose }: Props) {
       key: 'oktava',
       label: 'La Oktava',
       children: [
-        { label: 'Sobre nosotros', onPress: onClose },
+        { label: 'Sobre nosotros', onPress: () => navigate('/(modal)/SobreNosotros') },
       ],
     },
     {
       key: 'legal',
       label: 'Legal',
       children: [
-        { label: 'Términos y condiciones', onPress: onClose },
-        { label: 'Política de privacidad', onPress: onClose },
+        { label: 'Términos y condiciones', onPress: () => navigate('/(modal)/Terminos') },
+        { label: 'Política de privacidad', onPress: () => navigate('/(modal)/Privacidad') },
+        { label: 'Eliminar cuenta', onPress: () => navigate('/(modal)/EliminarCuenta') },
       ],
     },
   ];
@@ -203,7 +204,7 @@ export function DrawerMenu({ visible, onClose }: Props) {
 
             {/* Action links */}
             <TouchableOpacity
-              onPress={onClose}
+              onPress={() => navigate('/(modal)/Ubicacion')}
               activeOpacity={0.7}
               className="flex-row items-center justify-between px-5 py-5 border-b border-[#1e1e1e] mt-2"
             >

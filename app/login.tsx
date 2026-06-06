@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,12 +11,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { router } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useAuth } from "@/src/context/AuthContext";
 import { authApi, ApiError } from "@/src/services/authApi";
 import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
+
+const logoImg = require("../assets/oktava_logo.png");
 
 function isValidEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email.trim());
@@ -84,13 +88,11 @@ export default function LoginScreen() {
           <View>
 
           
-            <View className="items-center mb-3">
-              <View className="flex-row">
-                <Text className="text-5xl font-black text-[#e50909]">OK</Text>
-                <Text className="text-5xl font-black text-white">TA</Text>
-                <Text className="text-5xl font-black text-[#e50909]">VA</Text>
-              </View>
-            </View>
+            <Image
+              source={logoImg}
+              style={{ width: 180, height: 45, alignSelf: 'center', marginBottom: 12 }}
+              resizeMode="contain"
+            />
 
        
             <Text

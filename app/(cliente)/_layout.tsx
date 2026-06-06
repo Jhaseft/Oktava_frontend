@@ -25,38 +25,45 @@ function CartTabButton({ onPress, totalItems }: CartButtonProps) {
       onPress={onPress}
       activeOpacity={0.85}
       style={{
-        top: -30,
-        width: 58,
-        height: 58,
-        borderRadius: 29,
-        backgroundColor: '#e50909',
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#e50909',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.45,
-        shadowRadius: 8,
-        elevation: 8,
-        position: 'relative',
+        top: -20,
       }}
     >
-      <Ionicons name="cart-outline" size={26} color="#ffffff" />
-      {totalItems > 0 && (
-        <View style={{
-          position: 'absolute',
-          top: 6,
-          right: 8,
-          backgroundColor: '#ffffff',
-          borderRadius: 8,
-          minWidth: 16,
-          height: 16,
+      <View
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: 29,
+          backgroundColor: '#e50909',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingHorizontal: 3,
-        }}>
-          <Text style={{ color: '#e50909', fontSize: 9, fontWeight: '800' }}>{totalItems}</Text>
-        </View>
-      )}
+          shadowColor: '#e50909',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.45,
+          shadowRadius: 8,
+          elevation: 8,
+        }}
+      >
+        <Ionicons name="cart-outline" size={26} color="#ffffff" />
+        {totalItems > 0 && (
+          <View style={{
+            position: 'absolute',
+            top: 6,
+            right: 8,
+            backgroundColor: '#ffffff',
+            borderRadius: 8,
+            minWidth: 16,
+            height: 16,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 3,
+          }}>
+            <Text style={{ color: '#e50909', fontSize: 9, fontWeight: '800' }}>{totalItems}</Text>
+          </View>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -112,8 +119,6 @@ export default function ClienteLayout() {
       <Tabs.Screen
         name="cart"
         options={{
-          title: '',
-          tabBarShowLabel: false,
           tabBarButton: (props) => (
             <CartTabButton
               onPress={props.onPress ?? undefined}
