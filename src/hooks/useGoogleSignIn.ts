@@ -1,15 +1,10 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { statusCodes } from '@react-native-google-signin/google-signin';
 import { useAuth } from '@/src/context/AuthContext';
 import { signInWithGoogle } from '@/src/services/googleAuth.service';
 import { authApi } from '@/src/services/authApi';
 import { getPostAuthRedirect } from '@/src/lib/authRedirect';
 
-/**
- * Hook compartido por login.tsx y register.tsx.
- * Orquesta todo el flujo Google Sign-In → backend → sesión → redirect.
- */
 export function useGoogleSignIn() {
   const { signIn } = useAuth();
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -25,20 +20,12 @@ export function useGoogleSignIn() {
       await signIn(accessToken, user);
       router.replace(getPostAuthRedirect(user) as any);
     } catch (err: any) {
-      const code: string | number | undefined = err?.code;
-
-      // Cancelación silenciosa — no mostrar error
-      if (code === statusCodes.SIGN_IN_CANCELLED) return;
-
-      // Ya hay un intento en curso — ignorar silenciosamente
-      if (code === statusCodes.IN_PROGRESS) return;
-
-      if (code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-        setGoogleError('Google Play Services no está disponible en este dispositivo.');
-        return;
-      }
-
-      setGoogleError('No se pudo iniciar sesión con Google. Inténtalo nuevamente.');
+      console.log('[GoogleSignIn] ERROR completo:', err);
+      console.log('[GoogleSignIn] err.message:', err?.message);
+      console.log('[GoogleSignIn] err.code:', err?.code);
+      console.log('[GoogleSignIn] err.cancelled:', err?.cancelled);
+      if (err?.cancelled) return;
+      setGoogleError(err?.message ?? 'No se pudo iniciar sesión con Google. Inténtalo nuevamente.');
     } finally {
       setIsGoogleLoading(false);
     }

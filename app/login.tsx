@@ -83,7 +83,7 @@ export default function LoginScreen() {
         >
           <View>
 
-            {/* Logo */}
+          
             <View className="items-center mb-3">
               <View className="flex-row">
                 <Text className="text-5xl font-black text-[#e50909]">OK</Text>
@@ -92,7 +92,7 @@ export default function LoginScreen() {
               </View>
             </View>
 
-            {/* Subtítulo */}
+       
             <Text
               className="text-white text-center text-[12px] font-bold uppercase mb-7 leading-[18px]"
               style={{ letterSpacing: 0.8 }}
@@ -100,14 +100,14 @@ export default function LoginScreen() {
               INICIA SESIÓN O CREA UNA CUENTA CON{"\n"}TU CORREO ELECTRÓNICO
             </Text>
 
-            {/* Error global (email/password o Google) */}
+           
             {displayError && (
               <View className="bg-[#1a0000] border border-[#e50909] rounded-md px-3.5 py-2.5 mb-4">
                 <Text className="text-[#ff4444] text-[13px]">{displayError}</Text>
               </View>
             )}
 
-            {/* Email */}
+       
             <View className="mb-4">
               <Text className="text-white text-[13px] font-semibold mb-2">
                 Dirección de correo electrónico *
@@ -139,7 +139,7 @@ export default function LoginScreen() {
               )}
             </View>
 
-            {/* Contraseña */}
+     
             <View className="mb-2">
               <Text className="text-white text-[13px] font-semibold mb-2">
                 Contraseña *
@@ -183,7 +183,7 @@ export default function LoginScreen() {
               )}
             </View>
 
-            {/* Olvidé mi contraseña */}
+          
             <Pressable
               onPress={() => router.push("/forgot-password")}
               disabled={isLoading}
@@ -194,7 +194,7 @@ export default function LoginScreen() {
               </Text>
             </Pressable>
 
-            {/* Texto legal */}
+    
             <Text className="text-[#888888] text-[11px] leading-4 mb-6">
               Al registro o inicio de sesión, aceptas nuestras{" "}
               <Text className="text-[#e50909] underline">Políticas de privacidad</Text>
@@ -202,7 +202,7 @@ export default function LoginScreen() {
               <Text className="text-[#e50909] underline">Términos y condiciones</Text>
             </Text>
 
-            {/* Botón principal */}
+      
             <Pressable
               onPress={handleLogin}
               disabled={!canSubmit || isLoading}
@@ -214,14 +214,14 @@ export default function LoginScreen() {
               }
             </Pressable>
 
-            {/* Divisor */}
+     
             <View className="flex-row items-center mb-5">
               <View className="flex-1 h-px bg-[#333333]" />
               <Text className="text-[#888888] text-[13px] mx-3.5">O</Text>
               <View className="flex-1 h-px bg-[#333333]" />
             </View>
 
-            {/* Google */}
+          
             <Pressable
               onPress={handleGoogleSignIn}
               disabled={anyLoading}
@@ -239,7 +239,7 @@ export default function LoginScreen() {
               )}
             </Pressable>
 
-            {/* Link a registro */}
+         
             <Pressable
               onPress={() => router.push("/register")}
               disabled={isLoading}
@@ -253,7 +253,7 @@ export default function LoginScreen() {
               </Text>
             </Pressable>
 
-            {/* Ver menú sin cuenta */}
+          
             <Pressable
               onPress={() => router.replace("/(cliente)/")}
               disabled={isLoading}
