@@ -15,7 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.oktava.app",
-      "googleServicesFile": "./GoogleService-Info.plist",
+      "googleServicesFile": "./google-services.json",
       "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
