@@ -10,7 +10,7 @@ import { OrderDetailModal } from '@/src/components/order/OrderDetailModal';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import type { Order } from '@/src/types/order.types';
 
-const ACTIVE_STATUSES = new Set(['PENDING', 'PREPARING', 'ON_THE_WAY', 'PICKED_UP']);
+const ACTIVE_STATUSES = new Set(['PENDING', 'ACCEPTED', 'PREPARING', 'ON_THE_WAY', 'PICKED_UP']);
 const POLL_INTERVAL_MS = 8000;
 
 export default function OrdersScreen() {
