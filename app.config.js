@@ -24,6 +24,8 @@ module.exports = ({ config }) => ({
   },
   plugins: [
     ...(config.plugins ?? []),
+    'expo-font',
+    'expo-splash-screen',
     [
       'expo-location',
       {
