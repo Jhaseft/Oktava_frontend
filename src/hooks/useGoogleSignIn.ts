@@ -20,10 +20,6 @@ export function useGoogleSignIn() {
       await signIn(accessToken, user);
       router.replace(getPostAuthRedirect(user) as any);
     } catch (err: any) {
-      console.log('[GoogleSignIn] ERROR completo:', err);
-      console.log('[GoogleSignIn] err.message:', err?.message);
-      console.log('[GoogleSignIn] err.code:', err?.code);
-      console.log('[GoogleSignIn] err.cancelled:', err?.cancelled);
       if (err?.cancelled) return;
       setGoogleError(err?.message ?? 'No se pudo iniciar sesión con Google. Inténtalo nuevamente.');
     } finally {
