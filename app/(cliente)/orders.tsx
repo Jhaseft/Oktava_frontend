@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/context/AuthContext';
 import { orderService } from '@/src/services/order.service';
 import { OrderCard } from '@/src/components/order/OrderCard';
+import { OrderDetailModal } from '@/src/components/order/OrderDetailModal';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import type { Order } from '@/src/types/order.types';
 
@@ -19,6 +20,7 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchOrders = useCallback(async () => {
@@ -103,6 +105,7 @@ export default function OrdersScreen() {
                 <OrderCard
                   key={order.id}
                   order={order}
+                  onPress={() => setSelectedOrder(order)}
                   onConfirmReceived={() => handleConfirm(order.id)}
                   confirming={confirming === order.id}
                 />
@@ -117,12 +120,21 @@ export default function OrdersScreen() {
                 Historial
               </Text>
               {history.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onPress={() => setSelectedOrder(order)}
+                />
               ))}
             </View>
           )}
         </ScrollView>
       )}
+
+      <OrderDetailModal
+        order={selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+      />
     </View>
   );
 }
