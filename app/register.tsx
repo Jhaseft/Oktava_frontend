@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -18,6 +19,8 @@ import { ChevronDown, Eye, EyeOff, Search } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { authApi, ApiError, setPendingSignUp } from "@/src/services/authApi";
 import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
+
+const logoImg = require("../assets/oktava_logo.png");
 
 // ─── Códigos de país ──────────────────────────────────────────────────────────
 
@@ -184,11 +187,11 @@ export default function RegisterScreen() {
         >
           <View className="flex-1 items-center justify-center gap-8 px-5 py-10">
             <View className="w-full items-center gap-3">
-              <View className="flex-row items-center gap-2">
-                <Text className="text-5xl font-extrabold text-red-500">OK</Text>
-                <Text className="text-5xl font-extrabold text-white">TA</Text>
-                <Text className="text-5xl font-extrabold text-red-500">VA</Text>
-              </View>
+              <Image
+                source={logoImg}
+                style={{ width: 180, height: 45, alignSelf: 'center' }}
+                resizeMode="contain"
+              />
               <Text className="text-4xl font-bold text-white">Crea tu cuenta gratis</Text>
               <Text className="text-gray-400 text-center">
                 Crea tu cuenta y comienza a disfrutar de Oktava

@@ -1,7 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const logoImg = require('../../../assets/oktava_logo.png');
 
 type Props = { totalItems: number; onMenuPress: () => void };
 
@@ -30,17 +32,7 @@ export function HomeHeader({ totalItems, onMenuPress }: Props) {
         <Ionicons name="menu" size={26} color="#ffffff" />
       </TouchableOpacity>
 
-      <View style={{ flexDirection: 'row' }}>
-        <Text style={{ fontSize: 24, fontWeight: '900', color: '#e50909', letterSpacing: -0.5 }}>
-          OK
-        </Text>
-        <Text style={{ fontSize: 24, fontWeight: '900', color: '#ffffff', letterSpacing: -0.5 }}>
-          TA
-        </Text>
-        <Text style={{ fontSize: 24, fontWeight: '900', color: '#e50909', letterSpacing: -0.5 }}>
-          VA
-        </Text>
-      </View>
+      <Image source={logoImg} style={{ width: 150, height: 45 }} resizeMode="contain" />
 
       <TouchableOpacity
         onPress={() => router.push('/(cliente)/cart')}

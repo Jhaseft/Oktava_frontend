@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
+  Image,
   Modal,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+
+const logoImg = require('../../../assets/oktava_logo.png');
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -92,15 +95,16 @@ export function DrawerMenu({ visible, onClose }: Props) {
       key: 'oktava',
       label: 'La Oktava',
       children: [
-        { label: 'Sobre nosotros', onPress: onClose },
+        { label: 'Sobre nosotros', onPress: () => navigate('/(modal)/SobreNosotros') },
       ],
     },
     {
       key: 'legal',
       label: 'Legal',
       children: [
-        { label: 'Términos y condiciones', onPress: onClose },
-        { label: 'Política de privacidad', onPress: onClose },
+        { label: 'Términos y condiciones', onPress: () => navigate('/(modal)/Terminos') },
+        { label: 'Política de privacidad', onPress: () => navigate('/(modal)/Privacidad') },
+        { label: 'Eliminar cuenta', onPress: () => navigate('/(modal)/EliminarCuenta') },
       ],
     },
   ];
@@ -154,17 +158,7 @@ export function DrawerMenu({ visible, onClose }: Props) {
               <Ionicons name="close" size={26} color="#ffffff" />
             </TouchableOpacity>
 
-            <View className="flex-row">
-              <Text className="text-[22px] font-black text-[#e50909] tracking-tight">
-                OK
-              </Text>
-              <Text className="text-[22px] font-black text-white tracking-tight">
-                TA
-              </Text>
-              <Text className="text-[22px] font-black text-[#e50909] tracking-tight">
-                VA
-              </Text>
-            </View>
+            <Image source={logoImg} style={{ width: 120, height: 30 }} resizeMode="contain" />
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
@@ -210,7 +204,7 @@ export function DrawerMenu({ visible, onClose }: Props) {
 
             {/* Action links */}
             <TouchableOpacity
-              onPress={onClose}
+              onPress={() => navigate('/(modal)/Ubicacion')}
               activeOpacity={0.7}
               className="flex-row items-center justify-between px-5 py-5 border-b border-[#1e1e1e] mt-2"
             >

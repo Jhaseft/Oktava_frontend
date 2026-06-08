@@ -1,11 +1,8 @@
-import { View, Text, TouchableOpacity, Modal, Pressable, Linking } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Pressable, Linking, Image } from "react-native";
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Menu, ShoppingCart, X } from "lucide-react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-
-type TitlePart = { text: string; color: string };
-type Props = { title?: string; titleParts?: TitlePart[] };
 
 const MENU_ITEMS = [
   { nombre: "Mi cuenta",   ruta: "/(modal)/MiCuenta"  },
@@ -25,15 +22,7 @@ const REDES = [
   { icon: "facebook",  bg: "#1877F2", url: "https://facebook.com/tuPagina"   },
 ];
 
-function OktavaLogo({ titleParts, title }: { titleParts?: TitlePart[]; title: string }) {
-  return (
-    <Text className="text-[38px] font-black italic">
-      {titleParts
-        ? titleParts.map((p, i) => <Text key={i} className={p.color}>{p.text}</Text>)
-        : <Text className="text-white">{title}</Text>}
-    </Text>
-  );
-}
+const logoImg = require("../../../assets/oktava_logo.png");
 
 function SocialIcon({ icon, bg, url }: { icon: string; bg: string; url: string }) {
   return (
@@ -47,7 +36,7 @@ function SocialIcon({ icon, bg, url }: { icon: string; bg: string; url: string }
   );
 }
 
-export default function HeaderTitle({ title = "OKTAVA", titleParts }: Props) {
+export default function HeaderTitle() {
   const [menuVisible, setMenuVisible] = useState(false);
   const router = useRouter();
 
@@ -58,7 +47,7 @@ export default function HeaderTitle({ title = "OKTAVA", titleParts }: Props) {
           <Menu color="white" size={35} />
         </TouchableOpacity>
 
-        <OktavaLogo titleParts={titleParts} title={title} />
+        <Image source={logoImg} style={{ width: 130, height: 32 }} resizeMode="contain" />
         <View className="flex-1" />
 
         <TouchableOpacity onPress={() => router.push("/(carrito)")} activeOpacity={0.7}>
@@ -78,7 +67,7 @@ export default function HeaderTitle({ title = "OKTAVA", titleParts }: Props) {
                 <TouchableOpacity onPress={() => setMenuVisible(false)} activeOpacity={0.7}>
                   <X color="white" size={42} />
                 </TouchableOpacity>
-                <OktavaLogo titleParts={titleParts} title={title} />
+                <Image source={logoImg} style={{ width: 140, height: 34 }} resizeMode="contain" />
               </View>
 
      
