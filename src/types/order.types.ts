@@ -1,12 +1,22 @@
 export type OrderStatus =
+  | 'PENDING_PAYMENT'
   | 'PENDING'
+  | 'ACCEPTED'
   | 'PREPARING'
   | 'ON_THE_WAY'
   | 'PICKED_UP'
+  | 'PAYMENT_FAILED'
   | 'COMPLETED'
   | 'CANCELLED';
 
 export type OrderType = 'DELIVERY' | 'PICKUP';
+
+export type OrderItemOption = {
+  id: string;
+  optionId: string;
+  optionName: string;
+  extraPrice: number;
+};
 
 export type OrderItem = {
   id: string;
@@ -15,6 +25,16 @@ export type OrderItem = {
   quantity: number;
   unitPrice: number;
   subtotal: number;
+  notes: string | null;
+  selectedOptions: OrderItemOption[];
+};
+
+export type OrderAddress = {
+  id: string;
+  label: string;
+  direction: string;
+  departament: string;
+  reference: string | null;
 };
 
 export type Order = {
@@ -29,12 +49,7 @@ export type Order = {
   createdAt: string;
   updatedAt: string;
   items: OrderItem[];
-  address?: {
-    id: string;
-    street: string;
-    city: string;
-    reference: string | null;
-  } | null;
+  address?: OrderAddress | null;
 };
 
 export type CreateOrderItemOption = {
