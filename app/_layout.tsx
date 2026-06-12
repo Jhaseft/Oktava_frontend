@@ -8,6 +8,7 @@ import { AuthProvider } from "@/src/context/AuthContext";
 import { CartProvider } from "@/src/context/CartContext";
 import { OrderProvider } from "@/src/context/OrderContext";
 import { useNotifications } from "@/src/hooks/useNotifications";
+import { UpdateGate } from "@/src/components/ui/UpdateGate";
 
 function AppInit() {
   const { expoPushToken } = useNotifications();
@@ -32,7 +33,9 @@ export default function Layout() {
       <CartProvider>
         <View className="flex-1 bg-black" style={{ paddingBottom: insets.bottom, backgroundColor: "black" }}>
           <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false }} />
+          <UpdateGate>
+            <Stack screenOptions={{ headerShown: false }} />
+          </UpdateGate>
         </View>
       </CartProvider>
       </OrderProvider>
