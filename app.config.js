@@ -1,8 +1,13 @@
+// La key de Google Maps debe quedar SIEMPRE en el manifest nativo. EAS no lee
+// el .env al evaluar este archivo, así que usamos un valor literal como respaldo.
+const GOOGLE_MAPS_API_KEY =
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? 'AIzaSyBAH5XtP0PMsRl5UpBNymFGO17msAmTLkM';
+
 module.exports = ({ config }) => ({
   ...config,
   android: {
     ...config.android,
-    googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     permissions: [
       ...(config.android?.permissions ?? []),
       'android.permission.ACCESS_FINE_LOCATION',
@@ -12,7 +17,7 @@ module.exports = ({ config }) => ({
   ios: {
     ...config.ios,
     config: {
-      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+      googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     },
     infoPlist: {
       ...config.ios?.infoPlist,
