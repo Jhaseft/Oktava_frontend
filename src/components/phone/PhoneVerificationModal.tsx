@@ -8,7 +8,14 @@ import {
   View,
 } from 'react-native';
 import { phoneVerificationService } from '@/src/services/phone-verification.service';
+import { api } from '@/src/services/api';
 import { useAuth } from '@/src/context/AuthContext';
+import {
+  PhoneNumberInput,
+  DEFAULT_COUNTRY,
+  toE164,
+  type CountryCode,
+} from '@/src/components/phone/PhoneNumberInput';
 
 type Props = {
   visible: boolean;
@@ -23,21 +30,52 @@ export function PhoneVerificationModal({ visible, onVerified, onClose }: Props) 
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [savingPhone, setSavingPhone] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const inputRefs = useRef<(TextInput | null)[]>([]);
+
+  // Para cuando el usuario aún no tiene número guardado (ej. registro con Google
+  // que omitió completar el teléfono). Lo ingresa aquí mismo antes de verificar.
+  const [dial, setDial] = useState<CountryCode>(DEFAULT_COUNTRY);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const needsPhone = !user?.phone;
 
   function reset() {
     setDigits(Array(CODE_LENGTH).fill(''));
     setCodeSent(false);
     setError(null);
     setSuccessMsg(null);
+    setPhoneNumber('');
   }
 
   function handleClose() {
     reset();
     onClose();
+  }
+
+  // Guarda el número (si falta) y envía el código de inmediato.
+  async function handleSavePhoneAndSend() {
+    if (phoneNumber.length < 7) {
+      setError('Ingresa un número válido (mín. 7 dígitos).');
+      return;
+    }
+    setSavingPhone(true);
+    setError(null);
+    try {
+      const e164 = toE164(dial, phoneNumber);
+      await api.patch('/auth/profile', { phone: e164 });
+      await updateUser({ phone: e164 });
+      await phoneVerificationService.sendCode();
+      setCodeSent(true);
+      setSuccessMsg('Código enviado. Revisa tu WhatsApp.');
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (e: any) {
+      setError(e?.response?.data?.message ?? e?.message ?? 'No se pudo guardar el número.');
+    } finally {
+      setSavingPhone(false);
+    }
   }
 
   async function handleSendCode() {
@@ -105,7 +143,9 @@ export function PhoneVerificationModal({ visible, onVerified, onClose }: Props) 
           <View className="gap-1">
             <Text className="text-white text-xl font-bold">Verifica tu número</Text>
             <Text className="text-zinc-400 text-sm leading-5">
-              Te enviaremos un código por WhatsApp para confirmar tu número antes de realizar el pedido.
+              {needsPhone
+                ? 'Ingresa tu número de WhatsApp para verificarlo antes de realizar el pedido.'
+                : 'Te enviaremos un código por WhatsApp para confirmar tu número antes de realizar el pedido.'}
             </Text>
             {user?.phone && (
               <Text className="text-zinc-500 text-xs mt-1">
@@ -128,8 +168,33 @@ export function PhoneVerificationModal({ visible, onVerified, onClose }: Props) 
             </View>
           )}
 
-          {/* Send code button — shown before and after (for resend) */}
-          {!codeSent ? (
+          {/* Paso 0: ingresar número si el usuario aún no lo tiene */}
+          {needsPhone && !codeSent ? (
+            <View className="gap-3">
+              <PhoneNumberInput
+                number={phoneNumber}
+                onChangeNumber={(t) => {
+                  setPhoneNumber(t);
+                  setError(null);
+                }}
+                dial={dial}
+                onChangeDial={setDial}
+                error={!!error && phoneNumber.length < 7}
+                editable={!savingPhone}
+              />
+              <Pressable
+                onPress={handleSavePhoneAndSend}
+                disabled={savingPhone}
+                className={`rounded-xl py-3.5 items-center ${savingPhone ? 'bg-zinc-700' : 'bg-red-600'}`}
+              >
+                {savingPhone ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text className="text-white font-semibold text-base">Guardar número y enviar código</Text>
+                )}
+              </Pressable>
+            </View>
+          ) : !codeSent ? (
             <Pressable
               onPress={handleSendCode}
               disabled={sending}

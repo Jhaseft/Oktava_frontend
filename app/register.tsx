@@ -1,10 +1,8 @@
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   KeyboardAvoidingView,
-  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -15,40 +13,18 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
-import { ChevronDown, Eye, EyeOff, Search } from "lucide-react-native";
+import { Eye, EyeOff } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { authApi, ApiError, setPendingSignUp } from "@/src/services/authApi";
 import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
+import {
+  PhoneNumberInput,
+  DEFAULT_COUNTRY,
+  toE164,
+  type CountryCode,
+} from "@/src/components/phone/PhoneNumberInput";
 
 const logoImg = require("../assets/oktava_logo.png");
-
-// ─── Códigos de país ──────────────────────────────────────────────────────────
-
-type CountryCode = { flag: string; name: string; dial: string };
-
-const COUNTRY_CODES: CountryCode[] = [
-  { flag: "🇨🇴", name: "Colombia",          dial: "+57"  },
-  { flag: "🇲🇽", name: "México",            dial: "+52"  },
-  { flag: "🇦🇷", name: "Argentina",         dial: "+54"  },
-  { flag: "🇨🇱", name: "Chile",             dial: "+56"  },
-  { flag: "🇵🇪", name: "Perú",              dial: "+51"  },
-  { flag: "🇻🇪", name: "Venezuela",         dial: "+58"  },
-  { flag: "🇪🇨", name: "Ecuador",           dial: "+593" },
-  { flag: "🇧🇴", name: "Bolivia",           dial: "+591" },
-  { flag: "🇵🇾", name: "Paraguay",          dial: "+595" },
-  { flag: "🇺🇾", name: "Uruguay",           dial: "+598" },
-  { flag: "🇵🇦", name: "Panamá",            dial: "+507" },
-  { flag: "🇨🇷", name: "Costa Rica",        dial: "+506" },
-  { flag: "🇬🇹", name: "Guatemala",         dial: "+502" },
-  { flag: "🇭🇳", name: "Honduras",          dial: "+504" },
-  { flag: "🇸🇻", name: "El Salvador",       dial: "+503" },
-  { flag: "🇳🇮", name: "Nicaragua",         dial: "+505" },
-  { flag: "🇩🇴", name: "Rep. Dominicana",   dial: "+1"   },
-  { flag: "🇺🇸", name: "Estados Unidos",    dial: "+1"   },
-  { flag: "🇨🇦", name: "Canadá",            dial: "+1"   },
-  { flag: "🇪🇸", name: "España",            dial: "+34"  },
-  { flag: "🇧🇷", name: "Brasil",            dial: "+55"  },
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -75,15 +51,13 @@ export default function RegisterScreen() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [dialCode, setDialCode] = useState<CountryCode>(COUNTRY_CODES[0]);
+  const [dialCode, setDialCode] = useState<CountryCode>(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [showPicker, setShowPicker] = useState(false);
-  const [pickerSearch, setPickerSearch] = useState("");
 
   const [firstNameTouched, setFirstNameTouched] = useState(false);
   const [lastNameTouched, setLastNameTouched] = useState(false);
@@ -99,16 +73,6 @@ export default function RegisterScreen() {
   const { handleGoogleSignIn, isGoogleLoading, googleError } = useGoogleSignIn();
   const displayError = error ?? googleError;
   const anyLoading = isLoading || isGoogleLoading;
-
-  const filteredCountries = useMemo(
-    () =>
-      COUNTRY_CODES.filter(
-        (c) =>
-          c.name.toLowerCase().includes(pickerSearch.toLowerCase()) ||
-          c.dial.includes(pickerSearch),
-      ),
-    [pickerSearch],
-  );
 
   const firstNameIsValid = useMemo(() => firstName.trim().length > 0, [firstName]);
   const lastNameIsValid  = useMemo(() => lastName.trim().length > 0, [lastName]);
@@ -156,7 +120,7 @@ export default function RegisterScreen() {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
-        phone: `${dialCode.dial}${phone.trim()}`,
+        phone: toE164(dialCode, phone),
         password,
       });
       router.push("/verify-code");
@@ -262,44 +226,18 @@ export default function RegisterScreen() {
               {/* Teléfono con selector de código */}
               <View className="gap-2">
                 <Text className="text-sm font-medium text-gray-400">Numero de telefono</Text>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  {/* Dial code picker */}
-                  <Pressable
-                    onPress={() => { setShowPicker(true); setPickerSearch(""); }}
-                    disabled={isLoading}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 4,
-                      backgroundColor: "#000",
-                      borderWidth: 1,
-                      borderColor: "#374151",
-                      borderRadius: 8,
-                      paddingHorizontal: 12,
-                      paddingVertical: 12,
-                    }}
-                  >
-                    <Text style={{ fontSize: 18 }}>{dialCode.flag}</Text>
-                    <Text style={{ color: "#d1d5db", fontSize: 15, marginLeft: 2 }}>{dialCode.dial}</Text>
-                    <ChevronDown size={14} color="#6b7280" style={{ marginLeft: 2 }} />
-                  </Pressable>
-
-                  {/* Number input */}
-                  <TextInput
-                    value={phone}
-                    onChangeText={(t) => {
-                      setPhone(t.replaceAll(/\D/g, ""));
-                      setError(null);
-                      if (!phoneTouched) setPhoneTouched(true);
-                    }}
-                    placeholder="3001234567"
-                    placeholderTextColor="#4b5563"
-                    keyboardType="phone-pad"
-                    editable={!isLoading}
-                    maxLength={15}
-                    style={[field(showPhoneError), { flex: 1 }]}
-                  />
-                </View>
+                <PhoneNumberInput
+                  number={phone}
+                  onChangeNumber={(t) => {
+                    setPhone(t);
+                    setError(null);
+                    if (!phoneTouched) setPhoneTouched(true);
+                  }}
+                  dial={dialCode}
+                  onChangeDial={setDialCode}
+                  error={showPhoneError}
+                  editable={!isLoading}
+                />
                 {showPhoneError && (
                   <Text className="text-sm text-red-500">
                     Ingresa un numero valido (min. 7 digitos).
@@ -475,93 +413,6 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
-      {/* ── Modal selector de código de país ── */}
-      <Modal visible={showPicker} animationType="slide" transparent>
-        <Pressable
-          style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.6)" }}
-          onPress={() => setShowPicker(false)}
-        >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: "#111",
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-              maxHeight: "70%",
-              paddingTop: 12,
-            }}
-          >
-            {/* Handle */}
-            <View style={{ alignItems: "center", marginBottom: 12 }}>
-              <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: "#374151" }} />
-            </View>
-
-            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "700", marginHorizontal: 16, marginBottom: 12 }}>
-              Codigo de pais
-            </Text>
-
-            {/* Búsqueda */}
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginHorizontal: 16,
-                marginBottom: 8,
-                backgroundColor: "#1f2937",
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                gap: 8,
-              }}
-            >
-              <Search size={16} color="#6b7280" />
-              <TextInput
-                value={pickerSearch}
-                onChangeText={setPickerSearch}
-                placeholder="Buscar pais o codigo..."
-                placeholderTextColor="#4b5563"
-                style={{ flex: 1, color: "#d1d5db", fontSize: 14, paddingVertical: 10 }}
-              />
-            </View>
-
-            {/* Lista */}
-            <FlatList
-              data={filteredCountries}
-              keyExtractor={(item) => `${item.name}-${item.dial}`}
-              keyboardShouldPersistTaps="handled"
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => { setDialCode(item); setShowPicker(false); }}
-                  style={({ pressed }) => {
-                    let bg = "transparent";
-                    if (pressed) bg = "#1f2937";
-                    else if (item.name === dialCode.name) bg = "#1c1c1e";
-                    return {
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 12,
-                      paddingHorizontal: 16,
-                      paddingVertical: 14,
-                      backgroundColor: bg,
-                    };
-                  }}
-                >
-                  <Text style={{ fontSize: 22 }}>{item.flag}</Text>
-                  <Text style={{ flex: 1, color: "#d1d5db", fontSize: 15 }}>{item.name}</Text>
-                  <Text style={{ color: "#6b7280", fontSize: 14 }}>{item.dial}</Text>
-                  {item.name === dialCode.name && (
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: "#ef4444" }} />
-                  )}
-                </Pressable>
-              )}
-            />
-          </Pressable>
-        </Pressable>
-      </Modal>
     </LinearGradient>
   );
 }

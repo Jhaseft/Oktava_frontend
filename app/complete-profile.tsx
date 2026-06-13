@@ -6,23 +6,28 @@ import {
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
 import { api } from '@/src/services/api';
 import { useAuth } from '@/src/context/AuthContext';
 import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerificationModal';
+import {
+  PhoneNumberInput,
+  DEFAULT_COUNTRY,
+  toE164,
+  type CountryCode,
+} from '@/src/components/phone/PhoneNumberInput';
 
 export default function CompleteProfileScreen() {
   const { updateUser } = useAuth();
+  const [dial, setDial] = useState<CountryCode>(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
 
-  const rawDigits = phone.replace(/\D/g, '');
-  const phoneIsValid = rawDigits.length >= 7;
+  const phoneIsValid = phone.length >= 7;
 
   async function handleSave() {
     if (!phoneIsValid) {
@@ -32,8 +37,9 @@ export default function CompleteProfileScreen() {
     setIsLoading(true);
     setError(null);
     try {
-      await api.patch('/auth/profile', { phone });
-      await updateUser({ phone });
+      const e164 = toE164(dial, phone);
+      await api.patch('/auth/profile', { phone: e164 });
+      await updateUser({ phone: e164 });
       setShowVerifyModal(true);
     } catch (err: any) {
       setError(err?.message ?? 'No se pudo guardar el número. Inténtalo nuevamente.');
@@ -82,27 +88,16 @@ export default function CompleteProfileScreen() {
           {/* Input */}
           <View className="w-full gap-2">
             <Text className="text-sm font-medium text-gray-400">Número de WhatsApp</Text>
-            <TextInput
-              value={phone}
-              onChangeText={(t) => {
+            <PhoneNumberInput
+              number={phone}
+              onChangeNumber={(t) => {
                 setPhone(t);
                 setError(null);
               }}
-              placeholder="+591 7XXXXXXX"
-              placeholderTextColor="#4b5563"
-              keyboardType="phone-pad"
+              dial={dial}
+              onChangeDial={setDial}
+              error={!!error && !phoneIsValid}
               editable={!isLoading}
-              maxLength={20}
-              style={{
-                backgroundColor: '#000',
-                borderWidth: 1,
-                borderColor: error && !phoneIsValid ? '#ef4444' : '#374151',
-                borderRadius: 8,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                color: '#d1d5db',
-                fontSize: 16,
-              }}
             />
           </View>
 
