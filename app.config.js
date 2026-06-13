@@ -7,7 +7,12 @@ module.exports = ({ config }) => ({
   ...config,
   android: {
     ...config.android,
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    config: {
+      ...config.android?.config,
+      googleMaps: {
+        apiKey: GOOGLE_MAPS_API_KEY,
+      },
+    },
     permissions: [
       ...(config.android?.permissions ?? []),
       'android.permission.ACCESS_FINE_LOCATION',
@@ -38,6 +43,5 @@ module.exports = ({ config }) => ({
           'Usamos tu ubicación para encontrar la dirección de entrega.',
       },
     ],
-    '@react-native-google-signin/google-signin',
   ],
 });
