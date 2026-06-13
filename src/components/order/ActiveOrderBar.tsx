@@ -6,19 +6,25 @@ import { useOrders } from '@/src/context/OrderContext';
 import type { OrderStatus } from '@/src/types/order.types';
 
 const STATUS_COLOR: Record<OrderStatus, string> = {
+  PENDING_PAYMENT: '#f59e0b',
   PENDING: '#f59e0b',
+  ACCEPTED: '#3b82f6',
   PREPARING: '#3b82f6',
   ON_THE_WAY: '#8b5cf6',
   PICKED_UP: '#22c55e',
+  PAYMENT_FAILED: '#ef4444',
   COMPLETED: '#22c55e',
   CANCELLED: '#ef4444',
 };
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
+  PENDING_PAYMENT: 'Pago pendiente',
   PENDING: 'Pedido enviado',
+  ACCEPTED: 'Pedido aceptado',
   PREPARING: 'Preparando tu pedido',
   ON_THE_WAY: 'En camino',
   PICKED_UP: 'Listo para recoger',
+  PAYMENT_FAILED: 'Pago fallido',
   COMPLETED: 'Completado',
   CANCELLED: 'Cancelado',
 };
