@@ -3,6 +3,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  Linking,
   Modal,
   ScrollView,
   Text,
@@ -28,7 +29,11 @@ type AccordionItem = {
 type SocialLink = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   bg: string;
+  url: string;
 };
+
+// Número de WhatsApp de OKtava (formato internacional sin '+', para wa.me).
+const WHATSAPP_PHONE = '59162565829';
 
 type Props = {
   visible: boolean;
@@ -110,11 +115,18 @@ export function DrawerMenu({ visible, onClose }: Props) {
   ];
 
   const socialLinks: SocialLink[] = [
-    { icon: 'logo-whatsapp', bg: '#25D366' },
-    { icon: 'logo-instagram', bg: '#E1306C' },
-    { icon: 'musical-notes', bg: '#010101' },
-    { icon: 'logo-facebook', bg: '#1877F2' },
+    { icon: 'logo-whatsapp', bg: '#25D366', url: `https://wa.me/${WHATSAPP_PHONE}` },
+    { icon: 'logo-instagram', bg: '#E1306C', url: 'https://www.instagram.com/pasarela8oktava' },
+    { icon: 'musical-notes', bg: '#010101', url: 'https://www.tiktok.com/@pasarela8oktava' },
   ];
+
+  const openLink = async (url: string) => {
+    try {
+      await Linking.openURL(url);
+    } catch {
+      // Si no hay app/navegador que pueda abrir el enlace, se ignora.
+    }
+  };
 
   const toggleAccordion = (key: string) =>
     setOpenAccordion((prev) => (prev === key ? null : key));
@@ -228,9 +240,10 @@ export function DrawerMenu({ visible, onClose }: Props) {
 
           {/* Social icons */}
           <View className="flex-row justify-center gap-3.5 py-[22px] border-t border-[#1e1e1e]">
-            {socialLinks.map(({ icon, bg }, idx) => (
+            {socialLinks.map(({ icon, bg, url }) => (
               <TouchableOpacity
-                key={idx}
+                key={icon}
+                onPress={() => openLink(url)}
                 activeOpacity={0.8}
                 className="w-[46px] h-[46px] rounded-full items-center justify-center"
                 style={{ backgroundColor: bg }}
