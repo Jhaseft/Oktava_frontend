@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { consumePendingAddressSelect } from '@/src/lib/pendingAddressSelect';
 import { haversineKm, calcDeliveryFee, STORE_LAT, STORE_LNG, MAX_DELIVERY_KM } from '@/src/lib/maps';
 import { useCart } from '@/src/context/CartContext';
+import { useStoreStatus } from '@/src/context/StoreStatusContext';
 import { orderService } from '@/src/services/order.service';
 import { paymentService } from '@/src/services/payment.service';
 import { addressService } from '@/src/services/address.service';
@@ -54,6 +55,7 @@ const PAYMENT_OPTIONS: { method: PaymentMethod; label: string; icon: string }[] 
 export default function CheckoutScreen() {
   const { token } = useAuth();
   const { items, totalAmount, clearCart } = useCart();
+  const { isOpen: storeOpen, message: storeMessage, refresh: refreshStore } = useStoreStatus();
 
   useEffect(() => {
     if (!token) router.replace('/login');
@@ -113,6 +115,7 @@ export default function CheckoutScreen() {
 
   const canPlace =
     items.length > 0 &&
+    storeOpen &&
     !outOfRange &&
     (orderType === 'PICKUP' || (orderType === 'DELIVERY' && !!selectedAddressId));
 
@@ -141,6 +144,11 @@ export default function CheckoutScreen() {
         },
       });
     } catch (e: any) {
+      if (e?.response?.data?.code === 'STORE_CLOSED') {
+        refreshStore();
+        Alert.alert('Tienda cerrada', e?.response?.data?.message ?? 'La tienda está cerrada en este momento.');
+        return;
+      }
       Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo iniciar el pago con tarjeta.');
     } finally {
       setPlacing(false);
@@ -158,6 +166,11 @@ export default function CheckoutScreen() {
         router.replace('/(cliente)/orders');
       }
     } catch (e: any) {
+      if (e?.response?.data?.code === 'STORE_CLOSED') {
+        refreshStore();
+        Alert.alert('Tienda cerrada', e?.response?.data?.message ?? 'La tienda está cerrada en este momento.');
+        return;
+      }
       if (e?.response?.data?.code === 'PHONE_NOT_VERIFIED') {
         setShowOtpModal(true);
         return;
@@ -193,6 +206,14 @@ export default function CheckoutScreen() {
       <ScrollView className="flex-1 bg-black" keyboardShouldPersistTaps="handled">
         <View className="px-5 pt-14 pb-8 gap-6">
           <Text className="text-white text-2xl font-bold">Checkout</Text>
+
+          {!storeOpen && (
+            <View className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+              <Text className="text-red-400 text-sm font-medium">
+                {storeMessage || 'La tienda está cerrada. No puedes hacer pedidos en este momento.'}
+              </Text>
+            </View>
+          )}
 
           {phoneJustVerified && (
             <View className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">

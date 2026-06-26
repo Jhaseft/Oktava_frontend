@@ -101,6 +101,7 @@ export function DrawerMenu({ visible, onClose }: Props) {
       label: 'La Oktava',
       children: [
         { label: 'Sobre nosotros', onPress: () => navigate('/(modal)/SobreNosotros') },
+        { label: 'Horarios', onPress: () => navigate('/(modal)/Horarios') },
       ],
     },
     {

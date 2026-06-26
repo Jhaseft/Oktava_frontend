@@ -1,6 +1,7 @@
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import { View, Text, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useStoreStatus } from "@/src/context/StoreStatusContext";
 
 const MAPS_URL = "https://maps.app.goo.gl/qdJixHTAnECPLuaB6";
 
@@ -21,6 +22,13 @@ function InfoRow({ icon, label, value }: InfoRowProps) {
 }
 
 export default function UbicacionScreen() {
+  const { isOpen, status } = useStoreStatus();
+  const today = status?.today;
+  let todayValue = "Consulta los horarios";
+  if (today) {
+    todayValue = today.isClosed ? "Cerrado hoy" : `${today.openTime} – ${today.closeTime}`;
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: "#111" }}>
       <Stack.Screen
@@ -42,8 +50,22 @@ export default function UbicacionScreen() {
 
           <View style={{ height: 1, backgroundColor: "#2a2a2a", marginVertical: 4 }} />
 
-          <InfoRow icon="time-outline" label="Lunes a Viernes" value="11:00 – 24:00" />
-          <InfoRow icon="time-outline" label="Sábado y Domingo" value="10:00 – 24:00" />
+          <InfoRow
+            icon="time-outline"
+            label={isOpen ? "Abierto ahora · Horario de hoy" : "Cerrado ahora · Horario de hoy"}
+            value={todayValue}
+          />
+
+          <TouchableOpacity
+            onPress={() => router.push("/(modal)/Horarios")}
+            activeOpacity={0.7}
+            style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingLeft: 48 }}
+          >
+            <Text style={{ fontSize: 14, color: "#e50909", fontWeight: "600" }}>
+              Ver todos los horarios
+            </Text>
+            <Ionicons name="chevron-forward" size={16} color="#e50909" />
+          </TouchableOpacity>
 
           <View style={{ height: 1, backgroundColor: "#2a2a2a", marginVertical: 4 }} />
 

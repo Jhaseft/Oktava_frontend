@@ -4,12 +4,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/src/context/AuthContext';
 import { useCart } from '@/src/context/CartContext';
+import { useStoreStatus } from '@/src/context/StoreStatusContext';
 import { CartItemCard } from '@/src/components/cart/CartItemCard';
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
   const { items, totalItems, totalAmount, updateQuantity, removeItem } = useCart();
+  const { isOpen: storeOpen, message: storeMessage } = useStoreStatus();
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000000' }}>
@@ -86,12 +88,32 @@ export default function CartScreen() {
                 </Text>
               </View>
 
+              {/* Aviso de tienda cerrada */}
+              {!storeOpen && (
+                <View style={{
+                  backgroundColor: 'rgba(229,9,9,0.10)',
+                  borderColor: 'rgba(229,9,9,0.30)',
+                  borderWidth: 1,
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                }}>
+                  <Text style={{ color: '#f87171', fontSize: 13, fontWeight: '600' }}>
+                    {storeMessage || 'La tienda está cerrada. No puedes hacer pedidos en este momento.'}
+                  </Text>
+                </View>
+              )}
+
               {/* Checkout button */}
               <TouchableOpacity
-                onPress={() => token ? router.push('/(cliente)/checkout') : router.push('/login')}
+                onPress={() => {
+                  if (!storeOpen) return;
+                  router.push(token ? '/(cliente)/checkout' : '/login');
+                }}
+                disabled={!storeOpen}
                 activeOpacity={0.8}
                 style={{
-                  backgroundColor: '#e50909',
+                  backgroundColor: storeOpen ? '#e50909' : '#3a3a3a',
                   borderRadius: 10,
                   height: 50,
                   alignItems: 'center',
@@ -99,8 +121,8 @@ export default function CartScreen() {
                   marginTop: 4,
                 }}
               >
-                <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>
-                  Proceder con el pedido
+                <Text style={{ color: storeOpen ? '#ffffff' : '#888888', fontWeight: '700', fontSize: 15 }}>
+                  {storeOpen ? 'Proceder con el pedido' : 'Tienda cerrada'}
                 </Text>
               </TouchableOpacity>
             </View>

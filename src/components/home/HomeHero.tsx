@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Animated, ImageBackground, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { useStoreStatus } from '@/src/context/StoreStatusContext';
 
 const heroBg = require('../../../assets/hero-bg.jpg');
 
@@ -12,6 +13,7 @@ type Props = {
 
 export function HomeHero({ onOrderNow, onViewMenu }: Props) {
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const { isOpen, message } = useStoreStatus();
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -53,13 +55,20 @@ export function HomeHero({ onOrderNow, onViewMenu }: Props) {
       {/* Content */}
       <View style={styles.content}>
 
-        {/* Status badge */}
+        {/* Status badge — dinámico según el horario del local */}
         <View style={styles.badgeRow}>
-          <View style={styles.badge}>
-            <Animated.View style={[styles.dot, { opacity: pulseAnim }]} />
-            <Text style={styles.badgeText}>Pedidos en línea · Abierto ahora</Text>
+          <View style={[styles.badge, isOpen ? styles.badgeOpen : styles.badgeClosed]}>
+            <Animated.View
+              style={[styles.dot, isOpen ? styles.dotOpen : styles.dotClosed, { opacity: pulseAnim }]}
+            />
+            <Text style={[styles.badgeText, isOpen ? styles.badgeTextOpen : styles.badgeTextClosed]}>
+              {isOpen ? 'ABIERTO AHORA' : 'CERRADO'}
+            </Text>
           </View>
         </View>
+        {!isOpen && !!message && (
+          <Text style={styles.closedNote}>{message}</Text>
+        )}
 
         {/* Headline */}
         <View style={{ marginBottom: 10 }}>
@@ -119,15 +128,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#e50909', opacity: 0.05,
   },
   content: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 28 },
-  badgeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
+  badgeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 1, borderColor: '#e50909',
-    backgroundColor: 'rgba(229,9,9,0.1)',
-    borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5,
+    flexDirection: 'row', alignItems: 'center', gap: 9,
+    borderWidth: 1.5,
+    borderRadius: 24, paddingHorizontal: 16, paddingVertical: 9,
   },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#e50909' },
-  badgeText: { color: '#ff6b6b', fontSize: 11, fontWeight: '600' },
+  badgeOpen: { borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.14)' },
+  badgeClosed: { borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.14)' },
+  dot: { width: 10, height: 10, borderRadius: 5 },
+  dotOpen: { backgroundColor: '#22c55e' },
+  dotClosed: { backgroundColor: '#ef4444' },
+  badgeText: { fontSize: 14, fontWeight: '800', letterSpacing: 0.5 },
+  badgeTextOpen: { color: '#4ade80' },
+  badgeTextClosed: { color: '#f87171' },
+  closedNote: { color: '#f87171', fontSize: 12, fontWeight: '600', marginBottom: 16, maxWidth: 280 },
   headlineWhite: { color: '#ffffff', fontSize: 38, fontWeight: '900', lineHeight: 42, letterSpacing: -0.5 },
   headlineRed:   { color: '#e50909', fontSize: 38, fontWeight: '900', lineHeight: 42, letterSpacing: -0.5 },
   subtitle: { color: '#999', fontSize: 13, lineHeight: 19, marginBottom: 22, maxWidth: 260 },

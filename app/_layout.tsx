@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/src/context/AuthContext";
 import { CartProvider } from "@/src/context/CartContext";
 import { OrderProvider } from "@/src/context/OrderContext";
+import { StoreStatusProvider } from "@/src/context/StoreStatusContext";
 import { useNotifications } from "@/src/hooks/useNotifications";
 import { registerPushToken } from "@/src/services/notifications.service";
 import { UpdateGate } from "@/src/components/ui/UpdateGate";
@@ -45,12 +46,14 @@ export default function Layout() {
       <AppInit />
       <OrderProvider>
       <CartProvider>
-        <View className="flex-1 bg-black" style={{ paddingBottom: insets.bottom, backgroundColor: "black" }}>
-          <StatusBar style="light" />
-          <UpdateGate>
-            <Stack screenOptions={{ headerShown: false }} />
-          </UpdateGate>
-        </View>
+        <StoreStatusProvider>
+          <View className="flex-1 bg-black" style={{ paddingBottom: insets.bottom, backgroundColor: "black" }}>
+            <StatusBar style="light" />
+            <UpdateGate>
+              <Stack screenOptions={{ headerShown: false }} />
+            </UpdateGate>
+          </View>
+        </StoreStatusProvider>
       </CartProvider>
       </OrderProvider>
     </AuthProvider>
