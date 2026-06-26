@@ -106,8 +106,12 @@ export default function AddressesScreen() {
           try {
             await addressService.deleteAddress(id);
             setAddresses((prev) => prev.filter((a) => a.id !== id));
-          } catch {
-            Alert.alert('Error', 'No se pudo eliminar la dirección.');
+          } catch (e: any) {
+            const msg = e?.response?.data?.message;
+            Alert.alert(
+              'Error',
+              Array.isArray(msg) ? msg.join('\n') : msg ?? 'No se pudo eliminar la dirección.',
+            );
           }
         },
       },
