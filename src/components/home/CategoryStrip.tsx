@@ -42,15 +42,15 @@ export function CategoryStrip({ categories }: Props) {
         }}
       >
         <View>
-          <Text style={{ color: '#e50909', fontSize: 10, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 2 }}>
+          <Text className="font-lemon-bold" style={{ color: '#c1121f', fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 2 }}>
             Explora
           </Text>
-          <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '900', letterSpacing: -0.3 }}>
+          <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 18, letterSpacing: -0.3 }}>
             ¿Qué te antojas?
           </Text>
         </View>
         <TouchableOpacity onPress={() => router.push('/(cliente)/menu')} activeOpacity={0.7}>
-          <Text style={{ color: '#e50909', fontSize: 13, fontWeight: '600' }}>Ver todo →</Text>
+          <Text className="font-lemon" style={{ color: '#c1121f', fontSize: 13 }}>Ver todo →</Text>
         </TouchableOpacity>
       </View>
 

@@ -14,17 +14,17 @@ export function SectionTitle({ title }: Props) {
       }}
     >
       <Text
+        className="font-lemon-bold"
         style={{
-          color: '#ffffff',
+          color: '#141414',
           fontSize: 15,
-          fontWeight: '800',
           letterSpacing: 1.2,
           textTransform: 'uppercase',
         }}
       >
         {title}
       </Text>
-      <View style={{ flex: 1, height: 1, backgroundColor: '#2a2a2a' }} />
+      <View style={{ flex: 1, height: 1, backgroundColor: '#e6e6e6' }} />
     </View>
   );
 }

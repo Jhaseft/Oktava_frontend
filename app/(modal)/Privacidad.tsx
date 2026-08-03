@@ -25,7 +25,7 @@ export default function PrivacidadScreen() {
         }}
       />
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 11, color: "#e50909", fontWeight: "700", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Legal</Text>
+        <Text style={{ fontSize: 11, color: "#c1121f", fontWeight: "700", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Legal</Text>
         <Text style={{ fontSize: 22, fontWeight: "800", color: "white", marginBottom: 4 }}>Política de privacidad</Text>
         <Text style={{ fontSize: 12, color: "#555", marginBottom: 24 }}>Última actualización: Mayo 2025</Text>
 

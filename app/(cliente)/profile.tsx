@@ -1,110 +1,48 @@
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '@/src/context/AuthContext';
-
-type RowProps = {
-  icon: React.ComponentProps<typeof Ionicons>['name'];
-  label: string;
-  onPress: () => void;
-  danger?: boolean;
-};
-
-function Row({ icon, label, onPress, danger }: RowProps) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
-      className="flex-row items-center gap-3.5 bg-[#111111] rounded-2xl px-4 py-4"
-    >
-      <Ionicons name={icon} size={20} color={danger ? '#e50909' : '#888888'} />
-      <Text className={`flex-1 font-semibold text-sm ${danger ? 'text-[#e50909]' : 'text-white'}`}>
-        {label}
-      </Text>
-      {!danger && <Ionicons name="chevron-forward" size={16} color="#333333" />}
-    </TouchableOpacity>
-  );
-}
+import { useProfile } from '@/src/hooks/useProfile';
+import { AuthRequired } from '@/src/components/ui/AuthRequired';
+import { ProfileHero } from '@/src/components/profile/ProfileHero';
+import { ProfileMenu } from '@/src/components/profile/ProfileMenu';
+import { colors } from '@/src/theme/theme';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, token, signOut } = useAuth();
+  const p = useProfile();
 
-  if (!token) {
-    return (
-      <View className="flex-1 bg-black items-center justify-center gap-4 px-8">
-        <Ionicons name="person-outline" size={64} color="#333333" />
-        <Text className="text-white text-lg font-bold text-center">
-          Inicia sesión para ver tu perfil
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push('/login')}
-          activeOpacity={0.8}
-          className="bg-[#e50909] rounded-[10px] h-[50px] items-center justify-center w-full"
-        >
-          <Text className="text-white font-bold text-[15px]">Iniciar sesión</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => router.push('/register')}
-          activeOpacity={0.8}
-          className="border border-[#333333] rounded-[10px] h-[50px] items-center justify-center w-full"
-        >
-          <Text className="text-white font-semibold text-[15px]">Crear cuenta</Text>
-        </TouchableOpacity>
-      </View>
-    );
+  if (!p.isLoggedIn) {
+    return <AuthRequired message="Inicia sesión para ver tu perfil" showRegister />;
   }
 
-  const handleLogout = () => {
-    Alert.alert('Cerrar sesión', '¿Seguro que quieres salir?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Salir', style: 'destructive', onPress: () => signOut() },
-    ]);
-  };
-
   return (
-    <ScrollView
-      className="flex-1 bg-black"
-      contentContainerStyle={{ paddingBottom: 32 }}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Avatar */}
-      <View className="items-center pb-8" style={{ paddingTop: insets.top + 24 }}>
-        <View className="w-20 h-20 rounded-full bg-[#1a1a1a] border-2 border-[#e50909] items-center justify-center mb-3.5">
-          <Text className="text-white text-[26px] font-black">
-            {user?.firstName?.[0]}{user?.lastName?.[0]}
-          </Text>
-        </View>
-        <Text className="text-white text-xl font-extrabold">
-          {user?.firstName} {user?.lastName}
-        </Text>
-        <Text className="text-[#666666] text-[13px] mt-1">{user?.email}</Text>
-        {user?.phone && (
-          <Text className="text-[#555555] text-[13px] mt-0.5">{user.phone}</Text>
-        )}
+    <View style={{ flex: 1, backgroundColor: colors.surface }}>
+      <View className="flex-row items-center gap-3 px-4 pb-3 bg-white" style={{ paddingTop: insets.top + 8 }}>
+        <TouchableOpacity onPress={p.goBack} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="arrow-back" size={26} color={colors.black} />
+        </TouchableOpacity>
+        <Text className="font-lemon-bold uppercase text-brand-black" style={{ fontSize: 22 }}>Perfil</Text>
       </View>
 
-      {/* Menu rows */}
-      <View className="px-4 gap-2.5">
-        <Row
-          icon="location-outline"
-          label="Mis direcciones"
-          onPress={() => router.push('/(cliente)/addresses')}
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+        <ProfileHero
+          fullName={p.fullName}
+          initials={p.initials}
+          phone={p.phone}
+          email={p.email}
+          completionPct={p.completionPct}
+          isComplete={p.isComplete}
+          onComplete={() => p.go('/complete-profile')}
         />
-        <Row
-          icon="receipt-outline"
-          label="Mis pedidos"
-          onPress={() => router.push('/(cliente)/orders')}
+        <ProfileMenu
+          onAddresses={() => p.go('/(cliente)/addresses')}
+          onOrders={() => p.go('/(cliente)/orders')}
+          onSettings={() => p.go('/(cliente)/settings')}
+          onSupport={p.callSupport}
+          onDelete={() => p.go('/(modal)/EliminarCuenta')}
+          onLogout={p.logout}
         />
-        <View className="h-px bg-[#1a1a1a] my-1" />
-        <Row
-          icon="log-out-outline"
-          label="Cerrar sesión"
-          onPress={handleLogout}
-          danger
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

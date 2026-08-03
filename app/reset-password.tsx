@@ -21,7 +21,7 @@ function isValidPassword(password: string) {
 const inputBase =
   "bg-[#1a1a1a] border border-[#3a3a3a] rounded-md px-4 py-3.5 text-white text-[15px]";
 const inputErr =
-  "bg-[#1a1a1a] border border-[#e50909] rounded-md px-4 py-3.5 text-white text-[15px]";
+  "bg-[#1a1a1a] border border-[#c1121f] rounded-md px-4 py-3.5 text-white text-[15px]";
 
 export default function ResetPasswordScreen() {
   const { email: emailParam } = useLocalSearchParams<{ email?: string }>();
@@ -120,8 +120,8 @@ export default function ResetPasswordScreen() {
           <View>
             {/* Ícono */}
             <View className="items-center mb-6">
-              <View className="w-16 h-16 rounded-full bg-[#1a0000] border border-[#e50909]/30 items-center justify-center">
-                <ShieldCheck size={28} color="#e50909" />
+              <View className="w-16 h-16 rounded-full bg-[#1a0000] border border-[#c1121f]/30 items-center justify-center">
+                <ShieldCheck size={28} color="#c1121f" />
               </View>
             </View>
 
@@ -137,7 +137,7 @@ export default function ResetPasswordScreen() {
 
             {/* Error global */}
             {error && (
-              <View className="bg-[#1a0000] border border-[#e50909] rounded-md px-3.5 py-2.5 mb-4">
+              <View className="bg-[#1a0000] border border-[#c1121f] rounded-md px-3.5 py-2.5 mb-4">
                 <Text className="text-[#ff4444] text-[13px]">{error}</Text>
               </View>
             )}
@@ -188,7 +188,7 @@ export default function ResetPasswordScreen() {
                 className={showCodeError ? inputErr : inputBase}
               />
               {showCodeError && (
-                <Text className="text-[#e50909] text-[12px] mt-1">
+                <Text className="text-[#c1121f] text-[12px] mt-1">
                   El código debe ser de 6 dígitos.
                 </Text>
               )}
@@ -231,7 +231,7 @@ export default function ResetPasswordScreen() {
                 </TouchableOpacity>
               </View>
               {showNewError && (
-                <Text className="text-[#e50909] text-[12px] mt-1">
+                <Text className="text-[#c1121f] text-[12px] mt-1">
                   La contraseña debe tener al menos 6 caracteres.
                 </Text>
               )}
@@ -274,7 +274,7 @@ export default function ResetPasswordScreen() {
                 </TouchableOpacity>
               </View>
               {showConfirmError && (
-                <Text className="text-[#e50909] text-[12px] mt-1">
+                <Text className="text-[#c1121f] text-[12px] mt-1">
                   Las contraseñas no coinciden.
                 </Text>
               )}

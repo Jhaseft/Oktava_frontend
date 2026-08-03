@@ -71,7 +71,7 @@ export default function LoginScreen() {
   };
 
   const inputBase = "bg-[#1a1a1a] border border-[#3a3a3a] rounded-md px-4 py-3.5 text-white text-[15px]";
-  const inputErr  = "bg-[#1a1a1a] border border-[#e50909] rounded-md px-4 py-3.5 text-white text-[15px]";
+  const inputErr  = "bg-[#1a1a1a] border border-[#c1121f] rounded-md px-4 py-3.5 text-white text-[15px]";
 
   return (
     <View className="flex-1 bg-black">
@@ -104,7 +104,7 @@ export default function LoginScreen() {
 
            
             {displayError && (
-              <View className="bg-[#1a0000] border border-[#e50909] rounded-md px-3.5 py-2.5 mb-4">
+              <View className="bg-[#1a0000] border border-[#c1121f] rounded-md px-3.5 py-2.5 mb-4">
                 <Text className="text-[#ff4444] text-[13px]">{displayError}</Text>
               </View>
             )}
@@ -135,7 +135,7 @@ export default function LoginScreen() {
                 className={showEmailError ? inputErr : inputBase}
               />
               {showEmailError && (
-                <Text className="text-[#e50909] text-[12px] mt-1">
+                <Text className="text-[#c1121f] text-[12px] mt-1">
                   Ingresa un correo electrónico válido.
                 </Text>
               )}
@@ -179,7 +179,7 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
               {showPasswordError && (
-                <Text className="text-[#e50909] text-[12px] mt-1">
+                <Text className="text-[#c1121f] text-[12px] mt-1">
                   La contraseña debe tener al menos 6 caracteres.
                 </Text>
               )}
@@ -191,7 +191,7 @@ export default function LoginScreen() {
               disabled={isLoading}
               className="self-end mt-1 mb-3 active:opacity-60"
             >
-              <Text className="text-[#e50909] text-[12px]">
+              <Text className="text-[#c1121f] text-[12px]">
                 ¿Olvidaste tu contraseña?
               </Text>
             </Pressable>
@@ -199,9 +199,9 @@ export default function LoginScreen() {
     
             <Text className="text-[#888888] text-[11px] leading-4 mb-6">
               Al registro o inicio de sesión, aceptas nuestras{" "}
-              <Text className="text-[#e50909] underline">Políticas de privacidad</Text>
+              <Text className="text-[#c1121f] underline">Políticas de privacidad</Text>
               {" "}y{" "}
-              <Text className="text-[#e50909] underline">Términos y condiciones</Text>
+              <Text className="text-[#c1121f] underline">Términos y condiciones</Text>
             </Text>
 
       
@@ -248,7 +248,7 @@ export default function LoginScreen() {
               className="active:opacity-60"
             >
               <Text
-                className="text-[#e50909] text-center text-[12px] font-bold uppercase"
+                className="text-[#c1121f] text-center text-[12px] font-bold uppercase"
                 style={{ letterSpacing: 0.8 }}
               >
                 ¿NO TIENES CUENTA? REGÍSTRATE

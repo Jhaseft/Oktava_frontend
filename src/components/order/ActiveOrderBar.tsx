@@ -80,9 +80,9 @@ export function ActiveOrderBar() {
         onPress={() => router.push('/(cliente)/orders')}
         activeOpacity={0.85}
         style={{
-          backgroundColor: '#0f0f0f',
+          backgroundColor: '#ffffff',
           borderTopWidth: 1,
-          borderTopColor: '#1e1e1e',
+          borderTopColor: '#e6e6e6',
           borderLeftWidth: 3,
           borderLeftColor: statusColor,
           flexDirection: 'row',
@@ -105,10 +105,10 @@ export function ActiveOrderBar() {
 
         {/* Status text + order id */}
         <View style={{ flex: 1 }}>
-          <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '700' }}>
+          <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 13 }}>
             {statusLabel}
           </Text>
-          <Text style={{ color: '#666666', fontSize: 11, marginTop: 1 }}>
+          <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 11, marginTop: 1 }}>
             Pedido #{orderId}
             {extraCount > 0 ? `  +${extraCount} más` : ''}
           </Text>
@@ -116,7 +116,7 @@ export function ActiveOrderBar() {
 
         {/* Receipt icon + chevron */}
         <Ionicons name="receipt-outline" size={16} color={statusColor} />
-        <Ionicons name="chevron-forward" size={14} color="#444444" />
+        <Ionicons name="chevron-forward" size={14} color="#c4c4c4" />
       </TouchableOpacity>
     </Animated.View>
   );

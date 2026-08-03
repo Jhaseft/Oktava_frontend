@@ -6,9 +6,9 @@ type LoadingStateProps = {
 
 export function LoadingState({ message }: LoadingStateProps) {
   return (
-    <View className="flex-1 items-center justify-center bg-black gap-3">
-      <ActivityIndicator color="#ef4444" size="large" />
-      {message && <Text className="text-zinc-400 text-sm">{message}</Text>}
+    <View className="flex-1 items-center justify-center bg-white gap-3">
+      <ActivityIndicator color="#c1121f" size="large" />
+      {message && <Text className="text-brand-muted text-sm font-lemon uppercase tracking-wide">{message}</Text>}
     </View>
   );
 }

@@ -1,80 +1,175 @@
-import { Tabs } from 'expo-router';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { Tabs, router } from 'expo-router';
+import { TouchableOpacity, View, Text, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BottomTabBar } from '@react-navigation/bottom-tabs';
-import { useCart } from '@/src/context/CartContext';
+import Svg, { Path } from 'react-native-svg';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { ActiveOrderBar } from '@/src/components/order/ActiveOrderBar';
 
-// ─── Tab bar icon helper ───────────────────────────────────────────────────────
+// ─── Colores ───────────────────────────────────────────────────────────────────
 
-function TabIcon({ name, color }: { name: React.ComponentProps<typeof Ionicons>['name']; color: string }) {
-  return <Ionicons name={name} size={22} color={color} />;
+const BAR_SURFACE = '#ffffff'; // superficie de la barra (la abertura queda transparente)
+const BAR_BORDER = '#e6e6e6';  // hairline que perfila la barra sobre el fondo blanco
+const ACTIVE = '#c1121f';      // rojo elegante
+const INACTIVE = '#000000';
+
+// Solo Inicio y Menú muestran la barra (flota sobre su contenido). En Buscar,
+// Perfil y las pantallas de detalle/pago (carrito, checkout, pedidos, pagos) se
+// oculta para dejar la pantalla enfocada / no tapar sus botones inferiores.
+// Nota: "Ofertas" navega al Menú, así que ahí la barra sigue visible.
+const PRIMARY_TABS = new Set(['index', 'menu']);
+
+// ─── Geometría de la barra ─────────────────────────────────────────────────────
+
+const BAR_HEIGHT = 75;   // alto visible (sin contar el safe-area inferior)
+const CORNER = 1;       // redondeo de esquinas superiores
+const RISE = 50;         // cuánto MÁS BAJAS están las esquinas respecto al centro
+const NOTCH_HALF = 400;   // medio ancho por donde el borde sube hacia el centro
+const POCKET_HALF = 50;  // medio ancho de la cuna donde se acuna el botón
+const NOTCH_DIP = 90;    // profundidad de la cuna (respecto a la cresta central)
+
+// Contorno de la barra: las esquinas quedan más abajo (y = RISE) y el borde
+// SUBE en curva hacia el centro (cresta en y = 0), con una cuna para el botón.
+// Todo lo que queda fuera del contorno (arriba de la curva) es transparente.
+function buildBarPath(width: number, height: number): string {
+  const cx = width / 2;
+  return [
+    `M0,${CORNER + RISE}`,
+    `Q0,${RISE} ${CORNER},${RISE}`,                                    // esquina sup. izq. (abajo)
+    `Q${cx - NOTCH_HALF},${RISE} ${cx - POCKET_HALF},0`,               // el borde sube hacia el centro
+    `Q${cx},${NOTCH_DIP} ${cx + POCKET_HALF},0`,                       // cuna del botón
+    `Q${cx + NOTCH_HALF},${RISE} ${width - CORNER},${RISE}`,           // el borde baja hacia la esquina
+    `Q${width},${RISE} ${width},${CORNER + RISE}`,                     // esquina sup. der. (abajo)
+    `L${width},${height}`,
+    `L0,${height}`,
+    'Z',
+  ].join(' ');
 }
 
-// ─── Floating center button (Carrito) ─────────────────────────────────────────
+type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-type CartButtonProps = {
-  onPress?: () => void;
-  accessibilityState?: { selected?: boolean };
-  totalItems: number;
-};
+// ─── Ítem lateral (Inicio · Buscar · Ofertas · Perfil) ─────────────────────────
 
-function CartTabButton({ onPress, totalItems }: CartButtonProps) {
+function SideItem({
+  icon,
+  label,
+  active,
+  onPress,
+}: {
+  icon: IconName; 
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.85}
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        top: -20,
-      }}
+      activeOpacity={0.7}
+      className="flex-1 items-center justify-center gap-1 py-1"
     >
-      <View
-        style={{
-          width: 58,
-          height: 58,
-          borderRadius: 29,
-          backgroundColor: '#e50909',
-          alignItems: 'center',
-          justifyContent: 'center',
-          shadowColor: '#e50909',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.45,
-          shadowRadius: 8,
-          elevation: 8,
-        }}
-      >
-        <Ionicons name="cart-outline" size={26} color="#ffffff" />
-        {totalItems > 0 && (
-          <View style={{
-            position: 'absolute',
-            top: 6,
-            right: 8,
-            backgroundColor: '#ffffff',
-            borderRadius: 8,
-            minWidth: 16,
-            height: 16,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingHorizontal: 3,
-          }}>
-            <Text style={{ color: '#e50909', fontSize: 9, fontWeight: '800' }}>{totalItems}</Text>
-          </View>
-        )}
-      </View>
+      <Ionicons name={icon} size={26} color={active ? ACTIVE : INACTIVE} />
+      <Text className={`text-[12px]  font-lemon-bold uppercase ${active ? 'text-brand-red' : 'text-brand-black'}`}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 }
+ 
+// ─── Slot central: solo la etiqueta "Menú", alineada con las demás ─────────────
+// El botón redondo va aparte (flotante), así la etiqueta queda a la misma altura
+// que Inicio/Buscar/Ofertas/Perfil. El View de 22px reserva el espacio del ícono
+// para que la etiqueta se alinee exactamente con los otros ítems.
 
-// ─── Custom tab bar with persistent order bar ─────────────────────────────────
-
-function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
+function CenterLabel({ active }: { active: boolean }) {
   return (
-    <View>
+    <View className="flex-1 items-center justify-center gap-1 py-1">
+      <View className="h-[22px]" />
+      <Text className={`text-[12px] font-lemon-bold uppercase ${active ? 'text-brand-red' : 'text-brand-black'}`}>
+        Menú
+      </Text>
+    </View>
+  );
+}
+
+// ─── Botón redondo flotante (Menú), centrado en el hueco cóncavo ───────────────
+// `top` controla qué tan arriba flota; súbelo (más negativo) si haces el notch
+// más profundo. `pointerEvents="box-none"` deja pasar los toques a los lados.
+
+function FloatingMenuButton({ onPress }: { onPress: () => void }) {
+  return (
+    <View className="absolute left-0 right-0 items-center" style={{ top: -25 }} pointerEvents="box-none">
+      <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
+        <View
+          className="w-[58px] h-[58px] rounded-full bg-brand-red items-center justify-center"
+          style={{
+            shadowColor: ACTIVE,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.5,
+            shadowRadius: 8,
+            elevation: 8,
+          }}
+        >
+          <Ionicons name="restaurant" size={26} color="#ffffff" />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// ─── Tab bar personalizada (barra negra con abertura transparente) ─────────────
+
+function CustomTabBar({ state, navigation }: BottomTabBarProps) {
+  const { width } = useWindowDimensions();
+  const currentName = state.routes[state.index]?.name;
+
+  // El layout raíz ya aplica paddingBottom: insets.bottom a toda la app, por eso
+  // aquí NO se suma el safe-area (evita el doble espaciado). Solo un respiro.
+  const bottomPad = 8;
+  const totalH = BAR_HEIGHT + bottomPad;
+
+  // En pantallas de detalle/pago no se dibuja la barra.
+  if (!PRIMARY_TABS.has(currentName)) return null;
+
+  const goToTab = (routeName: string) => {
+    const route = state.routes.find((r) => r.name === routeName);
+    if (!route) return;
+    const isFocused = currentName === routeName;
+    const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+    if (!isFocused && !event.defaultPrevented) {
+      navigation.navigate(route.name);
+    }
+  };
+
+  // Ofertas es un atajo: abre el Menú preseleccionando la categoría de ofertas.
+  const goToOfertas = () => {
+    router.push({
+      pathname: '/(cliente)/menu',
+      params: { category: 'oferta', ts: Date.now().toString() },
+    });
+  };
+
+  return (
+    <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
       <ActiveOrderBar />
-      <BottomTabBar {...props} />
+      <View style={{ width, height: totalH }}>
+        <Svg width={width} height={totalH} style={{ position: 'absolute', top: 0, left: 0 }}>
+          <Path d={buildBarPath(width, totalH)} fill={BAR_SURFACE} stroke={BAR_BORDER} strokeWidth={1} />
+        </Svg>
+
+    
+        <View
+          className="flex-row items-end px-2"
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, paddingBottom: bottomPad }}
+        >
+          <SideItem icon="home-outline" label="Inicio" active={currentName === 'index'} onPress={() => goToTab('index')} />
+          <SideItem icon="search-outline" label="Buscar" active={currentName === 'search'} onPress={() => goToTab('search')} />
+          <CenterLabel active={currentName === 'menu'} />
+          <SideItem icon="pricetag-outline" label="Ofertas" active={false} onPress={goToOfertas} />
+          <SideItem icon="person-outline" label="Perfil" active={currentName === 'profile'} onPress={() => goToTab('profile')} />
+        </View>
+
+   
+        <FloatingMenuButton onPress={() => goToTab('menu')} />
+      </View>
     </View>
   );
 }
@@ -82,69 +177,21 @@ function CustomTabBar(props: React.ComponentProps<typeof BottomTabBar>) {
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
 export default function ClienteLayout() {
-  const { totalItems } = useCart();
-
   return (
     <Tabs
-      tabBar={CustomTabBar}
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#000000',
-          borderTopWidth: 0,
-          height: 62,
-          paddingBottom: 8,
-          paddingTop: 6,
-          elevation: 0,
-        },
-        tabBarActiveTintColor: '#e50909',
-        tabBarInactiveTintColor: '#5a5a5a',
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ color }) => <TabIcon name="home-outline" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="menu"
-        options={{
-          title: 'Menú',
-          tabBarIcon: ({ color }) => <TabIcon name="restaurant-outline" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="cart"
-        options={{
-          tabBarButton: (props) => (
-            <CartTabButton
-              onPress={props.onPress ?? undefined}
-              accessibilityState={props.accessibilityState ?? undefined}
-              totalItems={totalItems}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="orders"
-        options={{
-          title: 'Pedidos',
-          tabBarIcon: ({ color }) => <TabIcon name="receipt-outline" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color }) => <TabIcon name="person-outline" color={color} />,
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Inicio' }} />
+      <Tabs.Screen name="search" options={{ title: 'Buscar' }} />
+      <Tabs.Screen name="menu" options={{ title: 'Menú' }} />
+      <Tabs.Screen name="profile" options={{ title: 'Perfil' }} />
 
+      <Tabs.Screen name="cart" options={{ href: null }} />
+      <Tabs.Screen name="orders" options={{ href: null }} />
       <Tabs.Screen name="checkout" options={{ href: null }} />
       <Tabs.Screen name="addresses" options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
       <Tabs.Screen name="qr-payment" options={{ href: null }} />
       <Tabs.Screen name="niubiz-payment" options={{ href: null }} />
     </Tabs>

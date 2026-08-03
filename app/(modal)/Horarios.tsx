@@ -4,6 +4,7 @@ import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getStoreHours, BusinessHour } from '@/src/services/store.service';
 import { useStoreStatus } from '@/src/context/StoreStatusContext';
+import { colors, fonts } from '@/src/theme/theme';
 
 // Orden de visualización Lunes→Domingo (dayOfWeek sigue convención JS: 0=Domingo).
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
@@ -33,26 +34,26 @@ export default function HorariosScreen() {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#111' }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Stack.Screen
         options={{
-          headerStyle: { backgroundColor: '#111' },
+          headerStyle: { backgroundColor: colors.bg },
           headerTitleAlign: 'center',
-          headerTintColor: 'white',
+          headerTintColor: colors.text,
+          headerTitleStyle: { fontFamily: fonts.bold },
           headerTitle: 'Horarios',
         }}
       />
 
       <ScrollView contentContainerStyle={{ padding: 20, gap: 16 }}>
-        {/* Estado actual */}
         <View
           style={{
             flexDirection: 'row',
             alignItems: 'center',
             gap: 10,
             borderWidth: 1.5,
-            borderColor: isOpen ? '#22c55e' : '#ef4444',
-            backgroundColor: isOpen ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+            borderColor: isOpen ? '#22c55e' : colors.red,
+            backgroundColor: isOpen ? 'rgba(34,197,94,0.10)' : 'rgba(193,18,31,0.06)',
             borderRadius: 14,
             paddingHorizontal: 16,
             paddingVertical: 14,
@@ -63,28 +64,27 @@ export default function HorariosScreen() {
               width: 10,
               height: 10,
               borderRadius: 5,
-              backgroundColor: isOpen ? '#22c55e' : '#ef4444',
+              backgroundColor: isOpen ? '#22c55e' : colors.red,
             }}
           />
           <View style={{ flex: 1 }}>
-            <Text style={{ color: isOpen ? '#4ade80' : '#f87171', fontSize: 15, fontWeight: '800' }}>
+            <Text style={{ fontFamily: fonts.bold, color: isOpen ? '#15803d' : colors.red, fontSize: 15 }}>
               {isOpen ? 'Abierto ahora' : 'Cerrado'}
             </Text>
             {!isOpen && !!message && (
-              <Text style={{ color: '#f87171', fontSize: 12, marginTop: 2 }}>{message}</Text>
+              <Text style={{ fontFamily: fonts.regular, color: colors.redDark, fontSize: 12, marginTop: 2 }}>{message}</Text>
             )}
           </View>
         </View>
 
-        {/* Lista semanal */}
-        <View style={{ backgroundColor: '#1a1a1a', borderRadius: 16, borderWidth: 1, borderColor: '#2a2a2a', overflow: 'hidden' }}>
+        <View style={{ backgroundColor: colors.surface, borderRadius: 16, borderWidth: 1, borderColor: colors.border, overflow: 'hidden' }}>
           {loading ? (
             <View style={{ padding: 28, alignItems: 'center' }}>
-              <ActivityIndicator color="#e50909" />
+              <ActivityIndicator color={colors.red} />
             </View>
           ) : error || !hours ? (
             <View style={{ padding: 24 }}>
-              <Text style={{ color: '#888', textAlign: 'center' }}>
+              <Text style={{ fontFamily: fonts.regular, color: colors.textMuted, textAlign: 'center' }}>
                 No se pudieron cargar los horarios.
               </Text>
             </View>
@@ -101,18 +101,18 @@ export default function HorariosScreen() {
                     justifyContent: 'space-between',
                     paddingHorizontal: 16,
                     paddingVertical: 14,
-                    backgroundColor: isToday ? 'rgba(229,9,9,0.08)' : 'transparent',
+                    backgroundColor: isToday ? 'rgba(193,18,31,0.06)' : 'transparent',
                     borderTopWidth: idx === 0 ? 0 : 1,
-                    borderTopColor: '#2a2a2a',
+                    borderTopColor: colors.border,
                   }}
                 >
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    {isToday && <Ionicons name="ellipse" size={8} color="#e50909" />}
+                    {isToday && <Ionicons name="ellipse" size={8} color={colors.red} />}
                     <Text
                       style={{
-                        color: isToday ? '#ffffff' : '#e0e0e0',
+                        fontFamily: isToday ? fonts.bold : fonts.medium,
+                        color: isToday ? colors.text : '#3a3a3a',
                         fontSize: 15,
-                        fontWeight: isToday ? '700' : '500',
                       }}
                     >
                       {DAY_LABELS[d]}
@@ -121,9 +121,9 @@ export default function HorariosScreen() {
                   </View>
                   <Text
                     style={{
-                      color: day?.isClosed ? '#f87171' : isToday ? '#ffffff' : '#bbbbbb',
+                      fontFamily: day?.isClosed ? fonts.bold : fonts.medium,
+                      color: day?.isClosed ? colors.red : isToday ? colors.text : colors.textMuted,
                       fontSize: 14,
-                      fontWeight: day?.isClosed ? '600' : '500',
                     }}
                   >
                     {day?.isClosed ? 'Cerrado' : `${day?.openTime} – ${day?.closeTime}`}

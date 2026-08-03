@@ -30,9 +30,9 @@ export default function EliminarCuentaScreen() {
 
         {/* Warning */}
         <View style={{ backgroundColor: "#1f0a0a", borderWidth: 1, borderColor: "#5a1010", borderRadius: 14, padding: 16, flexDirection: "row", gap: 12, alignItems: "flex-start" }}>
-          <Ionicons name="warning-outline" size={22} color="#e50909" />
+          <Ionicons name="warning-outline" size={22} color="#c1121f" />
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 14, fontWeight: "700", color: "#e50909", marginBottom: 6 }}>Acción irreversible</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: "#c1121f", marginBottom: 6 }}>Acción irreversible</Text>
             <Text style={{ fontSize: 13, color: "#cc6666", lineHeight: 19 }}>
               Al eliminar tu cuenta perderás permanentemente todos tus datos, historial de pedidos y direcciones guardadas. Esta acción no se puede deshacer.
             </Text>
@@ -50,7 +50,7 @@ export default function EliminarCuentaScreen() {
             "Acceso a la cuenta",
           ].map((item) => (
             <View key={item} style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 }}>
-              <Ionicons name="close-circle-outline" size={16} color="#e50909" />
+              <Ionicons name="close-circle-outline" size={16} color="#c1121f" />
               <Text style={{ fontSize: 13, color: "#888" }}>{item}</Text>
             </View>
           ))}
@@ -75,14 +75,14 @@ export default function EliminarCuentaScreen() {
             gap: 10,
             backgroundColor: "#1f0a0a",
             borderWidth: 1,
-            borderColor: "#e50909",
+            borderColor: "#c1121f",
             borderRadius: 14,
             paddingVertical: 16,
             marginTop: 4,
           }}
         >
-          <Ionicons name="trash-outline" size={20} color="#e50909" />
-          <Text style={{ fontSize: 15, fontWeight: "700", color: "#e50909" }}>Solicitar eliminación</Text>
+          <Ionicons name="trash-outline" size={20} color="#c1121f" />
+          <Text style={{ fontSize: 15, fontWeight: "700", color: "#c1121f" }}>Solicitar eliminación</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ alignItems: "center", paddingVertical: 12 }}>

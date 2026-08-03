@@ -64,7 +64,7 @@ export default function LegalScreen() {
             }}
           >
             <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#111", alignItems: "center", justifyContent: "center" }}>
-              <Ionicons name={item.icon} size={20} color="#e50909" />
+              <Ionicons name={item.icon} size={20} color="#c1121f" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 14, fontWeight: "700", color: "white", marginBottom: 3 }}>{item.title}</Text>

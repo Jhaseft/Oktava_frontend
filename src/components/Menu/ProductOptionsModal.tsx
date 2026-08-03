@@ -76,15 +76,15 @@ function buildSelectedGroups(groups: OptionGroup[], selections: Selections): Sel
 }
 
 function cardBorderColor(isSelected: boolean, isDisabled: boolean): string {
-  if (isSelected) return '#e50909';
-  if (isDisabled) return '#222';
-  return '#333';
+  if (isSelected) return '#c1121f';
+  if (isDisabled) return '#efefef';
+  return '#e6e6e6';
 }
 
 function rowBorderColor(isSelected: boolean, isDisabled: boolean): string {
-  if (isSelected) return '#e50909';
-  if (isDisabled) return '#222';
-  return 'rgba(255,255,255,0.08)';
+  if (isSelected) return '#c1121f';
+  if (isDisabled) return '#efefef';
+  return '#e6e6e6';
 }
 
 // ─── OptionCard (grupo con imágenes) ─────────────────────────────────────────
@@ -116,7 +116,7 @@ function OptionCard({
         borderWidth: 2,
         borderColor: cardBorderColor(isSelected, isDisabled),
         opacity: isDisabled ? 0.35 : 1,
-        backgroundColor: isSelected ? 'rgba(229,9,9,0.08)' : '#1a1a1a',
+        backgroundColor: isSelected ? 'rgba(193,18,31,0.06)' : '#f6f6f6',
       }}
     >
       {/* Image */}
@@ -139,8 +139,8 @@ function OptionCard({
             height: 26,
             borderRadius: single ? 13 : 6,
             borderWidth: 2,
-            borderColor: isSelected ? '#e50909' : 'rgba(255,255,255,0.4)',
-            backgroundColor: isSelected ? '#e50909' : 'rgba(0,0,0,0.5)',
+            borderColor: isSelected ? '#c1121f' : 'rgba(255,255,255,0.4)',
+            backgroundColor: isSelected ? '#c1121f' : 'rgba(0,0,0,0.5)',
             alignItems: 'center',
             justifyContent: 'center',
           }}
@@ -154,18 +154,18 @@ function OptionCard({
         style={{
           paddingHorizontal: 10,
           paddingVertical: 8,
-          backgroundColor: isSelected ? 'rgba(229,9,9,0.10)' : 'transparent',
+          backgroundColor: isSelected ? 'rgba(193,18,31,0.08)' : 'transparent',
         }}
       >
-        <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600', lineHeight: 17 }}>
+        <Text className="font-lemon-medium" style={{ color: '#141414', fontSize: 13, lineHeight: 17 }}>
           {option.name}
         </Text>
         {option.extraPrice > 0 ? (
-          <Text style={{ color: '#e50909', fontSize: 11, fontWeight: '700', marginTop: 2 }}>
+          <Text className="font-lemon-bold" style={{ color: '#c1121f', fontSize: 11, marginTop: 2 }}>
             +Bs. {option.extraPrice.toFixed(0)}
           </Text>
         ) : (
-          <Text style={{ color: '#555', fontSize: 11, marginTop: 2 }}>Incluido</Text>
+          <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 11, marginTop: 2 }}>Incluido</Text>
         )}
       </View>
     </TouchableOpacity>
@@ -199,7 +199,7 @@ function OptionRow({
         borderRadius: 16,
         borderWidth: 1,
         borderColor: rowBorderColor(isSelected, isDisabled),
-        backgroundColor: isSelected ? 'rgba(229,9,9,0.10)' : 'rgba(255,255,255,0.03)',
+        backgroundColor: isSelected ? 'rgba(193,18,31,0.08)' : '#f6f6f6',
         paddingHorizontal: 16,
         paddingVertical: 14,
         opacity: isDisabled ? 0.35 : 1,
@@ -212,8 +212,8 @@ function OptionRow({
           height: 20,
           borderRadius: single ? 10 : 5,
           borderWidth: 2,
-          borderColor: isSelected ? '#e50909' : '#555',
-          backgroundColor: isSelected ? '#e50909' : 'transparent',
+          borderColor: isSelected ? '#c1121f' : '#c4c4c4',
+          backgroundColor: isSelected ? '#c1121f' : 'transparent',
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
@@ -222,12 +222,12 @@ function OptionRow({
         {isSelected && <Ionicons name="checkmark" size={11} color="#fff" />}
       </View>
 
-      <Text style={{ flex: 1, color: '#e5e5e5', fontSize: 15, fontWeight: '500' }}>
+      <Text className="font-lemon-medium" style={{ flex: 1, color: '#141414', fontSize: 15 }}>
         {option.name}
       </Text>
 
       {option.extraPrice > 0 && (
-        <Text style={{ color: '#e50909', fontSize: 13, fontWeight: '700', flexShrink: 0 }}>
+        <Text className="font-lemon-bold" style={{ color: '#c1121f', fontSize: 13, flexShrink: 0 }}>
           +Bs. {option.extraPrice.toFixed(0)}
         </Text>
       )}
@@ -299,7 +299,7 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
       presentationStyle="fullScreen"
       onRequestClose={handleClose}
     >
-      <View style={{ flex: 1, backgroundColor: '#0f0f0f' }}>
+      <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
 
         {/* ── Hero image ── */}
         <View style={{ height: 260, position: 'relative' }}>
@@ -310,12 +310,12 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
               resizeMode="cover"
             />
           ) : (
-            <View style={{ width: '100%', height: '100%', backgroundColor: '#1a1a1a', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="restaurant-outline" size={60} color="#333" />
+            <View style={{ width: '100%', height: '100%', backgroundColor: '#f6f6f6', alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="restaurant-outline" size={60} color="#cccccc" />
             </View>
           )}
           <LinearGradient
-            colors={['transparent', '#0f0f0f']}
+            colors={['transparent', '#ffffff']}
             style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160 }}
           />
 
@@ -337,18 +337,18 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
             }}
           >
             <Ionicons name="arrow-back" size={15} color="#fff" />
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>Volver</Text>
+            <Text className="font-lemon-medium" style={{ color: '#fff', fontSize: 13 }}>Volver</Text>
           </TouchableOpacity>
 
           {/* Product info */}
           <View style={{ position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 20, paddingBottom: 16 }}>
-            <Text style={{ color: '#e50909', fontSize: 10, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 }}>
+            <Text className="font-lemon-bold" style={{ color: '#c1121f', fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 }}>
               Personaliza tu pedido
             </Text>
-            <Text style={{ color: '#fff', fontSize: 24, fontWeight: '800', lineHeight: 28 }} numberOfLines={2}>
+            <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 24, lineHeight: 28 }} numberOfLines={2}>
               {product.name}
             </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: '600', marginTop: 2 }}>
+            <Text className="font-lemon-medium" style={{ color: '#6b6b6b', fontSize: 14, marginTop: 2 }}>
               Desde Bs. {product.price.toFixed(0)}
             </Text>
           </View>
@@ -356,7 +356,7 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
 
         {/* ── Options (scrollable) ── */}
         <ScrollView
-          style={{ flex: 1, backgroundColor: '#111' }}
+          style={{ flex: 1, backgroundColor: '#ffffff' }}
           contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 20, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
         >
@@ -371,22 +371,22 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
                 {/* Group header */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-                    <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700' }}>
+                    <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 16 }}>
                       {group.name}
                     </Text>
                     <View
                       style={{
-                        backgroundColor: group.isRequired ? 'rgba(229,9,9,0.15)' : '#222',
+                        backgroundColor: group.isRequired ? 'rgba(193,18,31,0.10)' : '#efefef',
                         borderRadius: 20,
                         paddingHorizontal: 8,
                         paddingVertical: 3,
                       }}
                     >
                       <Text
+                        className="font-lemon-bold"
                         style={{
-                          color: group.isRequired ? '#e50909' : '#666',
+                          color: group.isRequired ? '#c1121f' : '#9a9a9a',
                           fontSize: 9,
-                          fontWeight: '700',
                           textTransform: 'uppercase',
                           letterSpacing: 0.8,
                         }}
@@ -395,7 +395,7 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
                       </Text>
                     </View>
                   </View>
-                  <Text style={{ color: '#555', fontSize: 12 }}>
+                  <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 12 }}>
                     {single ? 'Elige 1' : 'Elige varios'}
                   </Text>
                 </View>
@@ -407,15 +407,15 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: 8,
-                      backgroundColor: 'rgba(229,9,9,0.1)',
+                      backgroundColor: 'rgba(193,18,31,0.08)',
                       borderRadius: 12,
                       paddingHorizontal: 12,
                       paddingVertical: 10,
                       marginBottom: 10,
                     }}
                   >
-                    <Ionicons name="warning" size={14} color="#e50909" />
-                    <Text style={{ color: '#e50909', fontSize: 12, fontWeight: '600', flex: 1 }}>
+                    <Ionicons name="warning" size={14} color="#c1121f" />
+                    <Text className="font-lemon-medium" style={{ color: '#c1121f', fontSize: 12, flex: 1 }}>
                       Selecciona al menos 1 opción para continuar.
                     </Text>
                   </View>
@@ -463,9 +463,9 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
         {/* ── Sticky footer ── */}
         <View
           style={{
-            backgroundColor: '#111',
+            backgroundColor: '#ffffff',
             borderTopWidth: 1,
-            borderTopColor: 'rgba(255,255,255,0.08)',
+            borderTopColor: '#e6e6e6',
             paddingHorizontal: 20,
             paddingTop: 12,
             paddingBottom: insets.bottom + 12,
@@ -473,12 +473,12 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
         >
           {extra > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 10 }}>
-              <Text style={{ color: '#666', fontSize: 13 }}>
-                Base <Text style={{ color: '#ccc', fontWeight: '600' }}>Bs. {product.price.toFixed(0)}</Text>
+              <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 13 }}>
+                Base <Text className="font-lemon-bold" style={{ color: '#141414' }}>Bs. {product.price.toFixed(0)}</Text>
               </Text>
-              <Text style={{ color: '#444', fontSize: 13 }}>+</Text>
-              <Text style={{ color: '#666', fontSize: 13 }}>
-                Extras <Text style={{ color: '#e50909', fontWeight: '700' }}>Bs. {extra.toFixed(0)}</Text>
+              <Text style={{ color: '#c4c4c4', fontSize: 13 }}>+</Text>
+              <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 13 }}>
+                Extras <Text className="font-lemon-bold" style={{ color: '#c1121f' }}>Bs. {extra.toFixed(0)}</Text>
               </Text>
             </View>
           )}
@@ -486,7 +486,7 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
             onPress={handleConfirm}
             activeOpacity={0.85}
             style={{
-              backgroundColor: '#e50909',
+              backgroundColor: '#c1121f',
               borderRadius: 16,
               paddingVertical: 16,
               flexDirection: 'row',
@@ -496,7 +496,7 @@ export function ProductOptionsModal({ visible, product, onConfirm, onClose }: Pr
             }}
           >
             <Ionicons name="cart" size={19} color="#fff" />
-            <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+            <Text className="font-lemon-bold" style={{ color: '#fff', fontSize: 15 }}>
               Agregar al carrito — Bs. {total.toFixed(0)}
             </Text>
           </TouchableOpacity>

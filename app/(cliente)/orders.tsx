@@ -1,140 +1,62 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/context/AuthContext';
-import { orderService } from '@/src/services/order.service';
+import { useOrders } from '@/src/hooks/useOrders';
 import { OrderCard } from '@/src/components/order/OrderCard';
+import { OrderFilterChips } from '@/src/components/order/OrderFilterChips';
 import { OrderDetailModal } from '@/src/components/order/OrderDetailModal';
 import { LoadingState } from '@/src/components/ui/LoadingState';
-import type { Order } from '@/src/types/order.types';
-
-const ACTIVE_STATUSES = new Set(['PENDING', 'ACCEPTED', 'PREPARING', 'ON_THE_WAY', 'PICKED_UP']);
-const POLL_INTERVAL_MS = 8000;
+import { AuthRequired } from '@/src/components/ui/AuthRequired';
+import { colors } from '@/src/theme/theme';
 
 export default function OrdersScreen() {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [confirming, setConfirming] = useState<string | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const o = useOrders();
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      const data = await orderService.getMyOrders();
-      setOrders(data);
-    } catch {}
-  }, []);
-
-  useEffect(() => {
-    fetchOrders().finally(() => setLoading(false));
-    timerRef.current = setInterval(fetchOrders, POLL_INTERVAL_MS);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [fetchOrders]);
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchOrders();
-    setRefreshing(false);
-  }, [fetchOrders]);
-
-  const handleConfirm = useCallback(async (id: string) => {
-    setConfirming(id);
-    try {
-      const updated = await orderService.confirmReceived(id);
-      setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
-    } catch {}
-    finally { setConfirming(null); }
-  }, []);
-
-  const active = orders.filter((o) => ACTIVE_STATUSES.has(o.status));
-  const history = orders.filter((o) => o.status === 'COMPLETED' || o.status === 'CANCELLED');
-
-  if (!token) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#000000', alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 }}>
-        <Ionicons name="receipt-outline" size={64} color="#333333" />
-        <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700', textAlign: 'center' }}>
-          Inicia sesión para ver tus pedidos
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push('/login')}
-          activeOpacity={0.8}
-          style={{ backgroundColor: '#e50909', borderRadius: 10, height: 50, alignItems: 'center', justifyContent: 'center', width: '100%' }}
-        >
-          <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 15 }}>Iniciar sesión</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (loading) return <LoadingState message="Cargando pedidos..." />;
+  if (!token) return <AuthRequired icon="receipt-outline" message="Inicia sesión para ver tus pedidos" />;
+  if (o.loading) return <LoadingState message="Cargando pedidos..." />;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#000000' }}>
-      {/* Header */}
-      <View style={{ paddingHorizontal: 16, paddingTop: insets.top + 8, paddingBottom: 12 }}>
-        <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: '900' }}>Mis pedidos</Text>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View className="flex-row items-center gap-3 px-4 pb-3" style={{ paddingTop: insets.top + 8 }}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="arrow-back" size={26} color={colors.black} />
+        </TouchableOpacity>
+        <Text className="font-lemon-bold uppercase text-brand-black" style={{ fontSize: 24 }}>Mis pedidos</Text>
       </View>
 
-      {orders.length === 0 ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-          <Ionicons name="receipt-outline" size={64} color="#333333" />
-          <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700' }}>Sin pedidos</Text>
-          <Text style={{ color: '#666666', fontSize: 14, textAlign: 'center', paddingHorizontal: 32 }}>
-            Aún no has realizado ningún pedido.
+      <OrderFilterChips active={o.filter} onSelect={o.setFilter} />
+
+      {o.visible.length === 0 ? (
+        <View className="flex-1 items-center justify-center gap-3 px-8">
+          <Ionicons name="receipt-outline" size={64} color={colors.borderStrong} />
+          <Text className="font-lemon-bold text-brand-black" style={{ fontSize: 18 }}>Sin pedidos</Text>
+          <Text className="font-lemon text-brand-muted text-center" style={{ fontSize: 14 }}>
+            {o.orders.length === 0 ? 'Aún no has realizado ningún pedido.' : 'No hay pedidos en este filtro.'}
           </Text>
         </View>
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#e50909" />}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 24 }}
+          refreshControl={<RefreshControl refreshing={o.refreshing} onRefresh={o.onRefresh} tintColor={colors.red} />}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 10 }}
         >
-          {/* Active orders */}
-          {active.length > 0 && (
-            <View style={{ gap: 10 }}>
-              <Text style={{ color: '#666666', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 }}>
-                Activos
-              </Text>
-              {active.map((order) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onPress={() => setSelectedOrder(order)}
-                  onConfirmReceived={() => handleConfirm(order.id)}
-                  confirming={confirming === order.id}
-                />
-              ))}
-            </View>
-          )}
-
-          {/* History */}
-          {history.length > 0 && (
-            <View style={{ gap: 10 }}>
-              <Text style={{ color: '#666666', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.8 }}>
-                Historial
-              </Text>
-              {history.map((order) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onPress={() => setSelectedOrder(order)}
-                />
-              ))}
-            </View>
-          )}
+          {o.visible.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+              onPress={() => o.setSelected(order)}
+              onConfirmReceived={() => o.confirmReceived(order.id)}
+              confirming={o.confirming === order.id}
+            />
+          ))}
         </ScrollView>
       )}
 
-      <OrderDetailModal
-        order={selectedOrder}
-        onClose={() => setSelectedOrder(null)}
-      />
+      <OrderDetailModal order={o.selected} onClose={() => o.setSelected(null)} />
     </View>
   );
 }

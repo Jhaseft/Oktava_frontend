@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge } from '@/src/components/ui/Badge';
 import type { Order, OrderStatus } from '@/src/types/order.types';
+import { colors, fonts } from '@/src/theme/theme';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   PENDING_PAYMENT: 'Pago pendiente',
@@ -67,17 +68,15 @@ export function OrderDetailModal({ order, onClose }: Props) {
       <View style={[styles.container, { paddingBottom: insets.bottom }]}>
         {order && (
           <>
-            {/* Handle bar */}
             <View style={styles.handle} />
 
-            {/* Header */}
             <View style={styles.header}>
               <View style={styles.headerLeft}>
                 <Text style={styles.orderNumber}>#{order.orderNumber}</Text>
                 <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
               </View>
               <TouchableOpacity onPress={onClose} activeOpacity={0.7} style={styles.closeBtn}>
-                <Ionicons name="close" size={20} color="#a1a1aa" />
+                <Ionicons name="close" size={20} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -85,17 +84,16 @@ export function OrderDetailModal({ order, onClose }: Props) {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
             >
-              {/* Status + Type row */}
               <View style={styles.row}>
                 <Badge
-                  label={STATUS_LABELS[order.status]}
-                  variant={STATUS_VARIANT[order.status]}
+                  label={STATUS_LABELS[order.status] ?? order.status}
+                  variant={STATUS_VARIANT[order.status] ?? 'default'}
                 />
                 <View style={styles.typePill}>
                   <Ionicons
                     name={order.orderType === 'DELIVERY' ? 'bicycle-outline' : 'storefront-outline'}
                     size={13}
-                    color="#a1a1aa"
+                    color={colors.textMuted}
                   />
                   <Text style={styles.typeText}>
                     {order.orderType === 'DELIVERY' ? 'Delivery' : 'Recojo en local'}
@@ -103,11 +101,10 @@ export function OrderDetailModal({ order, onClose }: Props) {
                 </View>
               </View>
 
-              {/* Address */}
               {order.orderType === 'DELIVERY' && order.address && (
                 <View style={styles.card}>
                   <View style={styles.cardLabelRow}>
-                    <Ionicons name="location-outline" size={13} color="#a1a1aa" />
+                    <Ionicons name="location-outline" size={13} color={colors.textMuted} />
                     <Text style={styles.cardLabel}>Dirección de entrega</Text>
                   </View>
                   <Text style={styles.addressTitle}>{order.address.label}</Text>
@@ -118,18 +115,15 @@ export function OrderDetailModal({ order, onClose }: Props) {
                 </View>
               )}
 
-              {/* Items */}
               <View style={styles.section}>
                 <Text style={styles.sectionLabel}>Productos</Text>
                 <View style={styles.itemsContainer}>
                   {(order.items ?? []).map((item) => (
                     <View key={item.id} style={styles.itemRow}>
-                      {/* Qty badge */}
                       <View style={styles.qtyBadge}>
                         <Text style={styles.qtyText}>{item.quantity}</Text>
                       </View>
 
-                      {/* Name + options */}
                       <View style={styles.itemInfo}>
                         <Text style={styles.itemName}>{item.productName}</Text>
                         {item.selectedOptions.length > 0 && (
@@ -149,14 +143,12 @@ export function OrderDetailModal({ order, onClose }: Props) {
                         ) : null}
                       </View>
 
-                      {/* Subtotal */}
                       <Text style={styles.itemSubtotal}>{formatCurrency(item.subtotal)}</Text>
                     </View>
                   ))}
                 </View>
               </View>
 
-              {/* Notes */}
               {order.notes && (
                 <View style={styles.card}>
                   <Text style={styles.cardLabel}>Instrucciones</Text>
@@ -164,7 +156,6 @@ export function OrderDetailModal({ order, onClose }: Props) {
                 </View>
               )}
 
-              {/* Totals */}
               <View style={styles.card}>
                 <View style={styles.totalRow}>
                   <Text style={styles.totalLabel}>Subtotal</Text>
@@ -174,7 +165,7 @@ export function OrderDetailModal({ order, onClose }: Props) {
                   <Text style={styles.totalLabel}>Delivery</Text>
                   <Text style={[
                     styles.totalValue,
-                    Number(order.deliveryFee) === 0 && { color: '#4ade80' },
+                    Number(order.deliveryFee) === 0 && { color: '#15803d' },
                   ]}>
                     {Number(order.deliveryFee) === 0
                       ? order.orderType === 'PICKUP' ? '—' : 'Gratis'
@@ -198,13 +189,13 @@ export function OrderDetailModal({ order, onClose }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: colors.bg,
   },
   handle: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#3f3f46',
+    backgroundColor: colors.borderStrong,
     alignSelf: 'center',
     marginTop: 10,
     marginBottom: 4,
@@ -216,25 +207,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.07)',
+    borderBottomColor: colors.border,
   },
   headerLeft: {
     gap: 2,
   },
   orderNumber: {
-    color: '#ffffff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     fontSize: 18,
-    fontWeight: '800',
   },
   orderDate: {
-    color: '#71717a',
+    fontFamily: fonts.regular,
+    color: colors.textFaint,
     fontSize: 12,
   },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -254,19 +246,20 @@ const styles = StyleSheet.create({
     gap: 5,
     borderRadius: 99,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
+    borderColor: colors.border,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   typeText: {
-    color: '#a1a1aa',
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
     fontSize: 12,
   },
   card: {
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     padding: 14,
     gap: 6,
   },
@@ -277,40 +270,42 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   cardLabel: {
-    color: '#71717a',
+    fontFamily: fonts.bold,
+    color: colors.textMuted,
     fontSize: 11,
-    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
   addressTitle: {
-    color: '#ffffff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     fontSize: 14,
-    fontWeight: '600',
   },
   addressSub: {
-    color: '#a1a1aa',
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
     fontSize: 13,
   },
   addressRef: {
-    color: '#71717a',
+    fontFamily: fonts.regular,
+    color: colors.textFaint,
     fontSize: 12,
   },
   section: {
     gap: 8,
   },
   sectionLabel: {
-    color: '#71717a',
+    fontFamily: fonts.bold,
+    color: colors.textMuted,
     fontSize: 11,
-    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
   itemsContainer: {
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     overflow: 'hidden',
   },
   itemRow: {
@@ -319,55 +314,58 @@ const styles = StyleSheet.create({
     gap: 10,
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: colors.border,
   },
   qtyBadge: {
     width: 24,
     height: 24,
     borderRadius: 8,
-    backgroundColor: 'rgba(229,9,9,0.18)',
+    backgroundColor: 'rgba(193,18,31,0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
     flexShrink: 0,
   },
   qtyText: {
-    color: '#fca5a5',
+    fontFamily: fonts.bold,
+    color: colors.red,
     fontSize: 11,
-    fontWeight: '800',
   },
   itemInfo: {
     flex: 1,
     gap: 3,
   },
   itemName: {
-    color: '#ffffff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     fontSize: 14,
-    fontWeight: '600',
     lineHeight: 18,
   },
   itemOptions: {
-    color: '#71717a',
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
     fontSize: 12,
     lineHeight: 16,
   },
   extraPrice: {
-    color: '#f87171',
+    color: colors.red,
   },
   itemNote: {
-    color: '#52525b',
+    fontFamily: fonts.regular,
+    color: colors.textFaint,
     fontSize: 11,
     fontStyle: 'italic',
   },
   itemSubtotal: {
-    color: '#ffffff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     fontSize: 14,
-    fontWeight: '700',
     flexShrink: 0,
     marginTop: 1,
   },
   notesText: {
-    color: '#d4d4d8',
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
     fontSize: 13,
     lineHeight: 18,
   },
@@ -377,26 +375,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   totalLabel: {
-    color: '#a1a1aa',
+    fontFamily: fonts.regular,
+    color: colors.textMuted,
     fontSize: 13,
   },
   totalValue: {
-    color: '#ffffff',
+    fontFamily: fonts.medium,
+    color: colors.text,
     fontSize: 13,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: colors.border,
     marginVertical: 4,
   },
   grandTotalLabel: {
-    color: '#ffffff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     fontSize: 15,
-    fontWeight: '700',
   },
   grandTotalValue: {
-    color: '#ffffff',
+    fontFamily: fonts.bold,
+    color: colors.text,
     fontSize: 15,
-    fontWeight: '800',
   },
 });

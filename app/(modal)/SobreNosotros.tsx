@@ -9,7 +9,7 @@ type StatProps = { value: string; label: string };
 function Stat({ value, label }: StatProps) {
   return (
     <View style={{ alignItems: "center", flex: 1 }}>
-      <Text style={{ fontSize: 26, fontWeight: "900", color: "#e50909" }}>{value}</Text>
+      <Text style={{ fontSize: 26, fontWeight: "900", color: "#c1121f" }}>{value}</Text>
       <Text style={{ fontSize: 11, color: "#666", textAlign: "center", marginTop: 2 }}>{label}</Text>
     </View>
   );
@@ -20,7 +20,7 @@ type PillarProps = { icon: React.ComponentProps<typeof Ionicons>["name"]; title:
 function Pillar({ icon, title, description }: PillarProps) {
   return (
     <View style={{ flex: 1, backgroundColor: "#1a1a1a", borderRadius: 14, padding: 14, alignItems: "center", gap: 6, borderWidth: 1, borderColor: "#2a2a2a" }}>
-      <Ionicons name={icon} size={24} color="#e50909" />
+      <Ionicons name={icon} size={24} color="#c1121f" />
       <Text style={{ fontSize: 12, fontWeight: "700", color: "white", textAlign: "center" }}>{title}</Text>
       <Text style={{ fontSize: 11, color: "#666", textAlign: "center", lineHeight: 16 }}>{description}</Text>
     </View>
@@ -50,7 +50,7 @@ export default function SobreNosotrosScreen() {
 
         {/* Historia */}
         <View style={{ backgroundColor: "#1a1a1a", borderRadius: 14, padding: 18, borderWidth: 1, borderColor: "#2a2a2a" }}>
-          <Text style={{ fontSize: 11, color: "#e50909", fontWeight: "700", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Nuestra historia</Text>
+          <Text style={{ fontSize: 11, color: "#c1121f", fontWeight: "700", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Nuestra historia</Text>
           <Text style={{ fontSize: 14, color: "#ccc", lineHeight: 22 }}>
             Oktava nació con una misión simple: llevar sabores auténticos y de calidad a las mesas de Cochabamba. Desde nuestro primer día, combinamos ingredientes frescos, técnicas cuidadas y un equipo apasionado para crear una experiencia de fast food diferente — sin apuros, sin compromisos.
           </Text>
@@ -81,13 +81,13 @@ export default function SobreNosotrosScreen() {
         {/* Misión / Visión */}
         <View style={{ gap: 12 }}>
           <View style={{ backgroundColor: "#1a1a1a", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#2a2a2a" }}>
-            <Text style={{ fontSize: 12, fontWeight: "700", color: "#e50909", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Nuestra misión</Text>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: "#c1121f", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Nuestra misión</Text>
             <Text style={{ fontSize: 13, color: "#888", lineHeight: 20 }}>
               Ofrecer una experiencia de fast food premium que combine rapidez, sabor y calidad sin sacrificar ninguno de los tres.
             </Text>
           </View>
           <View style={{ backgroundColor: "#1a1a1a", borderRadius: 14, padding: 16, borderWidth: 1, borderColor: "#2a2a2a" }}>
-            <Text style={{ fontSize: 12, fontWeight: "700", color: "#e50909", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Nuestra visión</Text>
+            <Text style={{ fontSize: 12, fontWeight: "700", color: "#c1121f", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>Nuestra visión</Text>
             <Text style={{ fontSize: 13, color: "#888", lineHeight: 20 }}>
               Ser el referente de fast food de calidad en Bolivia, expandiendo el sabor Oktava a más ciudades y más mesas.
             </Text>

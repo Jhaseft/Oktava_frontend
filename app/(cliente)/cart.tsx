@@ -83,7 +83,7 @@ export default function CartScreen() {
               <View style={{ height: 1, backgroundColor: '#2a2a2a' }} />
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 16 }}>Total</Text>
-                <Text style={{ color: '#e50909', fontWeight: '700', fontSize: 16 }}>
+                <Text style={{ color: '#c1121f', fontWeight: '700', fontSize: 16 }}>
                   BOB/ {totalAmount.toFixed(2)}
                 </Text>
               </View>
@@ -113,7 +113,7 @@ export default function CartScreen() {
                 disabled={!storeOpen}
                 activeOpacity={0.8}
                 style={{
-                  backgroundColor: storeOpen ? '#e50909' : '#3a3a3a',
+                  backgroundColor: storeOpen ? '#c1121f' : '#3a3a3a',
                   borderRadius: 10,
                   height: 50,
                   alignItems: 'center',

@@ -16,17 +16,17 @@ function QuantityControl({ product, quantity, onAdd, onRemove }: Props) {
         <TouchableOpacity
           onPress={() => onRemove(product)}
           activeOpacity={0.7}
-          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#c1121f', alignItems: 'center', justifyContent: 'center' }}
         >
           <Ionicons name="remove" size={16} color="#ffffff" />
         </TouchableOpacity>
-        <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14, minWidth: 16, textAlign: 'center' }}>
+        <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 14, minWidth: 16, textAlign: 'center' }}>
           {quantity}
         </Text>
         <TouchableOpacity
           onPress={() => onAdd(product)}
           activeOpacity={0.7}
-          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
+          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#c1121f', alignItems: 'center', justifyContent: 'center' }}
         >
           <Ionicons name="add" size={16} color="#ffffff" />
         </TouchableOpacity>
@@ -37,7 +37,7 @@ function QuantityControl({ product, quantity, onAdd, onRemove }: Props) {
     <TouchableOpacity
       onPress={() => onAdd(product)}
       activeOpacity={0.7}
-      style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#e50909', alignItems: 'center', justifyContent: 'center' }}
+      style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: '#c1121f', alignItems: 'center', justifyContent: 'center' }}
     >
       <Ionicons name="add" size={22} color="#ffffff" />
     </TouchableOpacity>
@@ -46,7 +46,7 @@ function QuantityControl({ product, quantity, onAdd, onRemove }: Props) {
 
 export function PromoProductCard({ product, quantity, onAdd, onRemove }: Props) {
   return (
-    <View style={{ flex: 1, backgroundColor: '#111111', borderRadius: 14, overflow: 'hidden' }}>
+    <View style={{ flex: 1, backgroundColor: '#ffffff', borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#e6e6e6' }}>
       {product.imageUrl ? (
         <Image
           source={{ uri: product.imageUrl }}
@@ -58,18 +58,19 @@ export function PromoProductCard({ product, quantity, onAdd, onRemove }: Props) 
           style={{
             width: '100%',
             aspectRatio: 1.05,
-            backgroundColor: '#1a1a1a',
+            backgroundColor: '#f6f6f6',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Ionicons name="restaurant-outline" size={36} color="#333333" />
+          <Ionicons name="restaurant-outline" size={36} color="#cccccc" />
         </View>
       )}
 
       <View style={{ padding: 10, gap: 4 }}>
         <Text
-          style={{ color: '#ffffff', fontWeight: '700', fontSize: 13, lineHeight: 18 }}
+          className="font-lemon-bold"
+          style={{ color: '#141414', fontSize: 13, lineHeight: 18 }}
           numberOfLines={2}
         >
           {product.name}
@@ -77,7 +78,8 @@ export function PromoProductCard({ product, quantity, onAdd, onRemove }: Props) 
 
         {product.description ? (
           <Text
-            style={{ color: '#888888', fontSize: 11, lineHeight: 15 }}
+            className="font-lemon"
+            style={{ color: '#6b6b6b', fontSize: 11, lineHeight: 15 }}
             numberOfLines={2}
           >
             {product.description}
@@ -92,13 +94,13 @@ export function PromoProductCard({ product, quantity, onAdd, onRemove }: Props) 
             marginTop: 6,
           }}
         >
-          <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 14 }}>
+          <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 14 }}>
             {product.price.toFixed(2)} Bs.
           </Text>
 
           {product.isAvailable
             ? <QuantityControl product={product} quantity={quantity} onAdd={onAdd} onRemove={onRemove} />
-            : <Text style={{ color: '#555555', fontSize: 11 }}>Agotado</Text>
+            : <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 11 }}>Agotado</Text>
           }
         </View>
       </View>

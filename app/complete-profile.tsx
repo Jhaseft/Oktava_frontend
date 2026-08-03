@@ -65,9 +65,9 @@ export default function CompleteProfileScreen() {
 
           {/* Logo */}
           <View className="flex-row">
-            <Text className="text-5xl font-black text-[#e50909]">OK</Text>
+            <Text className="text-5xl font-black text-[#c1121f]">OK</Text>
             <Text className="text-5xl font-black text-white">TA</Text>
-            <Text className="text-5xl font-black text-[#e50909]">VA</Text>
+            <Text className="text-5xl font-black text-[#c1121f]">VA</Text>
           </View>
 
           {/* Título */}

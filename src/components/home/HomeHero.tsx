@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   glowTopRight: {
     position: 'absolute', top: -40, right: -40,
     width: 220, height: 220, borderRadius: 110,
-    backgroundColor: '#e50909', opacity: 0.07,
+    backgroundColor: '#c1121f', opacity: 0.07,
   },
   glowLeft: {
     position: 'absolute', left: -60, top: '25%',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   glowBottom: {
     position: 'absolute', bottom: -20, alignSelf: 'center',
     width: 260, height: 100, borderRadius: 130,
-    backgroundColor: '#e50909', opacity: 0.05,
+    backgroundColor: '#c1121f', opacity: 0.05,
   },
   content: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 28 },
   badgeRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -144,14 +144,14 @@ const styles = StyleSheet.create({
   badgeTextClosed: { color: '#f87171' },
   closedNote: { color: '#f87171', fontSize: 12, fontWeight: '600', marginBottom: 16, maxWidth: 280 },
   headlineWhite: { color: '#ffffff', fontSize: 38, fontWeight: '900', lineHeight: 42, letterSpacing: -0.5 },
-  headlineRed:   { color: '#e50909', fontSize: 38, fontWeight: '900', lineHeight: 42, letterSpacing: -0.5 },
+  headlineRed:   { color: '#c1121f', fontSize: 38, fontWeight: '900', lineHeight: 42, letterSpacing: -0.5 },
   subtitle: { color: '#999', fontSize: 13, lineHeight: 19, marginBottom: 22, maxWidth: 260 },
   ctaRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
   ctaPrimary: {
-    flex: 1, backgroundColor: '#e50909', borderRadius: 14,
+    flex: 1, backgroundColor: '#c1121f', borderRadius: 14,
     paddingVertical: 13, alignItems: 'center',
     flexDirection: 'row', justifyContent: 'center', gap: 6,
-    shadowColor: '#e50909', shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#c1121f', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35, shadowRadius: 10, elevation: 6,
   },
   ctaPrimaryText: { color: '#ffffff', fontSize: 14, fontWeight: '700' },

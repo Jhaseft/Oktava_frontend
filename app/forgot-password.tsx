@@ -20,7 +20,7 @@ function isValidEmail(email: string) {
 const inputBase =
   "bg-[#1a1a1a] border border-[#3a3a3a] rounded-md px-4 py-3.5 text-white text-[15px]";
 const inputErr =
-  "bg-[#1a1a1a] border border-[#e50909] rounded-md px-4 py-3.5 text-white text-[15px]";
+  "bg-[#1a1a1a] border border-[#c1121f] rounded-md px-4 py-3.5 text-white text-[15px]";
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
@@ -117,8 +117,8 @@ export default function ForgotPasswordScreen() {
           <View>
             {/* Ícono */}
             <View className="items-center mb-6">
-              <View className="w-16 h-16 rounded-full bg-[#1a0000] border border-[#e50909]/30 items-center justify-center">
-                <Mail size={28} color="#e50909" />
+              <View className="w-16 h-16 rounded-full bg-[#1a0000] border border-[#c1121f]/30 items-center justify-center">
+                <Mail size={28} color="#c1121f" />
               </View>
             </View>
 
@@ -134,7 +134,7 @@ export default function ForgotPasswordScreen() {
 
             {/* Error global */}
             {error && (
-              <View className="bg-[#1a0000] border border-[#e50909] rounded-md px-3.5 py-2.5 mb-4">
+              <View className="bg-[#1a0000] border border-[#c1121f] rounded-md px-3.5 py-2.5 mb-4">
                 <Text className="text-[#ff4444] text-[13px]">{error}</Text>
               </View>
             )}
@@ -164,7 +164,7 @@ export default function ForgotPasswordScreen() {
                 className={showEmailError ? inputErr : inputBase}
               />
               {showEmailError && (
-                <Text className="text-[#e50909] text-[12px] mt-1">
+                <Text className="text-[#c1121f] text-[12px] mt-1">
                   Ingresa un correo electrónico válido.
                 </Text>
               )}
@@ -194,7 +194,7 @@ export default function ForgotPasswordScreen() {
               className="active:opacity-60"
             >
               <Text
-                className="text-[#e50909] text-center text-[12px] font-bold uppercase"
+                className="text-[#c1121f] text-center text-[12px] font-bold uppercase"
                 style={{ letterSpacing: 0.8 }}
               >
                 VOLVER A INICIAR SESIÓN
