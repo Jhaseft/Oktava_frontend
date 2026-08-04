@@ -8,12 +8,11 @@ type ProductCardProps = Readonly<{
   quantity: number;
   onAdd: (product: Product) => void;
   onRemove: (product: Product) => void;
-  onOpenOptions: (product: Product) => void;
+  onOpenDetail: (product: Product) => void;
 }>;
 
-function CartAction({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
+function CartAction({ product, quantity, onAdd, onRemove, onOpenDetail }: ProductCardProps) {
   const hasOptions = (product.optionGroups?.length ?? 0) > 0;
-  const add = () => (hasOptions ? onOpenOptions(product) : onAdd(product));
 
   if (quantity > 0) {
     return (
@@ -35,7 +34,7 @@ function CartAction({ product, quantity, onAdd, onRemove, onOpenOptions }: Produ
         </Text>
 
         <TouchableOpacity
-          onPress={add}
+          onPress={() => (hasOptions ? onOpenDetail(product) : onAdd(product))}
           activeOpacity={0.7}
           className="items-center justify-center rounded-lg"
           style={{ width: 30, height: 30, backgroundColor: colors.red }}
@@ -48,7 +47,7 @@ function CartAction({ product, quantity, onAdd, onRemove, onOpenOptions }: Produ
 
   return (
     <TouchableOpacity
-      onPress={add}
+      onPress={() => onOpenDetail(product)}
       activeOpacity={0.8}
       className="flex-row items-center justify-center rounded-xl"
       style={{ height: 38, backgroundColor: colors.red, gap: 6 }}
@@ -59,19 +58,11 @@ function CartAction({ product, quantity, onAdd, onRemove, onOpenOptions }: Produ
   );
 }
 
-export function ProductCard({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
-  const hasOptions = (product.optionGroups?.length ?? 0) > 0;
-  const handleCardPress = () => {
-    if (!product.isAvailable) return;
-    if (hasOptions) onOpenOptions(product);
-    else onAdd(product);
-  };
-
+export function ProductCard({ product, quantity, onAdd, onRemove, onOpenDetail }: ProductCardProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.9}
-      onPress={handleCardPress}
-      disabled={!product.isAvailable}
+      onPress={() => onOpenDetail(product)}
       className="rounded-xl overflow-hidden"
       style={{ backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border }}
     >
@@ -127,7 +118,7 @@ export function ProductCard({ product, quantity, onAdd, onRemove, onOpenOptions 
               quantity={quantity}
               onAdd={onAdd}
               onRemove={onRemove}
-              onOpenOptions={onOpenOptions}
+              onOpenDetail={onOpenDetail}
             />
           ) : (
             <View

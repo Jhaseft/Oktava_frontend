@@ -9,11 +9,11 @@ type Props = {
   getQuantity: (id: string) => number;
   onAdd: (p: Product) => void;
   onRemove: (p: Product) => void;
-  onOpenOptions: (p: Product) => void;
+  onOpenDetail: (p: Product) => void;
   onLayoutY: (y: number) => void;
 };
 
-export function MenuSection({ section, getQuantity, onAdd, onRemove, onOpenOptions, onLayoutY }: Props) {
+export function MenuSection({ section, getQuantity, onAdd, onRemove, onOpenDetail, onLayoutY }: Props) {
   return (
     <View onLayout={(e) => onLayoutY(e.nativeEvent.layout.y)} style={{ marginBottom: 24 }}>
       <SectionTitle title={section.category.name} />
@@ -26,7 +26,7 @@ export function MenuSection({ section, getQuantity, onAdd, onRemove, onOpenOptio
                 quantity={getQuantity(left.id)}
                 onAdd={onAdd}
                 onRemove={onRemove}
-                onOpenOptions={onOpenOptions}
+                onOpenDetail={onOpenDetail}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -36,7 +36,7 @@ export function MenuSection({ section, getQuantity, onAdd, onRemove, onOpenOptio
                   quantity={getQuantity(right.id)}
                   onAdd={onAdd}
                   onRemove={onRemove}
-                  onOpenOptions={onOpenOptions}
+                  onOpenDetail={onOpenDetail}
                 />
               ) : (
                 <View style={{ flex: 1 }} />

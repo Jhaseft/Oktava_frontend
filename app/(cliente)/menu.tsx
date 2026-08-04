@@ -6,7 +6,7 @@ import { HomeHeader } from '@/src/components/home/HomeHeader';
 import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
 import { MenuFilterBar } from '@/src/components/Menu/MenuFilterBar';
 import { MenuSection } from '@/src/components/Menu/MenuSection';
-import { ProductOptionsModal } from '@/src/components/Menu/ProductOptionsModal';
+import { ProductDetailModal } from '@/src/components/Menu/ProductDetailModal';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import { colors } from '@/src/theme/theme';
 
@@ -36,11 +36,11 @@ export default function MenuScreen() {
       />
 
       <DrawerMenu visible={drawerOpen} onClose={() => setDrawerOpen(false)} topOffset={headerHeight} />
-      <ProductOptionsModal
-        visible={!!m.optionsProduct}
-        product={m.optionsProduct}
-        onConfirm={m.handleOptionsConfirm}
-        onClose={() => m.setOptionsProduct(null)}
+      <ProductDetailModal
+        visible={!!m.detailProduct}
+        product={m.detailProduct}
+        onConfirm={m.handleDetailConfirm}
+        onClose={() => m.setDetailProduct(null)}
       />
 
       <ScrollView
@@ -79,7 +79,7 @@ export default function MenuScreen() {
               getQuantity={m.getQuantity}
               onAdd={m.handleAdd}
               onRemove={m.handleRemove}
-              onOpenOptions={m.setOptionsProduct}
+              onOpenDetail={m.setDetailProduct}
               onLayoutY={(y) => m.registerSection(section.category.id, y)}
             />
           ))}

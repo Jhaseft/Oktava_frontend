@@ -22,7 +22,7 @@ export function useMenu() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [optionsProduct, setOptionsProduct] = useState<Product | null>(null);
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
   const sectionOffsets = useRef<Record<string, number>>({});
@@ -101,18 +101,19 @@ export function useMenu() {
     return () => clearTimeout(t);
   }, [params.category, params.ts, categories, scrollToCategory]);
 
+  // Agregado rápido (botón +/− de la card): incrementa 1 sin abrir el modal.
   const handleAdd = useCallback(
     (product: Product) => {
-      if (product.optionGroups?.length) setOptionsProduct(product);
+      if (product.optionGroups?.length) setDetailProduct(product);
       else addItem(product);
     },
     [addItem],
   );
 
-  const handleOptionsConfirm = useCallback(
-    (product: Product, selectedOptions: SelectedOptionGroup[]) => {
-      addItem(product, selectedOptions);
-      setOptionsProduct(null);
+  const handleDetailConfirm = useCallback(
+    (product: Product, selectedOptions: SelectedOptionGroup[], quantity: number) => {
+      for (let i = 0; i < quantity; i++) addItem(product, selectedOptions);
+      setDetailProduct(null);
     },
     [addItem],
   );
@@ -149,9 +150,9 @@ export function useMenu() {
     getQuantity,
     handleAdd,
     handleRemove,
-    optionsProduct,
-    setOptionsProduct,
-    handleOptionsConfirm,
+    detailProduct,
+    setDetailProduct,
+    handleDetailConfirm,
     totalItems,
   };
 }

@@ -7,7 +7,7 @@ import { colors } from '@/src/theme/theme';
 import { productService } from '@/src/services/product.service';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import { ProductCard } from '@/src/components/Menu/ProductCard';
-import { ProductOptionsModal } from '@/src/components/Menu/ProductOptionsModal';
+import { ProductDetailModal } from '@/src/components/Menu/ProductDetailModal';
 import { MenuSearchBar } from '@/src/components/Menu/MenuSearchBar';
 import { useCart } from '@/src/context/CartContext';
 import type { Product } from '@/src/types/product.types';
@@ -28,7 +28,7 @@ export default function SearchScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [optionsProduct, setOptionsProduct] = useState<Product | null>(null);
+  const [detailProduct, setDetailProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     productService
@@ -41,7 +41,7 @@ export default function SearchScreen() {
   const handleAdd = useCallback(
     (product: Product) => {
       if (product.optionGroups?.length) {
-        setOptionsProduct(product);
+        setDetailProduct(product);
       } else {
         addItem(product);
       }
@@ -49,10 +49,10 @@ export default function SearchScreen() {
     [addItem],
   );
 
-  const handleOptionsConfirm = useCallback(
-    (product: Product, selectedOptions: SelectedOptionGroup[]) => {
-      addItem(product, selectedOptions);
-      setOptionsProduct(null);
+  const handleDetailConfirm = useCallback(
+    (product: Product, selectedOptions: SelectedOptionGroup[], quantity: number) => {
+      for (let i = 0; i < quantity; i++) addItem(product, selectedOptions);
+      setDetailProduct(null);
     },
     [addItem],
   );
@@ -87,11 +87,11 @@ export default function SearchScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-      <ProductOptionsModal
-        visible={!!optionsProduct}
-        product={optionsProduct}
-        onConfirm={handleOptionsConfirm}
-        onClose={() => setOptionsProduct(null)}
+      <ProductDetailModal
+        visible={!!detailProduct}
+        product={detailProduct}
+        onConfirm={handleDetailConfirm}
+        onClose={() => setDetailProduct(null)}
       />
 
       <View style={{ paddingTop: insets.top + 8, paddingBottom: 6 }}>
@@ -148,7 +148,7 @@ export default function SearchScreen() {
                     quantity={getProductQuantity(left.id)}
                     onAdd={handleAdd}
                     onRemove={handleRemoveProduct}
-                    onOpenOptions={setOptionsProduct}
+                    onOpenDetail={setDetailProduct}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -158,7 +158,7 @@ export default function SearchScreen() {
                       quantity={getProductQuantity(right.id)}
                       onAdd={handleAdd}
                       onRemove={handleRemoveProduct}
-                      onOpenOptions={setOptionsProduct}
+                      onOpenDetail={setDetailProduct}
                     />
                   ) : (
                     <View style={{ flex: 1 }} />
