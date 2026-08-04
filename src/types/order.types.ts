@@ -35,6 +35,9 @@ export type OrderAddress = {
   direction: string;
   departament: string;
   reference: string | null;
+  contact?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export type Order = {

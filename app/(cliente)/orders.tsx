@@ -2,8 +2,10 @@ import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-
 import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCallback } from 'react';
 import { useAuth } from '@/src/context/AuthContext';
 import { useOrders } from '@/src/hooks/useOrders';
+import { useAndroidBackHandler } from '@/src/hooks/useAndroidBackHandler';
 import { OrderCard } from '@/src/components/order/OrderCard';
 import { OrderFilterChips } from '@/src/components/order/OrderFilterChips';
 import { OrderDetailModal } from '@/src/components/order/OrderDetailModal';
@@ -17,12 +19,23 @@ export default function OrdersScreen() {
   const { from } = useLocalSearchParams<{ from?: string }>();
   const o = useOrders();
 
+  const fromCheckout = from === 'checkout';
+
   // Si venimos del flujo de pedido (checkout/pago), el checkout quedó vacío en el
   // historial del Tabs, así que "atrás" vuelve al menú en vez de al checkout.
   const handleBack = () => {
-    if (from === 'checkout') { router.navigate('/(cliente)/menu'); return; }
+    if (fromCheckout) { router.navigate('/(cliente)/menu'); return; }
     router.back();
   };
+
+  // Mismo control para el botón físico "atrás" del teléfono.
+  useAndroidBackHandler(
+    useCallback(() => {
+      router.navigate('/(cliente)/menu');
+      return true;
+    }, []),
+    fromCheckout,
+  );
 
   if (!token) return <AuthRequired icon="receipt-outline" message="Inicia sesión para ver tus pedidos" />;
   if (o.loading) return <LoadingState message="Cargando pedidos..." />;

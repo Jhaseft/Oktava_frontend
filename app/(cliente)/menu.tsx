@@ -28,7 +28,7 @@ export default function MenuScreen() {
     ),
     [m.getQuantity, m.handleAdd, m.handleRemove, m.setDetailProduct],
   );
-
+1
   if (m.loading) return <LoadingState message="Cargando menú..." />;
 
   return (

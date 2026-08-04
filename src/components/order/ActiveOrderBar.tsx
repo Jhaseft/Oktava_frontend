@@ -3,19 +3,9 @@ import { Animated, TouchableOpacity, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useOrders } from '@/src/context/OrderContext';
+import { statusUI } from '@/src/lib/order';
+import { OrderStatusIcon } from '@/src/components/order/OrderStatusIcon';
 import type { OrderStatus } from '@/src/types/order.types';
-
-const STATUS_COLOR: Record<OrderStatus, string> = {
-  PENDING_PAYMENT: '#f59e0b',
-  PENDING: '#f59e0b',
-  ACCEPTED: '#3b82f6',
-  PREPARING: '#3b82f6',
-  ON_THE_WAY: '#8b5cf6',
-  PICKED_UP: '#22c55e',
-  PAYMENT_FAILED: '#ef4444',
-  COMPLETED: '#22c55e',
-  CANCELLED: '#ef4444',
-};
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING_PAYMENT: 'Pago pendiente',
@@ -69,7 +59,8 @@ export function ActiveOrderBar() {
   if (activeOrders.length === 0 && !isVisible.current) return null;
 
   const order = activeOrders[0];
-  const statusColor = order ? STATUS_COLOR[order.status] : '#f59e0b';
+  const ui = order ? statusUI(order.status) : null;
+  const statusColor = ui ? ui.color : '#d97706';
   const statusLabel = order ? STATUS_LABEL[order.status] : '';
   const orderId = order ? order.id.slice(-6).toUpperCase() : '';
   const extraCount = activeOrders.length - 1;
@@ -92,7 +83,7 @@ export function ActiveOrderBar() {
           gap: 10,
         }}
       >
-        {/* Pulsing dot */}
+ 
         <Animated.View
           style={{
             width: 8,
@@ -103,7 +94,7 @@ export function ActiveOrderBar() {
           }}
         />
 
-        {/* Status text + order id */}
+
         <View style={{ flex: 1 }}>
           <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 13 }}>
             {statusLabel}
@@ -114,8 +105,11 @@ export function ActiveOrderBar() {
           </Text>
         </View>
 
-        {/* Receipt icon + chevron */}
-        <Ionicons name="receipt-outline" size={16} color={statusColor} />
+        {order && ui && (
+          <View className="items-center justify-center rounded-full" style={{ width: 32, height: 32, backgroundColor: ui.tint }}>
+            <OrderStatusIcon status={order.status} color={statusColor} size={17} />
+          </View>
+        )}
         <Ionicons name="chevron-forward" size={14} color="#c4c4c4" />
       </TouchableOpacity>
     </Animated.View>

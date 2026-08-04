@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useAndroidBackHandler } from '@/src/hooks/useAndroidBackHandler';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Rect } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -98,6 +99,14 @@ export default function QRPaymentScreen() {
   const goToOrders = () => {
     router.navigate({ pathname: '/(cliente)/orders', params: { from: 'checkout' } });
   };
+
+  // El pedido ya fue creado: el botón físico "atrás" no debe volver al checkout vacío.
+  useAndroidBackHandler(
+    useCallback(() => {
+      goToOrders();
+      return true;
+    }, []),
+  );
 
   const handleSimulatePaid = () => {
     setSimulated(true);

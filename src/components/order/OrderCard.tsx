@@ -1,32 +1,9 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge } from '@/src/components/ui/Badge';
-import type { Order, OrderStatus } from '@/src/types/order.types';
+import { OrderStatusBadge } from '@/src/components/order/OrderStatusBadge';
+import { statusUI } from '@/src/lib/order';
+import type { Order } from '@/src/types/order.types';
 import { colors } from '@/src/theme/theme';
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  PENDING_PAYMENT: 'Pago pendiente',
-  PENDING:         'Pendiente',
-  ACCEPTED:        'Aceptado',
-  PREPARING:       'Preparando',
-  ON_THE_WAY:      'En camino',
-  PICKED_UP:       'Listo para recoger',
-  PAYMENT_FAILED:  'Pago fallido',
-  COMPLETED:       'Completado',
-  CANCELLED:       'Cancelado',
-};
-
-const STATUS_VARIANT: Record<OrderStatus, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
-  PENDING_PAYMENT: 'warning',
-  PENDING:         'warning',
-  ACCEPTED:        'info',
-  PREPARING:       'info',
-  ON_THE_WAY:      'info',
-  PICKED_UP:       'success',
-  PAYMENT_FAILED:  'danger',
-  COMPLETED:       'success',
-  CANCELLED:       'danger',
-};
 
 type OrderCardProps = Readonly<{
   order: Order;
@@ -38,18 +15,18 @@ type OrderCardProps = Readonly<{
 export function OrderCard({ order, onPress, onConfirmReceived, confirming }: OrderCardProps) {
   const canConfirm = order.status === 'ON_THE_WAY' || order.status === 'PICKED_UP';
   const items = order.items ?? [];
-  const statusLabel = STATUS_LABELS[order.status] ?? order.status;
-  const statusVariant = STATUS_VARIANT[order.status] ?? 'default';
+  const ui = statusUI(order.status);
 
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={onPress ? 0.75 : 1}
       className="bg-white rounded-2xl p-4 gap-3 border border-brand-border"
+      style={{ borderLeftWidth: 4, borderLeftColor: ui.color }}
     >
       <View className="flex-row items-center justify-between">
         <Text className="text-brand-black font-lemon-bold text-sm">#{order.orderNumber}</Text>
-        <Badge label={statusLabel} variant={statusVariant} />
+        <OrderStatusBadge status={order.status} />
       </View>
 
       {items.length > 0 && (

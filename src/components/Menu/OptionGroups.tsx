@@ -1,10 +1,11 @@
-import { Dimensions, Image, Text, TouchableOpacity, View } from 'react-native';
+import { memo } from 'react';
+import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import type { OptionGroup, OptionItem, Product } from '@/src/types/product.types';
 import type { SelectedOption, SelectedOptionGroup } from '@/src/types/cart.types';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const OPTION_PLACEHOLDER = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format&fit=crop';
 
 export type Selections = Map<string, Set<string>>;
 
@@ -82,17 +83,31 @@ export function toggleSelection(prev: Selections, group: OptionGroup, option: Op
   return next;
 }
 
-function OptionCard({ option, isSelected, box, onToggle }: Readonly<{ option: OptionItem; isSelected: boolean; box: boolean; onToggle: () => void }>) {
+type OptionChildProps = Readonly<{
+  option: OptionItem;
+  isSelected: boolean;
+  box: boolean;
+  group: OptionGroup;
+  onToggle: (group: OptionGroup, option: OptionItem) => void;
+}>;
+
+const OptionCard = memo(function OptionCard({ option, isSelected, box, group, onToggle }: OptionChildProps) {
   const cardWidth = (SCREEN_WIDTH - 40 - 10) / 2;
   return (
     <TouchableOpacity
-      onPress={onToggle}
+      onPress={() => onToggle(group, option)}
       activeOpacity={0.8}
       className="rounded-2xl overflow-hidden"
       style={{ width: cardWidth, borderWidth: 2, borderColor: isSelected ? '#c1121f' : '#e6e6e6', backgroundColor: isSelected ? 'rgba(193,18,31,0.06)' : '#f6f6f6' }}
     >
       <View style={{ aspectRatio: 4 / 3, width: '100%', backgroundColor: '#ffffff' }}>
-        <Image source={{ uri: option.imageUrl ?? OPTION_PLACEHOLDER }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+        {option.imageUrl ? (
+          <Image source={{ uri: option.imageUrl }} style={{ width: '100%', height: '100%' }} contentFit="contain" cachePolicy="memory-disk" transition={150} />
+        ) : (
+          <View className="items-center justify-center" style={{ width: '100%', height: '100%', backgroundColor: '#efefef' }}>
+            <Ionicons name="fast-food-outline" size={28} color="#c4c4c4" />
+          </View>
+        )}
         <View
           className="absolute items-center justify-center"
           style={{ top: 8, right: 8, width: 26, height: 26, borderRadius: box ? 6 : 13, borderWidth: 2, borderColor: isSelected ? '#c1121f' : 'rgba(255,255,255,0.6)', backgroundColor: isSelected ? '#c1121f' : 'rgba(0,0,0,0.4)' }}
@@ -110,12 +125,12 @@ function OptionCard({ option, isSelected, box, onToggle }: Readonly<{ option: Op
       </View>
     </TouchableOpacity>
   );
-}
+});
 
-function OptionRow({ option, isSelected, box, onToggle }: Readonly<{ option: OptionItem; isSelected: boolean; box: boolean; onToggle: () => void }>) {
+const OptionRow = memo(function OptionRow({ option, isSelected, box, group, onToggle }: OptionChildProps) {
   return (
     <TouchableOpacity
-      onPress={onToggle}
+      onPress={() => onToggle(group, option)}
       activeOpacity={0.7}
       className="flex-row items-center rounded-2xl"
       style={{ gap: 14, borderWidth: 1, borderColor: isSelected ? '#c1121f' : '#e6e6e6', backgroundColor: isSelected ? 'rgba(193,18,31,0.08)' : '#f6f6f6', paddingHorizontal: 16, paddingVertical: 14 }}
@@ -130,7 +145,7 @@ function OptionRow({ option, isSelected, box, onToggle }: Readonly<{ option: Opt
       {option.extraPrice > 0 && <Text className="font-lemon-bold text-brand-red" style={{ fontSize: 13, flexShrink: 0 }}>+Bs. {option.extraPrice.toFixed(0)}</Text>}
     </TouchableOpacity>
   );
-}
+});
 
 type Props = Readonly<{
   product: Product;
@@ -179,13 +194,13 @@ export function OptionGroups({ product, selections, errors, onToggle }: Props) {
             {useCards ? (
               <View className="flex-row flex-wrap" style={{ gap: 10 }}>
                 {group.options.map((option) => (
-                  <OptionCard key={option.id} option={option} isSelected={selectedIds.has(option.id)} box={box} onToggle={() => onToggle(group, option)} />
+                  <OptionCard key={option.id} option={option} isSelected={selectedIds.has(option.id)} box={box} group={group} onToggle={onToggle} />
                 ))}
               </View>
             ) : (
               <View style={{ gap: 8 }}>
                 {group.options.map((option) => (
-                  <OptionRow key={option.id} option={option} isSelected={selectedIds.has(option.id)} box={box} onToggle={() => onToggle(group, option)} />
+                  <OptionRow key={option.id} option={option} isSelected={selectedIds.has(option.id)} box={box} group={group} onToggle={onToggle} />
                 ))}
               </View>
             )}

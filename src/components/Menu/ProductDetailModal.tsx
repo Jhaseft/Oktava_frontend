@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/src/theme/theme';
@@ -35,21 +36,21 @@ export function ProductDetailModal({ visible, product, onConfirm, onClose }: Pro
     }
   }, [visible, product?.id]);
 
-  if (!product) return null;
-
-  const groups = product.optionGroups ?? [];
-  const available = product.isAvailable;
-  const unitPrice = product.price + calcExtra(groups, selections);
-  const total = unitPrice * quantity;
-
-  const onToggle = (group: OptionGroup, option: OptionItem) => {
+  const onToggle = useCallback((group: OptionGroup, option: OptionItem) => {
     setSelections((prev) => toggleSelection(prev, group, option));
     setErrors((prev) => {
       const next = new Set(prev);
       next.delete(group.id);
       return next;
     });
-  };
+  }, []);
+
+  if (!product) return null;
+
+  const groups = product.optionGroups ?? [];
+  const available = product.isAvailable;
+  const unitPrice = product.price + calcExtra(groups, selections);
+  const total = unitPrice * quantity;
 
   const handleAdd = () => {
     if (!available) return;
@@ -63,15 +64,15 @@ export function ProductDetailModal({ visible, product, onConfirm, onClose }: Pro
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable className="flex-1 justify-end" style={{ backgroundColor: 'rgba(0,0,0,0.45)' }} onPress={onClose}>
-        <Pressable
-          onPress={(e) => e.stopPropagation()}
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Pressable style={{ ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' }} onPress={onClose} />
+        <View
           className="bg-white"
           style={{ borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '88%', overflow: 'hidden' }}
         >
           <View style={{ height: 210, backgroundColor: colors.surface }}>
             {product.imageUrl ? (
-              <Image source={{ uri: product.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+              <Image source={{ uri: product.imageUrl }} style={{ width: '100%', height: '100%' }} contentFit="contain" cachePolicy="memory-disk" transition={150} />
             ) : (
               <View className="items-center justify-center" style={{ width: '100%', height: '100%', backgroundColor: colors.surface }}>
                 <Ionicons name="restaurant-outline" size={56} color="#cccccc" />
@@ -163,8 +164,8 @@ export function ProductDetailModal({ visible, product, onConfirm, onClose }: Pro
               </Text>
             </TouchableOpacity>
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

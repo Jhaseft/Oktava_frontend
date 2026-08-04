@@ -4,19 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useOrders } from '@/src/context/OrderContext';
 import { colors } from '@/src/theme/theme';
+import { statusUI } from '@/src/lib/order';
+import { OrderStatusIcon } from '@/src/components/order/OrderStatusIcon';
 import type { OrderStatus } from '@/src/types/order.types';
-
-const STATUS_COLOR: Record<OrderStatus, string> = {
-  PENDING_PAYMENT: '#f59e0b',
-  PENDING: '#f59e0b',
-  ACCEPTED: '#3b82f6',
-  PREPARING: '#3b82f6',
-  ON_THE_WAY: '#8b5cf6',
-  PICKED_UP: '#22c55e',
-  PAYMENT_FAILED: '#ef4444',
-  COMPLETED: '#22c55e',
-  CANCELLED: '#ef4444',
-};
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   PENDING_PAYMENT: 'Pago pendiente',
@@ -48,7 +38,8 @@ export function ActiveOrderCard() {
   if (activeOrders.length === 0) return null;
 
   const order = activeOrders[0];
-  const statusColor = STATUS_COLOR[order.status];
+  const ui = statusUI(order.status);
+  const statusColor = ui.color;
   const statusLabel = STATUS_LABEL[order.status];
   const orderId = order.id.slice(-6).toUpperCase();
   const extraCount = activeOrders.length - 1;
@@ -61,8 +52,8 @@ export function ActiveOrderCard() {
       style={{ borderWidth: 1, borderColor: colors.border, borderLeftWidth: 4, borderLeftColor: statusColor }}
     >
       <View className="flex-row items-center gap-3 px-4 py-4">
-        <View className="w-11 h-11 rounded-full items-center justify-center" style={{ backgroundColor: `${statusColor}1a` }}>
-          <Ionicons name="receipt-outline" size={22} color={statusColor} />
+        <View className="w-11 h-11 rounded-full items-center justify-center" style={{ backgroundColor: ui.tint }}>
+          <OrderStatusIcon status={order.status} color={statusColor} size={22} />
         </View>
 
         <View className="flex-1 gap-1">
