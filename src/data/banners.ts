@@ -11,6 +11,5 @@ import type { ImageSourcePropType } from 'react-native';
 export const HOME_BANNERS: ImageSourcePropType[] = [
   require('../../assets/Bannerpollo01.png'),
   require('../../assets/BannerPedidos.png'),
-  require('../../assets/Bannerpollo01.png'),
-  require('../../assets/DSC00104.JPG.jpeg'),
+  require('../../assets/Bannerrefrescos.png'),
 ];

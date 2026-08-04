@@ -1,145 +1,55 @@
-import { useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-} from 'react-native';
-import { router } from 'expo-router';
-import { api } from '@/src/services/api';
-import { useAuth } from '@/src/context/AuthContext';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { useCompleteProfile } from '@/src/hooks/useCompleteProfile';
 import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerificationModal';
-import {
-  PhoneNumberInput,
-  DEFAULT_COUNTRY,
-  toE164,
-  type CountryCode,
-} from '@/src/components/phone/PhoneNumberInput';
+import { PhoneNumberInput } from '@/src/components/phone/PhoneNumberInput';
+import { AuthLogo } from '@/src/components/auth/AuthLogo';
+import { AuthErrorBanner } from '@/src/components/auth/AuthErrorBanner';
+import { AuthPrimaryButton } from '@/src/components/auth/AuthPrimaryButton';
 
 export default function CompleteProfileScreen() {
-  const { updateUser } = useAuth();
-  const [dial, setDial] = useState<CountryCode>(DEFAULT_COUNTRY);
-  const [phone, setPhone] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
-
-  const phoneIsValid = phone.length >= 7;
-
-  async function handleSave() {
-    if (!phoneIsValid) {
-      setError('Ingresa un número válido (mín. 7 dígitos).');
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const e164 = toE164(dial, phone);
-      await api.patch('/auth/profile', { phone: e164 });
-      await updateUser({ phone: e164 });
-      setShowVerifyModal(true);
-    } catch (err: any) {
-      setError(err?.message ?? 'No se pudo guardar el número. Inténtalo nuevamente.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  function handleSkip() {
-    router.replace('/(cliente)/');
-  }
+  const f = useCompleteProfile();
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-black"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAvoidingView className="flex-1 bg-white" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
         <View className="flex-1 items-center justify-center px-7 py-10 gap-8">
+          <AuthLogo />
 
-          {/* Logo */}
-          <View className="flex-row">
-            <Text className="text-5xl font-black text-[#c1121f]">OK</Text>
-            <Text className="text-5xl font-black text-white">TA</Text>
-            <Text className="text-5xl font-black text-[#c1121f]">VA</Text>
-          </View>
-
-          {/* Título */}
           <View className="items-center gap-2">
-            <Text className="text-3xl font-bold text-white text-center">Un paso más</Text>
-            <Text className="text-gray-400 text-center text-sm leading-5">
+            <Text className="text-2xl font-lemon-bold text-brand-black text-center">Un paso más</Text>
+            <Text className="text-brand-muted font-lemon text-center text-[13px] leading-5">
               Para recibir notificaciones sobre tu pedido necesitamos tu número de WhatsApp.
             </Text>
           </View>
 
-          {/* Error */}
-          {error && (
-            <View className="w-full rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3">
-              <Text className="text-sm text-white">{error}</Text>
-            </View>
-          )}
+          {f.error && <AuthErrorBanner message={f.error} />}
 
-          {/* Input */}
           <View className="w-full gap-2">
-            <Text className="text-sm font-medium text-gray-400">Número de WhatsApp</Text>
+            <Text className="text-brand-black text-[13px] font-lemon-medium">Número de WhatsApp</Text>
             <PhoneNumberInput
-              number={phone}
-              onChangeNumber={(t) => {
-                setPhone(t);
-                setError(null);
-              }}
-              dial={dial}
-              onChangeDial={setDial}
-              error={!!error && !phoneIsValid}
-              editable={!isLoading}
+              number={f.phone}
+              onChangeNumber={f.onChangePhone}
+              dial={f.dial}
+              onChangeDial={f.setDial}
+              error={!!f.error && !f.phoneIsValid}
+              editable={!f.isLoading}
             />
           </View>
 
-          {/* Guardar */}
-          <Pressable
-            onPress={handleSave}
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              backgroundColor: isLoading ? '#7f1d1d' : '#b91c1c',
-              borderRadius: 8,
-              height: 48,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-base font-semibold text-white">Guardar y continuar</Text>
-            )}
-          </Pressable>
+          <View className="w-full gap-4">
+            <AuthPrimaryButton label="Guardar y continuar" onPress={f.handleSave} loading={f.isLoading} />
 
-          {/* Omitir */}
-          <Pressable onPress={handleSkip} disabled={isLoading}>
-            <Text className="text-sm text-gray-600">Omitir por ahora</Text>
-          </Pressable>
-
+            <Pressable onPress={f.handleSkip} disabled={f.isLoading} className="active:opacity-60">
+              <Text className="text-center text-[13px] font-lemon-medium text-brand-muted">Omitir por ahora</Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
 
-      {/* Modal de verificación — se muestra justo después de guardar el teléfono */}
       <PhoneVerificationModal
-        visible={showVerifyModal}
-        onVerified={() => {
-          setShowVerifyModal(false);
-          router.replace('/(cliente)/');
-        }}
-        onClose={() => {
-          setShowVerifyModal(false);
-          router.replace('/(cliente)/');
-        }}
+        visible={f.showVerifyModal}
+        onVerified={f.closeVerify}
+        onClose={f.closeVerify}
       />
     </KeyboardAvoidingView>
   );

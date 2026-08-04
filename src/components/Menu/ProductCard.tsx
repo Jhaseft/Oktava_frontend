@@ -1,5 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors } from '@/src/theme/theme';
 import type { Product } from '../../types/product.types';
 
 type ProductCardProps = Readonly<{
@@ -10,80 +11,134 @@ type ProductCardProps = Readonly<{
   onOpenOptions: (product: Product) => void;
 }>;
 
-function QuantityControl({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
+function CartAction({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
   const hasOptions = (product.optionGroups?.length ?? 0) > 0;
+  const add = () => (hasOptions ? onOpenOptions(product) : onAdd(product));
 
   if (quantity > 0) {
     return (
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View
+        className="flex-row items-center justify-between rounded-xl"
+        style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: 4 }}
+      >
         <TouchableOpacity
           onPress={() => onRemove(product)}
           activeOpacity={0.7}
-          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#c1121f', alignItems: 'center', justifyContent: 'center' }}
+          className="items-center justify-center rounded-lg"
+          style={{ width: 30, height: 30, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border }}
         >
-          <Ionicons name="remove" size={16} color="#ffffff" />
+          <Ionicons name="remove" size={18} color={colors.red} />
         </TouchableOpacity>
-        <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 14, minWidth: 16, textAlign: 'center' }}>
+
+        <Text className="font-lemon-bold text-brand-black" style={{ fontSize: 14, minWidth: 20, textAlign: 'center' }}>
           {quantity}
         </Text>
+
         <TouchableOpacity
-          onPress={() => hasOptions ? onOpenOptions(product) : onAdd(product)}
+          onPress={add}
           activeOpacity={0.7}
-          style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: '#c1121f', alignItems: 'center', justifyContent: 'center' }}
+          className="items-center justify-center rounded-lg"
+          style={{ width: 30, height: 30, backgroundColor: colors.red }}
         >
-          <Ionicons name="add" size={16} color="#ffffff" />
+          <Ionicons name="add" size={18} color={colors.white} />
         </TouchableOpacity>
       </View>
     );
   }
+
   return (
     <TouchableOpacity
-      onPress={() => hasOptions ? onOpenOptions(product) : onAdd(product)}
-      activeOpacity={0.7}
-      style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: '#c1121f', alignItems: 'center', justifyContent: 'center' }}
+      onPress={add}
+      activeOpacity={0.8}
+      className="flex-row items-center justify-center rounded-xl"
+      style={{ height: 38, backgroundColor: colors.red, gap: 6 }}
     >
-      <Ionicons name="add" size={20} color="#ffffff" />
+      <MaterialCommunityIcons name="cart-arrow-down" size={18} color={colors.white} />
+      <Text className="font-lemon-bold text-white" style={{ fontSize: 12 }}>Agregar</Text>
     </TouchableOpacity>
   );
 }
 
 export function ProductCard({ product, quantity, onAdd, onRemove, onOpenOptions }: ProductCardProps) {
+  const hasOptions = (product.optionGroups?.length ?? 0) > 0;
+  const handleCardPress = () => {
+    if (!product.isAvailable) return;
+    if (hasOptions) onOpenOptions(product);
+    else onAdd(product);
+  };
+
   return (
-    <View style={{ backgroundColor: '#ffffff', borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#e6e6e6' }}>
-      {product.imageUrl ? (
-        <Image
-          source={{ uri: product.imageUrl }}
-          style={{ width: '100%', aspectRatio: 1 }}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={{ width: '100%', aspectRatio: 1, backgroundColor: '#f6f6f6', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="restaurant-outline" size={36} color="#cccccc" />
-        </View>
-      )}
+    <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={handleCardPress}
+      disabled={!product.isAvailable}
+      className="rounded-xl overflow-hidden"
+      style={{ backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border }}
+    >
+      <View>
+        {product.imageUrl ? (
+          <Image source={{ uri: product.imageUrl }} style={{ width: '100%', aspectRatio: 1 }} resizeMode="cover" />
+        ) : (
+          <View
+            className="items-center justify-center"
+            style={{ width: '100%', aspectRatio: 1, backgroundColor: colors.surface }}
+          >
+            <Ionicons name="restaurant-outline" size={36} color="#cccccc" />
+          </View>
+        )}
+
+        {quantity > 0 && (
+          <View
+            className="absolute items-center justify-center rounded-full"
+            style={{ top: 8, right: 8, minWidth: 26, height: 26, paddingHorizontal: 6, backgroundColor: colors.red }}
+          >
+            <Text className="font-lemon-bold text-white" style={{ fontSize: 12 }}>{quantity}</Text>
+          </View>
+        )}
+      </View>
 
       <View style={{ padding: 10, gap: 4 }}>
-        <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 13, lineHeight: 18 }} numberOfLines={2}>
+        <Text
+          className="font-lemon-bold text-brand-black"
+          style={{ fontSize: 13, lineHeight: 18, height: 36 }}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
           {product.name}
         </Text>
 
-        {product.description ? (
-          <Text className="font-lemon" style={{ color: '#6b6b6b', fontSize: 11, lineHeight: 16 }} numberOfLines={2}>
-            {product.description}
-          </Text>
-        ) : null}
+        <Text
+          className="font-lemon text-brand-muted"
+          style={{ fontSize: 11, lineHeight: 16, height: 16 }}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {product.description ?? ''}
+        </Text>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-          <Text className="font-lemon-bold" style={{ color: '#141414', fontSize: 14 }}>
-            {product.price.toFixed(2)} Bs.
-          </Text>
+        <Text className="font-lemon-bold text-brand-black" style={{ fontSize: 15, marginTop: 4 }}>
+          {product.price.toFixed(2)} Bs.
+        </Text>
 
-          {product.isAvailable
-            ? <QuantityControl product={product} quantity={quantity} onAdd={onAdd} onRemove={onRemove} onOpenOptions={onOpenOptions} />
-            : <Text className="font-lemon" style={{ color: '#9a9a9a', fontSize: 11 }}>Agotado</Text>
-          }
+        <View style={{ marginTop: 6 }}>
+          {product.isAvailable ? (
+            <CartAction
+              product={product}
+              quantity={quantity}
+              onAdd={onAdd}
+              onRemove={onRemove}
+              onOpenOptions={onOpenOptions}
+            />
+          ) : (
+            <View
+              className="items-center justify-center rounded-xl"
+              style={{ height: 38, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
+            >
+              <Text className="font-lemon text-brand-muted" style={{ fontSize: 11 }}>Agotado</Text>
+            </View>
+          )}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }

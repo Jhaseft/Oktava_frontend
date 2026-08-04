@@ -4,12 +4,14 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Linking,
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Badge } from '@/src/components/ui/Badge';
 import type { Order, OrderStatus } from '@/src/types/order.types';
+import { mapsSearchUrl } from '@/src/lib/maps';
 import { colors, fonts } from '@/src/theme/theme';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -108,10 +110,17 @@ export function OrderDetailModal({ order, onClose }: Props) {
                     <Text style={styles.cardLabel}>Dirección de entrega</Text>
                   </View>
                   <Text style={styles.addressTitle}>{order.address.label}</Text>
-                  <Text style={styles.addressSub}>{order.address.direction}</Text>
                   {order.address.reference && (
                     <Text style={styles.addressRef}>Ref: {order.address.reference}</Text>
                   )}
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(mapsSearchUrl(order.address!.direction || order.address!.label)).catch(() => {})}
+                    activeOpacity={0.8}
+                    style={styles.mapBtn}
+                  >
+                    <Ionicons name="navigate" size={15} color={colors.red} />
+                    <Text style={styles.mapBtnText}>Ver dirección</Text>
+                  </TouchableOpacity>
                 </View>
               )}
 
@@ -281,15 +290,29 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 14,
   },
-  addressSub: {
-    fontFamily: fonts.regular,
-    color: colors.textMuted,
-    fontSize: 13,
-  },
   addressRef: {
     fontFamily: fonts.regular,
     color: colors.textFaint,
     fontSize: 12,
+  },
+  mapBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: colors.red,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  mapBtnText: {
+    fontFamily: fonts.bold,
+    color: colors.red,
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   section: {
     gap: 8,

@@ -6,6 +6,7 @@ import { useAuth } from '@/src/context/AuthContext';
 import { useCart } from '@/src/context/CartContext';
 import { useStoreStatus } from '@/src/context/StoreStatusContext';
 import { CartItemCard } from '@/src/components/cart/CartItemCard';
+import { colors } from '@/src/theme/theme';
 
 export default function CartScreen() {
   const insets = useSafeAreaInsets();
@@ -13,44 +14,48 @@ export default function CartScreen() {
   const { items, totalItems, totalAmount, updateQuantity, removeItem } = useCart();
   const { isOpen: storeOpen, message: storeMessage } = useStoreStatus();
 
+  const goToMenu = () => router.push('/(cliente)/menu');
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#000000' }}>
-      {/* Header */}
-      <View style={{
-        paddingHorizontal: 16,
-        paddingTop: insets.top + 8,
-        paddingBottom: 12,
-      }}>
-        <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: '900' }}>
-          Carrito{totalItems > 0 && (
-            <Text style={{ color: '#555555', fontSize: 18, fontWeight: '400' }}> ({totalItems})</Text>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <View
+        className="flex-row items-center gap-3"
+        style={{ paddingHorizontal: 16, paddingTop: insets.top + 8, paddingBottom: 12 }}
+      >
+        <TouchableOpacity
+          onPress={goToMenu}
+          activeOpacity={0.7}
+          className="items-center justify-center rounded-full"
+          style={{ width: 38, height: 38, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
+        >
+          <Ionicons name="arrow-back" size={20} color={colors.black} />
+        </TouchableOpacity>
+
+        <Text className="font-lemon-bold text-brand-black uppercase" style={{ fontSize: 20 }}>
+          Carrito
+          {totalItems > 0 && (
+            <Text className="font-lemon text-brand-muted" style={{ fontSize: 16 }}> ({totalItems})</Text>
           )}
         </Text>
       </View>
 
       {items.length === 0 ? (
-        /* Empty state */
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16, paddingHorizontal: 32 }}>
-          <Ionicons name="cart-outline" size={64} color="#333333" />
-          <Text style={{ color: '#ffffff', fontSize: 18, fontWeight: '700', textAlign: 'center' }}>
+        <View className="items-center justify-center" style={{ flex: 1, gap: 16, paddingHorizontal: 32 }}>
+          <Ionicons name="cart-outline" size={64} color={colors.borderStrong} />
+          <Text className="font-lemon-bold text-brand-black text-center" style={{ fontSize: 16 }}>
             Tu carrito está vacío
           </Text>
-          <Text style={{ color: '#666666', fontSize: 14, textAlign: 'center' }}>
+          <Text className="font-lemon text-brand-muted text-center" style={{ fontSize: 13 }}>
             Agrega productos desde el menú.
           </Text>
           <TouchableOpacity
-            onPress={() => router.push('/(cliente)/menu')}
-            activeOpacity={0.7}
-            style={{
-              marginTop: 8,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: '#333333',
-              paddingHorizontal: 24,
-              paddingVertical: 12,
-            }}
+            onPress={goToMenu}
+            activeOpacity={0.8}
+            className="flex-row items-center rounded-xl"
+            style={{ marginTop: 8, backgroundColor: colors.red, paddingHorizontal: 24, paddingVertical: 12, gap: 8 }}
           >
-            <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 14 }}>Ir al menú</Text>
+            <Ionicons name="restaurant-outline" size={18} color={colors.white} />
+            <Text className="font-lemon-bold text-white" style={{ fontSize: 13 }}>Ir al menú</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -68,43 +73,35 @@ export default function CartScreen() {
             />
           )}
           ListFooterComponent={
-            <View style={{
-              marginTop: 8,
-              backgroundColor: '#111111',
-              borderRadius: 16,
-              padding: 16,
-              gap: 12,
-            }}>
-              {/* Summary rows */}
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: '#888888', fontSize: 14 }}>Productos ({totalItems})</Text>
-                <Text style={{ color: '#ffffff', fontSize: 14 }}>BOB/ {totalAmount.toFixed(2)}</Text>
+            <View
+              className="rounded-2xl"
+              style={{ marginTop: 8, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: 16, gap: 12 }}
+            >
+              <View className="flex-row justify-between">
+                <Text className="font-lemon text-brand-muted" style={{ fontSize: 13 }}>Productos ({totalItems})</Text>
+                <Text className="font-lemon text-brand-black" style={{ fontSize: 13 }}>BOB/ {totalAmount.toFixed(2)}</Text>
               </View>
-              <View style={{ height: 1, backgroundColor: '#2a2a2a' }} />
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: '#ffffff', fontWeight: '700', fontSize: 16 }}>Total</Text>
-                <Text style={{ color: '#c1121f', fontWeight: '700', fontSize: 16 }}>
+
+              <View style={{ height: 1, backgroundColor: colors.border }} />
+
+              <View className="flex-row justify-between">
+                <Text className="font-lemon-bold text-brand-black" style={{ fontSize: 15 }}>Total</Text>
+                <Text className="font-lemon-bold text-brand-red" style={{ fontSize: 15 }}>
                   BOB/ {totalAmount.toFixed(2)}
                 </Text>
               </View>
 
-              {/* Aviso de tienda cerrada */}
               {!storeOpen && (
-                <View style={{
-                  backgroundColor: 'rgba(229,9,9,0.10)',
-                  borderColor: 'rgba(229,9,9,0.30)',
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
-                }}>
-                  <Text style={{ color: '#f87171', fontSize: 13, fontWeight: '600' }}>
+                <View
+                  className="rounded-xl"
+                  style={{ backgroundColor: 'rgba(193,18,31,0.08)', borderColor: 'rgba(193,18,31,0.30)', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 10 }}
+                >
+                  <Text className="font-lemon-medium text-brand-red" style={{ fontSize: 12 }}>
                     {storeMessage || 'La tienda está cerrada. No puedes hacer pedidos en este momento.'}
                   </Text>
                 </View>
               )}
 
-              {/* Checkout button */}
               <TouchableOpacity
                 onPress={() => {
                   if (!storeOpen) return;
@@ -112,16 +109,13 @@ export default function CartScreen() {
                 }}
                 disabled={!storeOpen}
                 activeOpacity={0.8}
-                style={{
-                  backgroundColor: storeOpen ? '#c1121f' : '#3a3a3a',
-                  borderRadius: 10,
-                  height: 50,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginTop: 4,
-                }}
+                className="items-center justify-center rounded-xl"
+                style={{ backgroundColor: storeOpen ? colors.red : colors.borderStrong, height: 50, marginTop: 4 }}
               >
-                <Text style={{ color: storeOpen ? '#ffffff' : '#888888', fontWeight: '700', fontSize: 15 }}>
+                <Text
+                  className="font-lemon-bold"
+                  style={{ color: storeOpen ? colors.white : colors.textMuted, fontSize: 14 }}
+                >
                   {storeOpen ? 'Proceder con el pedido' : 'Tienda cerrada'}
                 </Text>
               </TouchableOpacity>

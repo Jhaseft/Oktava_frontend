@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { ChevronDown, Search } from 'lucide-react-native';
+import { colors } from '@/src/theme/theme';
 
 export type CountryCode = { flag: string; name: string; dial: string };
 
@@ -75,105 +76,65 @@ export function PhoneNumberInput({
     [pickerSearch],
   );
 
-  const borderColor = error ? '#ef4444' : '#374151';
+  const borderColor = error ? colors.red : colors.border;
 
   return (
     <>
       <View style={{ flexDirection: 'row', gap: 8 }}>
-        {/* Selector de código de país */}
         <Pressable
           onPress={() => {
             setShowPicker(true);
             setPickerSearch('');
           }}
           disabled={!editable}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4,
-            backgroundColor: '#000',
-            borderWidth: 1,
-            borderColor: '#374151',
-            borderRadius: 8,
-            paddingHorizontal: 12,
-            paddingVertical: 12,
-          }}
+          className="flex-row items-center bg-white rounded-xl"
+          style={{ gap: 4, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 12 }}
         >
           <Text style={{ fontSize: 18 }}>{dial.flag}</Text>
-          <Text style={{ color: '#d1d5db', fontSize: 15, marginLeft: 2 }}>{dial.dial}</Text>
-          <ChevronDown size={14} color="#6b7280" style={{ marginLeft: 2 }} />
+          <Text className="font-lemon text-brand-black" style={{ fontSize: 15, marginLeft: 2 }}>{dial.dial}</Text>
+          <ChevronDown size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
         </Pressable>
 
-        {/* Campo de número (solo dígitos nacionales) */}
         <TextInput
           value={number}
           onChangeText={(t) => onChangeNumber(t.replace(/\D/g, ''))}
           placeholder={placeholder}
-          placeholderTextColor="#4b5563"
+          placeholderTextColor={colors.textFaint}
           keyboardType="phone-pad"
           editable={editable}
           maxLength={15}
-          style={{
-            flex: 1,
-            backgroundColor: '#000',
-            borderWidth: 1,
-            borderColor,
-            borderRadius: 8,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            color: '#d1d5db',
-            fontSize: 16,
-          }}
+          className="flex-1 bg-white rounded-xl text-brand-black font-lemon"
+          style={{ borderWidth: 1, borderColor, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 }}
         />
       </View>
 
-      {/* Modal selector de país */}
       <Modal visible={showPicker} animationType="slide" transparent>
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' }}
-          onPress={() => setShowPicker(false)}
-        >
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }} onPress={() => setShowPicker(false)}>
           <Pressable
             onPress={(e) => e.stopPropagation()}
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: '#111',
-              borderTopLeftRadius: 16,
-              borderTopRightRadius: 16,
-              maxHeight: '70%',
-              paddingTop: 12,
-            }}
+            className="absolute bottom-0 left-0 right-0 bg-white"
+            style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '70%', paddingTop: 12 }}
           >
             <View style={{ alignItems: 'center', marginBottom: 12 }}>
-              <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: '#374151' }} />
+              <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong }} />
             </View>
 
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: '700', marginHorizontal: 16, marginBottom: 12 }}>
+            <Text className="font-lemon-bold text-brand-black" style={{ fontSize: 16, marginHorizontal: 16, marginBottom: 12 }}>
               Código de país
             </Text>
 
             <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginHorizontal: 16,
-                marginBottom: 8,
-                backgroundColor: '#1f2937',
-                borderRadius: 8,
-                paddingHorizontal: 12,
-                gap: 8,
-              }}
+              className="flex-row items-center rounded-xl bg-brand-surface"
+              style={{ marginHorizontal: 16, marginBottom: 8, paddingHorizontal: 12, gap: 8, borderWidth: 1, borderColor: colors.border }}
             >
-              <Search size={16} color="#6b7280" />
+              <Search size={16} color={colors.textMuted} />
               <TextInput
                 value={pickerSearch}
                 onChangeText={setPickerSearch}
                 placeholder="Buscar país o código..."
-                placeholderTextColor="#4b5563"
-                style={{ flex: 1, color: '#d1d5db', fontSize: 14, paddingVertical: 10 }}
+                placeholderTextColor={colors.textFaint}
+                className="flex-1 text-brand-black font-lemon"
+                style={{ fontSize: 14, paddingVertical: 10 }}
               />
             </View>
 
@@ -189,8 +150,8 @@ export function PhoneNumberInput({
                   }}
                   style={({ pressed }) => {
                     let bg = 'transparent';
-                    if (pressed) bg = '#1f2937';
-                    else if (item.name === dial.name) bg = '#1c1c1e';
+                    if (pressed) bg = colors.surface;
+                    else if (item.name === dial.name) bg = 'rgba(193,18,31,0.06)';
                     return {
                       flexDirection: 'row',
                       alignItems: 'center',
@@ -202,10 +163,10 @@ export function PhoneNumberInput({
                   }}
                 >
                   <Text style={{ fontSize: 22 }}>{item.flag}</Text>
-                  <Text style={{ flex: 1, color: '#d1d5db', fontSize: 15 }}>{item.name}</Text>
-                  <Text style={{ color: '#6b7280', fontSize: 14 }}>{item.dial}</Text>
+                  <Text className="flex-1 font-lemon text-brand-black" style={{ fontSize: 15 }}>{item.name}</Text>
+                  <Text className="font-lemon text-brand-muted" style={{ fontSize: 14 }}>{item.dial}</Text>
                   {item.name === dial.name && (
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#ef4444' }} />
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.red }} />
                   )}
                 </Pressable>
               )}

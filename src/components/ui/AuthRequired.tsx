@@ -30,6 +30,15 @@ export function AuthRequired({ icon = 'person-outline', message, showRegister }:
           <Text className="text-brand-black font-lemon-bold text-[15px] uppercase tracking-wide">Crear cuenta</Text>
         </TouchableOpacity>
       )}
+
+      <TouchableOpacity
+        onPress={() => router.replace('/(cliente)/menu')}
+        activeOpacity={0.7}
+        className="flex-row items-center gap-1.5 mt-1"
+      >
+        <Ionicons name="arrow-back" size={16} color={colors.textMuted} />
+        <Text className="text-brand-muted font-lemon-medium text-[13px]">Volver al menú</Text>
+      </TouchableOpacity>
     </View>
   );
 }

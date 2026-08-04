@@ -1,377 +1,78 @@
-import { useEffect, useState, useCallback, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
-import { useAuth } from '@/src/context/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
-import { consumePendingAddressSelect } from '@/src/lib/pendingAddressSelect';
-import { haversineKm, calcDeliveryFee, STORE_LAT, STORE_LNG, MAX_DELIVERY_KM } from '@/src/lib/maps';
-import { useCart } from '@/src/context/CartContext';
-import { useStoreStatus } from '@/src/context/StoreStatusContext';
-import { orderService } from '@/src/services/order.service';
-import { paymentService } from '@/src/services/payment.service';
-import { addressService } from '@/src/services/address.service';
-import { AddressCard } from '@/src/components/address/AddressCard';
+import { ScrollView, View } from 'react-native';
+import { useCheckout } from '@/src/hooks/useCheckout';
 import { Button } from '@/src/components/ui/Button';
 import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerificationModal';
-import type { OrderType, CreateOrderItemOption } from '@/src/types/order.types';
-import type { CartItem } from '@/src/types/cart.types';
-import type { Address } from '@/src/types/address.types';
-
-function paymentMethodLabel(method: PaymentMethod): string {
-  if (method === 'CASH') return 'Al recoger';
-  if (method === 'QR') return 'Por QR';
-  return 'Tarjeta (Niubiz)';
-}
-
-function cartItemToOrderItem(i: CartItem): { productId: string; quantity: number; selectedOptions: CreateOrderItemOption[] } {
-  return {
-    productId: i.productId,
-    quantity: i.quantity,
-    selectedOptions: i.selectedOptions.flatMap((group) =>
-      group.items.map((opt) => ({
-        optionId: opt.optionId,
-        optionName: opt.name,
-        extraPrice: opt.extraPrice,
-      }))
-    ),
-  };
-}
-
-type PaymentMethod = 'CASH' | 'QR' | 'NIUBIZ';
-
-// Niubiz solo disponible cuando el flag sandbox está activo explícitamente.
-// Para habilitar: EXPO_PUBLIC_ENABLE_NIUBIZ_SANDBOX=true en .env
-// Para deshabilitar (o en producción): eliminar o poner en false la variable.
-const NIUBIZ_SANDBOX_ENABLED = process.env.EXPO_PUBLIC_ENABLE_NIUBIZ_SANDBOX === 'true';
-
-const PAYMENT_OPTIONS: { method: PaymentMethod; label: string; icon: string }[] = [
-  { method: 'CASH', label: 'Al recoger', icon: 'cash-outline'    },
-  { method: 'QR',   label: 'Por QR',     icon: 'qr-code-outline' },
-  ...(NIUBIZ_SANDBOX_ENABLED
-    ? [{ method: 'NIUBIZ' as PaymentMethod, label: 'Tarjeta', icon: 'card-outline' }]
-    : []),
-];
+import { CheckoutHeader } from '@/src/components/checkout/CheckoutHeader';
+import { InfoBanner } from '@/src/components/checkout/InfoBanner';
+import { OrderTypeSelector } from '@/src/components/checkout/OrderTypeSelector';
+import { PickupSection } from '@/src/components/checkout/PickupSection';
+import { DeliveryAddressSection } from '@/src/components/checkout/DeliveryAddressSection';
+import { PaymentMethodSelector } from '@/src/components/checkout/PaymentMethodSelector';
+import { CheckoutNotes } from '@/src/components/checkout/CheckoutNotes';
+import { CheckoutSummary } from '@/src/components/checkout/CheckoutSummary';
 
 export default function CheckoutScreen() {
-  const { token } = useAuth();
-  const { items, totalAmount, clearCart } = useCart();
-  const { isOpen: storeOpen, message: storeMessage, refresh: refreshStore } = useStoreStatus();
-
-  useEffect(() => {
-    if (!token) router.replace('/login');
-  }, [token]);
-
-  const [orderType, setOrderType] = useState<OrderType>('PICKUP');
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [notes, setNotes] = useState('');
-  const [loadingAddresses, setLoadingAddresses] = useState(false);
-  const [placing, setPlacing] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [phoneJustVerified, setPhoneJustVerified] = useState(false);
-
-  const loadAddresses = useCallback(async () => {
-    setLoadingAddresses(true);
-    try {
-      const data = await addressService.getAddresses();
-      setAddresses(data);
-    } catch {}
-    finally { setLoadingAddresses(false); }
-  }, []);
-
-  useEffect(() => {
-    if (orderType === 'DELIVERY') loadAddresses();
-  }, [orderType, loadAddresses]);
-
-  useFocusEffect(
-    useCallback(() => {
-      const pendingId = consumePendingAddressSelect();
-      if (!pendingId) return;
-      addressService.getAddresses()
-        .then((data) => {
-          setAddresses(data);
-          setSelectedAddressId(pendingId);
-        })
-        .catch(() => {});
-    }, []),
-  );
-
-  const selectedAddress = useMemo(
-    () => addresses.find((a) => a.id === selectedAddressId) ?? null,
-    [addresses, selectedAddressId],
-  );
-
-  const deliveryKm = useMemo(() => {
-    if (orderType !== 'DELIVERY' || !selectedAddress) return 0;
-    return haversineKm(STORE_LAT, STORE_LNG, selectedAddress.latitude, selectedAddress.longitude);
-  }, [orderType, selectedAddress]);
-
-  const outOfRange = orderType === 'DELIVERY' && !!selectedAddress && deliveryKm > MAX_DELIVERY_KM;
-  const deliveryFee = orderType === 'DELIVERY' && selectedAddress && !outOfRange
-    ? calcDeliveryFee(deliveryKm)
-    : 0;
-  const grandTotal = totalAmount + deliveryFee;
-
-  const canPlace =
-    items.length > 0 &&
-    storeOpen &&
-    !outOfRange &&
-    (orderType === 'PICKUP' || (orderType === 'DELIVERY' && !!selectedAddressId));
-
-  const buildPayload = () => ({
-    orderType,
-    items: items.map(cartItemToOrderItem),
-    ...(orderType === 'DELIVERY' && selectedAddressId ? { addressId: selectedAddressId } : {}),
-    ...(notes.trim() ? { notes: notes.trim() } : {}),
-  });
-
-  // El carrito NO se limpia aquí; se limpia solo si el pago es exitoso (en niubiz-payment.tsx).
-  const handleNiubizPayment = async () => {
-    setPlacing(true);
-    try {
-      const session = await paymentService.createNiubizSession(buildPayload());
-      router.push({
-        pathname: '/(cliente)/niubiz-payment',
-        params: {
-          orderId: session.orderId,
-          orderNumber: session.orderNumber,
-          sessionKey: session.sessionKey,
-          merchantId: session.merchantId,
-          purchaseNumber: session.purchaseNumber,
-          amount: session.amount.toFixed(2),
-          currency: session.currency,
-        },
-      });
-    } catch (e: any) {
-      if (e?.response?.data?.code === 'STORE_CLOSED') {
-        refreshStore();
-        Alert.alert('Tienda cerrada', e?.response?.data?.message ?? 'La tienda está cerrada en este momento.');
-        return;
-      }
-      Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo iniciar el pago con tarjeta.');
-    } finally {
-      setPlacing(false);
-    }
-  };
-
-  const handleCashQrOrder = async () => {
-    setPlacing(true);
-    try {
-      const order = await orderService.createOrder(buildPayload());
-      clearCart();
-      if (paymentMethod === 'QR') {
-        router.replace({ pathname: '/(cliente)/qr-payment', params: { orderId: order.id, total: grandTotal.toFixed(2) } });
-      } else {
-        router.replace('/(cliente)/orders');
-      }
-    } catch (e: any) {
-      if (e?.response?.data?.code === 'STORE_CLOSED') {
-        refreshStore();
-        Alert.alert('Tienda cerrada', e?.response?.data?.message ?? 'La tienda está cerrada en este momento.');
-        return;
-      }
-      if (e?.response?.data?.code === 'PHONE_NOT_VERIFIED') {
-        setShowOtpModal(true);
-        return;
-      }
-      Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo crear el pedido.');
-    } finally {
-      setPlacing(false);
-    }
-  };
-
-  const handlePlace = async () => {
-    if (!canPlace) return;
-    if (paymentMethod === 'NIUBIZ') {
-      await handleNiubizPayment();
-    } else {
-      await handleCashQrOrder();
-    }
-  };
-
-  const handlePhoneVerified = () => {
-    setShowOtpModal(false);
-    setPhoneJustVerified(true);
-    setTimeout(() => setPhoneJustVerified(false), 5000);
-  };
+  const c = useCheckout();
 
   return (
     <>
       <PhoneVerificationModal
-        visible={showOtpModal}
-        onVerified={handlePhoneVerified}
-        onClose={() => setShowOtpModal(false)}
+        visible={c.showOtpModal}
+        onVerified={c.handlePhoneVerified}
+        onClose={() => c.setShowOtpModal(false)}
       />
-      <ScrollView className="flex-1 bg-black" keyboardShouldPersistTaps="handled">
+      <ScrollView className="flex-1 bg-white" keyboardShouldPersistTaps="handled">
         <View className="px-5 pt-14 pb-8 gap-6">
-          <Text className="text-white text-2xl font-bold">Checkout</Text>
+          <CheckoutHeader onBack={c.goToMenu} />
 
-          {!storeOpen && (
-            <View className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
-              <Text className="text-red-400 text-sm font-medium">
-                {storeMessage || 'La tienda está cerrada. No puedes hacer pedidos en este momento.'}
-              </Text>
-            </View>
-          )}
-
-          {phoneJustVerified && (
-            <View className="bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3">
-              <Text className="text-green-400 text-sm font-medium">
-                ✓ Número verificado. Ya puedes confirmar tu pedido.
-              </Text>
-            </View>
-          )}
-
-          {/* Tipo de pedido */}
-          <View className="gap-2">
-            <Text className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Tipo de pedido</Text>
-            <View className="flex-row gap-3">
-              {(['PICKUP', 'DELIVERY'] as OrderType[]).map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  onPress={() => setOrderType(type)}
-                  activeOpacity={0.7}
-                  className={`flex-1 rounded-xl border py-3 items-center ${
-                    orderType === type ? 'border-red-500 bg-red-500/20' : 'border-white/10 bg-white/5'
-                  }`}
-                >
-                  <Text className={`font-semibold text-sm ${orderType === type ? 'text-white' : 'text-zinc-400'}`}>
-                    {type === 'PICKUP' ? 'Recojo en tienda' : 'Delivery'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Dirección */}
-          {orderType === 'DELIVERY' && (
-            <View className="gap-2">
-              <View className="flex-row items-center justify-between">
-                <Text className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Dirección</Text>
-                <TouchableOpacity onPress={() => router.push({ pathname: '/(cliente)/addresses', params: { from: 'checkout' } })} activeOpacity={0.7}>
-                  <Text className="text-red-400 text-sm">Gestionar</Text>
-                </TouchableOpacity>
-              </View>
-              {loadingAddresses && (
-                <Text className="text-zinc-500 text-sm">Cargando direcciones...</Text>
-              )}
-              {!loadingAddresses && addresses.length === 0 && (
-                <View className="gap-2">
-                  <Text className="text-zinc-500 text-sm">No tienes direcciones guardadas.</Text>
-                  <Button label="Agregar dirección" variant="secondary" onPress={() => router.push({ pathname: '/(cliente)/addresses', params: { from: 'checkout' } })} />
-                </View>
-              )}
-              {!loadingAddresses && addresses.length > 0 && (
-                <View className="gap-2">
-                  {addresses.map((addr) => (
-                    <AddressCard
-                      key={addr.id}
-                      address={addr}
-                      selected={selectedAddressId === addr.id}
-                      onSelect={() => setSelectedAddressId(addr.id)}
-                    />
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Aviso sandbox Niubiz */}
-          {paymentMethod === 'NIUBIZ' && NIUBIZ_SANDBOX_ENABLED && (
-            <View className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3">
-              <Text className="text-yellow-300 text-xs font-medium">
-                Niubiz en modo sandbox. Flujo temporal de desarrollo — no usar en producción.
-              </Text>
-            </View>
-          )}
-
-          {/* Método de pago */}
-          <View className="gap-2">
-            <Text className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Método de pago</Text>
-            <View className="flex-row gap-3">
-              {PAYMENT_OPTIONS.map(({ method, label, icon }) => (
-                <TouchableOpacity
-                  key={method}
-                  onPress={() => setPaymentMethod(method)}
-                  activeOpacity={0.7}
-                  className={`flex-1 rounded-xl border py-3 items-center gap-1 ${
-                    paymentMethod === method ? 'border-red-500 bg-red-500/20' : 'border-white/10 bg-white/5'
-                  }`}
-                >
-                  <Ionicons
-                    name={icon as any}
-                    size={20}
-                    color={paymentMethod === method ? '#ffffff' : '#71717a'}
-                  />
-                  <Text className={`font-semibold text-sm ${paymentMethod === method ? 'text-white' : 'text-zinc-400'}`}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Notas */}
-          <View className="gap-2">
-            <Text className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Notas (opcional)</Text>
-            <TextInput
-              value={notes}
-              onChangeText={setNotes}
-              placeholder="Ej: Sin cebolla, extra salsa..."
-              placeholderTextColor="#52525b"
-              multiline
-              numberOfLines={3}
-              className="bg-zinc-900 text-white rounded-xl px-4 py-3 border border-white/10 text-sm"
-              style={{ textAlignVertical: 'top', minHeight: 80 }}
+          {!c.storeOpen && (
+            <InfoBanner
+              variant="error"
+              message={c.storeMessage || 'La tienda está cerrada. No puedes hacer pedidos en este momento.'}
             />
-          </View>
-
-          {/* Fuera de cobertura */}
-          {outOfRange && (
-            <View className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
-              <Text className="text-red-400 text-sm font-medium">
-                La dirección está fuera del área de cobertura ({deliveryKm.toFixed(1)} km). Máximo {MAX_DELIVERY_KM} km.
-              </Text>
-            </View>
           )}
 
-          {/* Resumen */}
-          <View className="bg-zinc-900 rounded-2xl p-4 gap-2 border border-white/5">
-            <Text className="text-white font-semibold mb-1">Resumen</Text>
-            {items.map((item) => (
-              <View key={item._cartId} className="flex-row justify-between">
-                <Text className="text-zinc-300 text-sm">{item.quantity}× {item.name}</Text>
-                <Text className="text-zinc-400 text-sm">Bs. {((item.unitPrice + item.extraPrice) * item.quantity).toFixed(2)}</Text>
-              </View>
-            ))}
-            <View className="h-px bg-white/10 my-1" />
-            <View className="flex-row justify-between">
-              <Text className="text-zinc-400 text-sm">Subtotal</Text>
-              <Text className="text-zinc-300 text-sm">Bs. {totalAmount.toFixed(2)}</Text>
-            </View>
-            {orderType === 'DELIVERY' && (
-              <View className="flex-row justify-between">
-                <Text className="text-zinc-400 text-sm">Delivery</Text>
-                {outOfRange && <Text className="text-red-400 text-sm">Fuera de cobertura</Text>}
-                {!outOfRange && selectedAddress && <Text className="text-zinc-300 text-sm">Bs. {deliveryFee.toFixed(2)}</Text>}
-                {!outOfRange && !selectedAddress && <Text className="text-zinc-500 text-sm">— selecciona dirección</Text>}
-              </View>
-            )}
-            <View className="flex-row justify-between">
-              <Text className="text-zinc-400 text-sm">Método de pago</Text>
-              <Text className="text-zinc-300 text-sm">
-                {paymentMethodLabel(paymentMethod)}
-              </Text>
-            </View>
-            <View className="h-px bg-white/10 my-1" />
-            <View className="flex-row justify-between">
-              <Text className="text-white font-bold">Total</Text>
-              <Text className="text-red-400 font-bold">Bs. {grandTotal.toFixed(2)}</Text>
-            </View>
-          </View>
+          {c.phoneJustVerified && (
+            <InfoBanner variant="success" message="✓ Número verificado. Ya puedes confirmar tu pedido." />
+          )}
 
-          <Button label="Confirmar pedido" onPress={handlePlace} loading={placing} disabled={!canPlace} />
+          <OrderTypeSelector value={c.orderType} onChange={c.setOrderType} />
+
+          {c.orderType === 'PICKUP' && <PickupSection />}
+
+          {c.orderType === 'DELIVERY' && (
+            <DeliveryAddressSection
+              addresses={c.addresses}
+              loading={c.loadingAddresses}
+              selectedId={c.selectedAddressId}
+              onSelect={c.setSelectedAddressId}
+              onManage={c.goToAddresses}
+            />
+          )}
+
+          <PaymentMethodSelector value={c.paymentMethod} onChange={c.setPaymentMethod} />
+
+          <CheckoutNotes value={c.notes} onChange={c.setNotes} />
+
+          {c.outOfRange && (
+            <InfoBanner
+              variant="error"
+              message={`La dirección está fuera del área de cobertura (${c.deliveryKm.toFixed(1)} km). Máximo ${c.maxDeliveryKm} km.`}
+            />
+          )}
+
+          <CheckoutSummary
+            items={c.items}
+            totalAmount={c.totalAmount}
+            grandTotal={c.grandTotal}
+            orderType={c.orderType}
+            outOfRange={c.outOfRange}
+            selectedAddress={c.selectedAddress}
+            deliveryFee={c.deliveryFee}
+            paymentMethod={c.paymentMethod}
+          />
+
+          <Button label="Confirmar pedido" onPress={c.handlePlace} loading={c.placing} disabled={!c.canPlace} />
         </View>
       </ScrollView>
     </>

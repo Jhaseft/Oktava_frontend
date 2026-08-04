@@ -4,6 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { ActiveOrderBar } from '@/src/components/order/ActiveOrderBar';
+import { SvgProps } from "react-native-svg";
+
+import HomeIcon from "@/assets/icons/casa.svg";
+import SearchIcon from "@/assets/icons/lupa.svg";
+import TagIcon from "@/assets/icons/etiqueta.svg";
+import UserIcon from "@/assets/icons/usuario.svg";
 
 // ─── Colores ───────────────────────────────────────────────────────────────────
 
@@ -45,17 +51,16 @@ function buildBarPath(width: number, height: number): string {
   ].join(' ');
 }
 
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 // ─── Ítem lateral (Inicio · Buscar · Ofertas · Perfil) ─────────────────────────
-
+type IconComponent = React.FC<SvgProps>;
 function SideItem({
-  icon,
+  icon: Icon,
   label,
   active,
   onPress,
 }: {
-  icon: IconName; 
+  icon: IconComponent;
   label: string;
   active: boolean;
   onPress: () => void;
@@ -66,8 +71,17 @@ function SideItem({
       activeOpacity={0.7}
       className="flex-1 items-center justify-center gap-1 py-1"
     >
-      <Ionicons name={icon} size={26} color={active ? ACTIVE : INACTIVE} />
-      <Text className={`text-[12px]  font-lemon-bold uppercase ${active ? 'text-brand-red' : 'text-brand-black'}`}>
+      <Icon
+        width={26}
+        height={26}
+        color={active ? ACTIVE : INACTIVE}
+      />
+
+      <Text
+        className={`text-[12px] font-lemon-bold uppercase ${
+          active ? "text-brand-red" : "text-brand-black"
+        }`}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -160,11 +174,11 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           className="flex-row items-end px-2"
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, paddingBottom: bottomPad }}
         >
-          <SideItem icon="home-outline" label="Inicio" active={currentName === 'index'} onPress={() => goToTab('index')} />
-          <SideItem icon="search-outline" label="Buscar" active={currentName === 'search'} onPress={() => goToTab('search')} />
+          <SideItem icon={HomeIcon} label="Inicio" active={currentName === 'index'} onPress={() => goToTab('index')} />
+          <SideItem icon={SearchIcon} label="Buscar" active={currentName === 'search'} onPress={() => goToTab('search')} />
           <CenterLabel active={currentName === 'menu'} />
-          <SideItem icon="pricetag-outline" label="Ofertas" active={false} onPress={goToOfertas} />
-          <SideItem icon="person-outline" label="Perfil" active={currentName === 'profile'} onPress={() => goToTab('profile')} />
+          <SideItem icon={TagIcon} label="Ofertas" active={false} onPress={goToOfertas} />
+          <SideItem icon={UserIcon} label="Perfil" active={currentName === 'profile'} onPress={() => goToTab('profile')} />
         </View>
 
    

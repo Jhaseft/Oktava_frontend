@@ -11,17 +11,17 @@ type ButtonProps = TouchableOpacityProps & {
 const base = 'flex-row items-center justify-center rounded-xl px-4 py-3';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-red-500',
-  secondary: 'bg-white/10 border border-white/20',
+  primary: 'bg-brand-red',
+  secondary: 'bg-white border border-brand-border',
   ghost: 'bg-transparent',
-  danger: 'bg-red-900/60 border border-red-700',
+  danger: 'bg-white border border-brand-red',
 };
 
 const textVariants: Record<Variant, string> = {
-  primary: 'text-white font-semibold text-base',
-  secondary: 'text-white font-semibold text-base',
-  ghost: 'text-red-400 font-semibold text-base',
-  danger: 'text-red-300 font-semibold text-base',
+  primary: 'text-white font-lemon-bold text-base',
+  secondary: 'text-brand-black font-lemon-bold text-base',
+  ghost: 'text-brand-red font-lemon-bold text-base',
+  danger: 'text-brand-red font-lemon-bold text-base',
 };
 
 export function Button({ label, variant = 'primary', loading, disabled, className, ...props }: ButtonProps) {

@@ -2,10 +2,18 @@ export const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?
 
 export const hasGoogleMapsKey = GOOGLE_MAPS_API_KEY.length > 0;
 
+/**
+ * Arma dinámicamente el link de Google Maps a partir de una dirección (texto o
+ * "lat,lng"). Sirve para abrir la ubicación sin exponer coordenadas en la UI.
+ */
+export function mapsSearchUrl(query: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query.trim())}`;
+}
+
 // ─── Delivery fee ──────────────────────────────────────────────────────────
 
-export const STORE_LAT = -17.392267;
-export const STORE_LNG = -66.069302;
+export const STORE_LAT = -17.3924456;
+export const STORE_LNG = -66.0693175;
 export const MAX_DELIVERY_KM = 14;
 
 export function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {

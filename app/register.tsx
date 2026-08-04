@@ -1,418 +1,142 @@
-import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { Eye, EyeOff } from "lucide-react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { authApi, ApiError, setPendingSignUp } from "@/src/services/authApi";
-import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
-import {
-  PhoneNumberInput,
-  DEFAULT_COUNTRY,
-  toE164,
-  type CountryCode,
-} from "@/src/components/phone/PhoneNumberInput";
-
-const logoImg = require("../assets/oktava_logo.png");
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function isValidEmail(email: string) {
-  return /\S+@\S+\.\S+/.test(email.trim());
-}
-
-function field(hasError: boolean) {
-  return {
-    backgroundColor: "#000",
-    borderWidth: 1,
-    borderColor: hasError ? "#ef4444" : "#374151",
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: "#d1d5db",
-    fontSize: 16,
-  };
-}
-
-// ─── Componente ───────────────────────────────────────────────────────────────
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { useRegisterForm } from '@/src/hooks/useRegisterForm';
+import { PhoneNumberInput } from '@/src/components/phone/PhoneNumberInput';
+import { AuthLogo } from '@/src/components/auth/AuthLogo';
+import { AuthTextField } from '@/src/components/auth/AuthTextField';
+import { AuthErrorBanner } from '@/src/components/auth/AuthErrorBanner';
+import { AuthPrimaryButton } from '@/src/components/auth/AuthPrimaryButton';
+import { AuthDivider } from '@/src/components/auth/AuthDivider';
+import { GoogleButton } from '@/src/components/auth/GoogleButton';
+import { TermsCheckbox } from '@/src/components/auth/TermsCheckbox';
 
 export default function RegisterScreen() {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [dialCode, setDialCode] = useState<CountryCode>(DEFAULT_COUNTRY);
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  const [firstNameTouched, setFirstNameTouched] = useState(false);
-  const [lastNameTouched, setLastNameTouched] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [phoneTouched, setPhoneTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [confirmTouched, setConfirmTouched] = useState(false);
-  const [termsTouched, setTermsTouched] = useState(false);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const { handleGoogleSignIn, isGoogleLoading, googleError } = useGoogleSignIn();
-  const displayError = error ?? googleError;
-  const anyLoading = isLoading || isGoogleLoading;
-
-  const firstNameIsValid = useMemo(() => firstName.trim().length > 0, [firstName]);
-  const lastNameIsValid  = useMemo(() => lastName.trim().length > 0, [lastName]);
-  const emailIsValid     = useMemo(() => isValidEmail(email), [email]);
-  const phoneIsValid     = useMemo(() => phone.trim().length >= 7, [phone]);
-  const passwordIsValid  = useMemo(() => password.length >= 8, [password]);
-  const confirmIsValid   = useMemo(
-    () => confirmPassword.length > 0 && confirmPassword === password,
-    [confirmPassword, password],
-  );
-
-  const canSubmit =
-    firstNameIsValid &&
-    lastNameIsValid &&
-    emailIsValid &&
-    phoneIsValid &&
-    passwordIsValid &&
-    confirmIsValid &&
-    acceptedTerms;
-
-  const showFirstNameError = firstNameTouched && !firstNameIsValid;
-  const showLastNameError  = lastNameTouched  && !lastNameIsValid;
-  const showEmailError     = emailTouched     && email.length > 0    && !emailIsValid;
-  const showPhoneError     = phoneTouched     && phone.length > 0    && !phoneIsValid;
-  const showPasswordError  = passwordTouched  && password.length > 0 && !passwordIsValid;
-  const showConfirmError   = confirmTouched   && confirmPassword.length > 0 && !confirmIsValid;
-  const showTermsError     = termsTouched     && !acceptedTerms;
-
-  const handleContinue = async () => {
-    setFirstNameTouched(true);
-    setLastNameTouched(true);
-    setEmailTouched(true);
-    setPhoneTouched(true);
-    setPasswordTouched(true);
-    setConfirmTouched(true);
-    setTermsTouched(true);
-    setError(null);
-
-    if (!canSubmit) return;
-
-    setIsLoading(true);
-    try {
-      await authApi.sendVerification(email.trim());
-      setPendingSignUp({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        email: email.trim(),
-        phone: toE164(dialCode, phone),
-        password,
-      });
-      router.push("/verify-code");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(
-          err.statusCode === 409
-            ? "Este email ya tiene una cuenta. Inicia sesion."
-            : err.message,
-        );
-      } else {
-        setError("Sin conexion. Verifica tu internet.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const f = useRegisterForm();
+  const v = f.values;
 
   return (
-    <LinearGradient colors={["#450a0a", "#000000"]} style={{ flex: 1 }}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View className="flex-1 items-center justify-center gap-8 px-5 py-10">
-            <View className="w-full items-center gap-3">
-              <Image
-                source={logoImg}
-                style={{ width: 180, height: 45, alignSelf: 'center' }}
-                resizeMode="contain"
-              />
-              <Text className="text-4xl font-bold text-white">Crea tu cuenta gratis</Text>
-              <Text className="text-gray-400 text-center">
+    <View className="flex-1 bg-white">
+      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} keyboardShouldPersistTaps="handled">
+          <View className="items-center justify-center gap-6 px-5 py-10">
+            <View className="w-full items-center gap-2">
+              <AuthLogo />
+              <Text className="text-2xl font-lemon-bold text-brand-black text-center mt-2">Crea tu cuenta gratis</Text>
+              <Text className="text-brand-muted font-lemon text-center text-[13px]">
                 Crea tu cuenta y comienza a disfrutar de Oktava
               </Text>
             </View>
 
-            <View className="w-full gap-5">
-              {displayError && (
-                <View className="rounded-lg border border-red-500/50 bg-red-500/10 px-4 py-3">
-                  <Text className="text-sm text-white">{displayError}</Text>
-                </View>
-              )}
+            <View className="w-full gap-4">
+              {f.displayError && <AuthErrorBanner message={f.displayError} />}
 
-              <Text className="text-center text-3xl font-bold text-white">Crear Cuenta</Text>
-
-              {/* Nombre / Apellido */}
               <View className="flex-row gap-3">
-                <View className="flex-1 gap-2">
-                  <Text className="text-sm font-medium text-gray-400">Nombre</Text>
-                  <TextInput
-                    value={firstName}
-                    onChangeText={(t) => { setFirstName(t); setError(null); if (!firstNameTouched) setFirstNameTouched(true); }}
+                <View className="flex-1">
+                  <AuthTextField
+                    label="Nombre"
+                    value={v.firstName}
+                    onChangeText={f.onChange.firstName}
+                    error={f.errors.firstName}
                     placeholder="Tu nombre"
-                    placeholderTextColor="#4b5563"
-                    editable={!isLoading}
+                    editable={!f.isLoading}
                     maxLength={100}
-                    style={field(showFirstNameError)}
                   />
-                  {showFirstNameError && <Text className="text-sm text-red-500">Requerido.</Text>}
                 </View>
-                <View className="flex-1 gap-2">
-                  <Text className="text-sm font-medium text-gray-400">Apellido</Text>
-                  <TextInput
-                    value={lastName}
-                    onChangeText={(t) => { setLastName(t); setError(null); if (!lastNameTouched) setLastNameTouched(true); }}
+                <View className="flex-1">
+                  <AuthTextField
+                    label="Apellido"
+                    value={v.lastName}
+                    onChangeText={f.onChange.lastName}
+                    error={f.errors.lastName}
                     placeholder="Tu apellido"
-                    placeholderTextColor="#4b5563"
-                    editable={!isLoading}
+                    editable={!f.isLoading}
                     maxLength={100}
-                    style={field(showLastNameError)}
                   />
-                  {showLastNameError && <Text className="text-sm text-red-500">Requerido.</Text>}
                 </View>
               </View>
 
-              {/* Email */}
-              <View className="gap-2">
-                <Text className="text-sm font-medium text-gray-400">Correo electronico</Text>
-                <TextInput
-                  value={email}
-                  onChangeText={(t) => { setEmail(t); setError(null); if (!emailTouched) setEmailTouched(true); }}
-                  placeholder="tu@ejemplo.com"
-                  placeholderTextColor="#4b5563"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  editable={!isLoading}
-                  maxLength={254}
-                  style={field(showEmailError)}
-                />
-                {showEmailError && (
-                  <Text className="text-sm text-red-500">Ingresa un correo electronico valido.</Text>
-                )}
-              </View>
+              <AuthTextField
+                label="Correo electrónico"
+                value={v.email}
+                onChangeText={f.onChange.email}
+                error={f.errors.email}
+                placeholder="tu@ejemplo.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="email"
+                textContentType="emailAddress"
+                editable={!f.isLoading}
+                maxLength={254}
+              />
 
-              {/* Teléfono con selector de código */}
               <View className="gap-2">
-                <Text className="text-sm font-medium text-gray-400">Numero de telefono</Text>
+                <Text className="text-brand-black text-[13px] font-lemon-medium">Número de teléfono</Text>
                 <PhoneNumberInput
-                  number={phone}
-                  onChangeNumber={(t) => {
-                    setPhone(t);
-                    setError(null);
-                    if (!phoneTouched) setPhoneTouched(true);
-                  }}
-                  dial={dialCode}
-                  onChangeDial={setDialCode}
-                  error={showPhoneError}
-                  editable={!isLoading}
+                  number={v.phone}
+                  onChangeNumber={f.onChange.phone}
+                  dial={v.dialCode}
+                  onChangeDial={f.onChange.dialCode}
+                  error={!!f.errors.phone}
+                  editable={!f.isLoading}
                 />
-                {showPhoneError && (
-                  <Text className="text-sm text-red-500">
-                    Ingresa un numero valido (min. 7 digitos).
-                  </Text>
-                )}
+                {f.errors.phone && <Text className="text-brand-red text-[12px] font-lemon">{f.errors.phone}</Text>}
               </View>
 
-              {/* Contraseña */}
+              <AuthTextField
+                label="Contraseña"
+                value={v.password}
+                onChangeText={f.onChange.password}
+                error={f.errors.password}
+                secure
+                placeholder="**********"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="password-new"
+                textContentType="newPassword"
+                editable={!f.isLoading}
+                maxLength={128}
+              />
+
+              <AuthTextField
+                label="Confirmar contraseña"
+                value={v.confirmPassword}
+                onChangeText={f.onChange.confirmPassword}
+                error={f.errors.confirm}
+                secure
+                placeholder="**********"
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="password-new"
+                textContentType="newPassword"
+                editable={!f.isLoading}
+                maxLength={128}
+              />
+
               <View className="gap-2">
-                <Text className="text-sm font-medium text-gray-400">Contrasena</Text>
-                <View style={{ position: "relative" }}>
-                  <TextInput
-                    value={password}
-                    onChangeText={(t) => { setPassword(t); setError(null); if (!passwordTouched) setPasswordTouched(true); }}
-                    placeholder="**********"
-                    placeholderTextColor="#4b5563"
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    autoComplete="password-new"
-                    textContentType="newPassword"
-                    editable={!isLoading}
-                    maxLength={128}
-                    style={[field(showPasswordError), { paddingRight: 48 }]}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword((v) => !v)}
-                    style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
-                  >
-                    {showPassword ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
-                  </TouchableOpacity>
-                </View>
-                {showPasswordError && (
-                  <Text className="text-sm text-red-500">Minimo 8 caracteres.</Text>
-                )}
+                <TermsCheckbox checked={v.acceptedTerms} onToggle={f.toggleTerms} disabled={f.isLoading} />
+                {f.errors.terms && <Text className="text-brand-red text-[12px] font-lemon">{f.errors.terms}</Text>}
               </View>
 
-              {/* Confirmar contraseña */}
-              <View className="gap-2">
-                <Text className="text-sm font-medium text-gray-400">Confirmar contrasena</Text>
-                <View style={{ position: "relative" }}>
-                  <TextInput
-                    value={confirmPassword}
-                    onChangeText={(t) => { setConfirmPassword(t); setError(null); if (!confirmTouched) setConfirmTouched(true); }}
-                    placeholder="**********"
-                    placeholderTextColor="#4b5563"
-                    secureTextEntry={!showConfirm}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    autoComplete="password-new"
-                    textContentType="newPassword"
-                    editable={!isLoading}
-                    maxLength={128}
-                    style={[field(showConfirmError), { paddingRight: 48 }]}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowConfirm((v) => !v)}
-                    style={{ position: "absolute", right: 12, top: 0, bottom: 0, justifyContent: "center" }}
-                  >
-                    {showConfirm ? <EyeOff size={20} color="#6b7280" /> : <Eye size={20} color="#6b7280" />}
-                  </TouchableOpacity>
-                </View>
-                {showConfirmError && (
-                  <Text className="text-sm text-red-500">Las contrasenas no coinciden.</Text>
-                )}
-              </View>
+              <AuthPrimaryButton label="Continuar" onPress={f.handleContinue} loading={f.isLoading} disabled={!f.canSubmit} />
 
-              {/* Términos */}
-              <Pressable
-                onPress={() => { setAcceptedTerms((p) => !p); setTermsTouched(true); setError(null); }}
-                disabled={isLoading}
-                className="flex-row items-start gap-3"
-              >
-                <View
-                  style={{
-                    marginTop: 2,
-                    width: 18,
-                    height: 18,
-                    borderRadius: 4,
-                    borderWidth: 1,
-                    borderColor: acceptedTerms ? "#ef4444" : "#6b7280",
-                    backgroundColor: acceptedTerms ? "#ef4444" : "transparent",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {acceptedTerms && (
-                    <View style={{ width: 8, height: 8, borderRadius: 2, backgroundColor: "white" }} />
-                  )}
-                </View>
-                <Text className="flex-1 text-sm text-gray-400">
-                  Acepto los terminos y condiciones y las politicas de privacidad.
-                </Text>
-              </Pressable>
-              {showTermsError && (
-                <Text className="text-sm text-red-500">Debes aceptar los terminos para continuar.</Text>
-              )}
+              <AuthDivider label="O continúa con" />
 
-              {/* Continuar */}
-              <Pressable
-                onPress={handleContinue}
-                disabled={!canSubmit || isLoading}
-                style={{
-                  backgroundColor: canSubmit && !isLoading ? "#b91c1c" : "#7f1d1d",
-                  borderRadius: 8,
-                  height: 48,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {isLoading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="text-base font-semibold text-white">Continuar</Text>
-                )}
-              </Pressable>
+              <GoogleButton onPress={f.handleGoogleSignIn} loading={f.isGoogleLoading} disabled={f.anyLoading} />
 
-              {/* Divider */}
-              <View className="relative my-2">
-                <View className="absolute inset-0 flex-row items-center">
-                  <View className="flex-1 border-t border-[#4b5563]" />
-                </View>
-                <View className="items-center">
-                  <Text className="px-2 text-sm text-gray-400" style={{ backgroundColor: "transparent" }}>
-                    O continua con
-                  </Text>
-                </View>
-              </View>
-
-              {/* Google */}
-              <Pressable
-                onPress={handleGoogleSignIn}
-                disabled={anyLoading}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 10,
-                  borderWidth: 1,
-                  borderColor: "#374151",
-                  borderRadius: 8,
-                  height: 48,
-                  backgroundColor: "transparent",
-                  opacity: anyLoading ? 0.5 : 1,
-                }}
-              >
-                {isGoogleLoading ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : (
-                  <>
-                    <FontAwesome name="google" size={20} color="white" />
-                    <Text className="text-base font-medium text-white">Continuar con Google</Text>
-                  </>
-                )}
-              </Pressable>
-
-              <Pressable onPress={() => router.push("/login")} disabled={isLoading}>
-                <Text className="text-center text-sm text-gray-400">
-                  Ya tienes cuenta? <Text className="text-red-400">Inicia sesion</Text>
+              <Pressable onPress={() => router.push('/login')} disabled={f.isLoading}>
+                <Text className="text-center text-[13px] font-lemon text-brand-muted">
+                  ¿Ya tienes cuenta? <Text className="text-brand-red font-lemon-bold">Inicia sesión</Text>
                 </Text>
               </Pressable>
 
-              <Pressable
-                onPress={() => router.replace("/(cliente)/")}
-                disabled={isLoading}
-                style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-              >
-                <Text className="text-center text-sm text-gray-600  ">
-                  Ver menú sin cuenta →
-                </Text>
+              <Pressable onPress={() => router.replace('/(cliente)/')} disabled={f.isLoading} className="active:opacity-60">
+                <Text className="text-center text-[12px] font-lemon-medium text-brand-muted">Ver menú sin cuenta →</Text>
               </Pressable>
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }

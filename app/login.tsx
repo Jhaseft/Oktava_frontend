@@ -1,271 +1,93 @@
-import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import { router } from "expo-router";
-import { Eye, EyeOff } from "lucide-react-native";
-import { FontAwesome } from "@expo/vector-icons";
-import { useAuth } from "@/src/context/AuthContext";
-import { authApi, ApiError } from "@/src/services/authApi";
-import { useGoogleSignIn } from "@/src/hooks/useGoogleSignIn";
-
-const logoImg = require("../assets/oktava_logo.png");
-
-function isValidEmail(email: string) {
-  return /\S+@\S+\.\S+/.test(email.trim());
-}
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { useLoginForm } from '@/src/hooks/useLoginForm';
+import { AuthLogo } from '@/src/components/auth/AuthLogo';
+import { AuthTextField } from '@/src/components/auth/AuthTextField';
+import { AuthErrorBanner } from '@/src/components/auth/AuthErrorBanner';
+import { AuthPrimaryButton } from '@/src/components/auth/AuthPrimaryButton';
+import { AuthDivider } from '@/src/components/auth/AuthDivider';
+import { GoogleButton } from '@/src/components/auth/GoogleButton';
 
 export default function LoginScreen() {
-  const { signIn } = useAuth();
-  const { handleGoogleSignIn, isGoogleLoading, googleError, clearGoogleError } = useGoogleSignIn();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const displayError = error ?? googleError;
-  const anyLoading = isLoading || isGoogleLoading;
-
-  const emailIsValid = useMemo(() => isValidEmail(email), [email]);
-  const passwordIsValid = useMemo(() => password.trim().length >= 6, [password]);
-  const canSubmit = emailIsValid && passwordIsValid;
-
-  const showEmailError = emailTouched && email.length > 0 && !emailIsValid;
-  const showPasswordError = passwordTouched && password.length > 0 && !passwordIsValid;
-
-  const handleLogin = async () => {
-    setEmailTouched(true);
-    setPasswordTouched(true);
-    setError(null);
-
-    if (!canSubmit) return;
-
-    setIsLoading(true);
-    try {
-      const { accessToken, user } = await authApi.signIn(email.trim(), password);
-      await signIn(accessToken, user);
-      router.replace("/(cliente)/");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.statusCode === 401 ? "Credenciales inválidas" : err.message);
-      } else {
-        setError("Sin conexión. Verifica tu internet.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const inputBase = "bg-[#1a1a1a] border border-[#3a3a3a] rounded-md px-4 py-3.5 text-white text-[15px]";
-  const inputErr  = "bg-[#1a1a1a] border border-[#c1121f] rounded-md px-4 py-3.5 text-white text-[15px]";
+  const f = useLoginForm();
 
   return (
-    <View className="flex-1 bg-black">
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+    <View className="flex-1 bg-white">
+      <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
           className="px-6 py-8"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View>
+          <View className="gap-4">
+            <AuthLogo />
 
-          
-            <Image
-              source={logoImg}
-              style={{ width: 180, height: 45, alignSelf: 'center', marginBottom: 12 }}
-              resizeMode="contain"
+            <Text className="text-brand-black text-center text-[12px] font-lemon-bold uppercase leading-[18px] mb-2" style={{ letterSpacing: 0.8 }}>
+              INICIA SESIÓN O CREA UNA CUENTA CON{'\n'}TU CORREO ELECTRÓNICO
+            </Text>
+
+            {f.displayError && <AuthErrorBanner message={f.displayError} />}
+
+            <AuthTextField
+              label="Dirección de correo electrónico"
+              required
+              value={f.email}
+              onChangeText={f.onChangeEmail}
+              error={f.emailError}
+              placeholder="tu@ejemplo.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+              textContentType="emailAddress"
+              editable={!f.isLoading}
+              maxLength={254}
+              onSubmitEditing={f.handleLogin}
             />
 
-       
-            <Text
-              className="text-white text-center text-[12px] font-bold uppercase mb-7 leading-[18px]"
-              style={{ letterSpacing: 0.8 }}
-            >
-              INICIA SESIÓN O CREA UNA CUENTA CON{"\n"}TU CORREO ELECTRÓNICO
+            <AuthTextField
+              label="Contraseña"
+              required
+              value={f.password}
+              onChangeText={f.onChangePassword}
+              error={f.passwordError}
+              secure
+              placeholder="••••••••••"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="password"
+              textContentType="password"
+              editable={!f.isLoading}
+              maxLength={128}
+              onSubmitEditing={f.handleLogin}
+            />
+
+            <Pressable onPress={() => router.push('/forgot-password')} disabled={f.isLoading} className="self-end active:opacity-60">
+              <Text className="text-brand-red text-[12px] font-lemon-medium">¿Olvidaste tu contraseña?</Text>
+            </Pressable>
+
+            <Text className="text-brand-muted text-[11px] font-lemon leading-4 mb-1">
+              Al registro o inicio de sesión, aceptas nuestras{' '}
+              <Text className="text-brand-red underline">Políticas de privacidad</Text> y{' '}
+              <Text className="text-brand-red underline">Términos y condiciones</Text>
             </Text>
 
-           
-            {displayError && (
-              <View className="bg-[#1a0000] border border-[#c1121f] rounded-md px-3.5 py-2.5 mb-4">
-                <Text className="text-[#ff4444] text-[13px]">{displayError}</Text>
-              </View>
-            )}
+            <AuthPrimaryButton label="Iniciar sesión" onPress={f.handleLogin} loading={f.isLoading} disabled={!f.canSubmit} />
 
-       
-            <View className="mb-4">
-              <Text className="text-white text-[13px] font-semibold mb-2">
-                Dirección de correo electrónico *
-              </Text>
-              <TextInput
-                value={email}
-                onChangeText={(text) => {
-                  setEmail(text);
-                  setError(null);
-                  clearGoogleError();
-                  if (!emailTouched) setEmailTouched(true);
-                }}
-                placeholder="tu@ejemplo.com"
-                placeholderTextColor="#555555"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                textContentType="emailAddress"
-                editable={!isLoading}
-                maxLength={254}
-                onSubmitEditing={handleLogin}
-                className={showEmailError ? inputErr : inputBase}
-              />
-              {showEmailError && (
-                <Text className="text-[#c1121f] text-[12px] mt-1">
-                  Ingresa un correo electrónico válido.
-                </Text>
-              )}
-            </View>
+            <AuthDivider />
 
-     
-            <View className="mb-2">
-              <Text className="text-white text-[13px] font-semibold mb-2">
-                Contraseña *
-              </Text>
-              <View className="relative">
-                <TextInput
-                  value={password}
-                  onChangeText={(text) => {
-                    setPassword(text);
-                    setError(null);
-                    clearGoogleError();
-                    if (!passwordTouched) setPasswordTouched(true);
-                  }}
-                  placeholder="••••••••••"
-                  placeholderTextColor="#555555"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  secureTextEntry={!showPassword}
-                  autoComplete="password"
-                  textContentType="password"
-                  editable={!isLoading}
-                  maxLength={128}
-                  onSubmitEditing={handleLogin}
-                  className={`${showPasswordError ? inputErr : inputBase} pr-12`}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword((v) => !v)}
-                  className="absolute right-3.5 top-0 bottom-0 justify-center"
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                >
-                  {showPassword
-                    ? <EyeOff size={18} color="#666666" />
-                    : <Eye size={18} color="#666666" />
-                  }
-                </TouchableOpacity>
-              </View>
-              {showPasswordError && (
-                <Text className="text-[#c1121f] text-[12px] mt-1">
-                  La contraseña debe tener al menos 6 caracteres.
-                </Text>
-              )}
-            </View>
+            <GoogleButton onPress={f.handleGoogleSignIn} loading={f.isGoogleLoading} disabled={f.anyLoading} />
 
-          
-            <Pressable
-              onPress={() => router.push("/forgot-password")}
-              disabled={isLoading}
-              className="self-end mt-1 mb-3 active:opacity-60"
-            >
-              <Text className="text-[#c1121f] text-[12px]">
-                ¿Olvidaste tu contraseña?
-              </Text>
-            </Pressable>
-
-    
-            <Text className="text-[#888888] text-[11px] leading-4 mb-6">
-              Al registro o inicio de sesión, aceptas nuestras{" "}
-              <Text className="text-[#c1121f] underline">Políticas de privacidad</Text>
-              {" "}y{" "}
-              <Text className="text-[#c1121f] underline">Términos y condiciones</Text>
-            </Text>
-
-      
-            <Pressable
-              onPress={handleLogin}
-              disabled={!canSubmit || isLoading}
-              className={`${canSubmit && !isLoading ? "bg-[#b91c1c]" : "bg-[#7f1d1d]"} rounded-lg h-12 items-center justify-center mb-6`}
-            >
-              {isLoading
-                ? <ActivityIndicator color="#ffffff" />
-                : <Text className="text-white text-base font-semibold">Iniciar Sesión</Text>
-              }
-            </Pressable>
-
-     
-            <View className="flex-row items-center mb-5">
-              <View className="flex-1 h-px bg-[#333333]" />
-              <Text className="text-[#888888] text-[13px] mx-3.5">O</Text>
-              <View className="flex-1 h-px bg-[#333333]" />
-            </View>
-
-          
-            <Pressable
-              onPress={handleGoogleSignIn}
-              disabled={anyLoading}
-              className={`flex-row items-center justify-center gap-2.5 border border-[#333333] rounded-full h-[50px] mb-5 ${anyLoading ? "opacity-50" : ""}`}
-            >
-              {isGoogleLoading ? (
-                <ActivityIndicator color="#ffffff" size="small" />
-              ) : (
-                <>
-                  <FontAwesome name="google" size={18} color="#ffffff" />
-                  <Text className="text-white text-[13px] font-semibold">
-                    Continuar con Google
-                  </Text>
-                </>
-              )}
-            </Pressable>
-
-         
-            <Pressable
-              onPress={() => router.push("/register")}
-              disabled={isLoading}
-              className="active:opacity-60"
-            >
-              <Text
-                className="text-[#c1121f] text-center text-[12px] font-bold uppercase"
-                style={{ letterSpacing: 0.8 }}
-              >
+            <Pressable onPress={() => router.push('/register')} disabled={f.isLoading} className="active:opacity-60 mt-1">
+              <Text className="text-brand-red text-center text-[12px] font-lemon-bold uppercase" style={{ letterSpacing: 0.8 }}>
                 ¿NO TIENES CUENTA? REGÍSTRATE
               </Text>
             </Pressable>
 
-          
-            <Pressable
-              onPress={() => router.replace("/(cliente)/")}
-              disabled={isLoading}
-              className="mt-4 active:opacity-60"
-            >
-              <Text className="text-[#555555] text-center text-[12px] font-semibold">
-                Ver menú sin cuenta →
-              </Text>
+            <Pressable onPress={() => router.replace('/(cliente)/')} disabled={f.isLoading} className="mt-2 active:opacity-60">
+              <Text className="text-brand-muted text-center text-[12px] font-lemon-medium">Ver menú sin cuenta →</Text>
             </Pressable>
-
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
