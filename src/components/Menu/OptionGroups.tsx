@@ -9,7 +9,21 @@ const OPTION_PLACEHOLDER = 'https://images.unsplash.com/photo-1546069901-ba9599a
 export type Selections = Map<string, Set<string>>;
 
 export function isSingleSelect(group: OptionGroup): boolean {
-  return !group.isMultiple;
+  return group.maxSelections <= 1;
+}
+
+// Mínimo real de opciones a elegir: un grupo requerido siempre exige al menos 1.
+export function minRequired(group: OptionGroup): number {
+  return group.isRequired ? Math.max(1, group.minSelections) : group.minSelections;
+}
+
+// Texto guía que se muestra a la derecha del nombre del grupo.
+export function selectionHint(group: OptionGroup): string {
+  const { minSelections: min, maxSelections: max } = group;
+  if (max <= 1) return group.isRequired ? 'Elige 1' : 'Elige 1 o ninguno';
+  if (min > 0 && min === max) return `Elige ${max}`;
+  if (min > 0) return `Elige ${min}–${max}`;
+  return `Elige hasta ${max}`;
 }
 
 function groupHasImages(group: OptionGroup): boolean {
@@ -31,7 +45,7 @@ export function calcExtra(groups: OptionGroup[], selections: Selections): number
 export function validateSelections(groups: OptionGroup[], selections: Selections): Set<string> {
   const errors = new Set<string>();
   for (const group of groups) {
-    if (group.isRequired && (selections.get(group.id)?.size ?? 0) === 0) errors.add(group.id);
+    if ((selections.get(group.id)?.size ?? 0) < minRequired(group)) errors.add(group.id);
   }
   return errors;
 }
@@ -53,10 +67,10 @@ export function toggleSelection(prev: Selections, group: OptionGroup, option: Op
   const next = new Map(prev);
   const current = new Set(next.get(group.id) ?? []);
 
-  if (group.isMultiple) {
-    // Multi-selección: cada opción se agrega/quita libremente.
+  if (group.maxSelections > 1) {
+    // Multi-selección: se agrega/quita libremente, respetando el tope máximo.
     if (current.has(option.id)) current.delete(option.id);
-    else current.add(option.id);
+    else if (current.size < group.maxSelections) current.add(option.id);
     next.set(group.id, current);
   } else if (current.has(option.id) && !group.isRequired) {
     // Single-select opcional: tocar la ya elegida la deselecciona (puede quedar vacío).
@@ -133,10 +147,10 @@ export function OptionGroups({ product, selections, errors, onToggle }: Props) {
       {groups.map((group) => {
         const selectedIds = selections.get(group.id) ?? new Set<string>();
         const hasError = errors.has(group.id);
-        const single = isSingleSelect(group);
         const useCards = groupHasImages(group);
+        const min = minRequired(group);
         // Cuadrado (deseleccionable) para múltiples u opcionales; círculo (radio) solo para single requerido.
-        const box = group.isMultiple || !group.isRequired;
+        const box = group.maxSelections > 1 || !group.isRequired;
 
         return (
           <View key={group.id} style={{ marginBottom: 24 }}>
@@ -152,13 +166,13 @@ export function OptionGroups({ product, selections, errors, onToggle }: Props) {
                   </Text>
                 </View>
               </View>
-              <Text className="font-lemon text-brand-muted" style={{ fontSize: 12 }}>{single ? 'Elige 1' : 'Elige varios'}</Text>
+              <Text className="font-lemon text-brand-muted" style={{ fontSize: 12 }}>{selectionHint(group)}</Text>
             </View>
 
             {hasError && (
               <View className="flex-row items-center rounded-xl" style={{ gap: 8, backgroundColor: 'rgba(193,18,31,0.08)', paddingHorizontal: 12, paddingVertical: 10, marginBottom: 10 }}>
                 <Ionicons name="warning" size={14} color="#c1121f" />
-                <Text className="flex-1 font-lemon-medium text-brand-red" style={{ fontSize: 12 }}>Selecciona al menos 1 opción para continuar.</Text>
+                <Text className="flex-1 font-lemon-medium text-brand-red" style={{ fontSize: 12 }}>{`Selecciona al menos ${min} ${min > 1 ? 'opciones' : 'opción'} para continuar.`}</Text>
               </View>
             )}
 

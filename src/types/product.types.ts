@@ -18,7 +18,8 @@ export type OptionGroup = {
   id: string;
   name: string;
   isRequired: boolean;
-  isMultiple: boolean;
+  minSelections: number;
+  maxSelections: number;
   options: OptionItem[];
 };
 
