@@ -69,9 +69,9 @@ export function ProductDetailModal({ visible, product, onConfirm, onClose }: Pro
           className="bg-white"
           style={{ borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '88%', overflow: 'hidden' }}
         >
-          <View style={{ height: 210 }}>
+          <View style={{ height: 210, backgroundColor: colors.surface }}>
             {product.imageUrl ? (
-              <Image source={{ uri: product.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+              <Image source={{ uri: product.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
             ) : (
               <View className="items-center justify-center" style={{ width: '100%', height: '100%', backgroundColor: colors.surface }}>
                 <Ionicons name="restaurant-outline" size={56} color="#cccccc" />
@@ -88,9 +88,10 @@ export function ProductDetailModal({ visible, product, onConfirm, onClose }: Pro
           </View>
 
           <ScrollView
-            style={{ flexGrow: 0 }}
+            style={{ flexGrow: 0, flexShrink: 1 }}
             contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             <View className="flex-row items-start justify-between" style={{ gap: 12 }}>
               <Text className="flex-1 font-lemon-bold text-brand-black" style={{ fontSize: 20, lineHeight: 25 }}>{product.name}</Text>

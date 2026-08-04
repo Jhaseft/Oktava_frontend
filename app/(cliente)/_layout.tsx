@@ -3,8 +3,8 @@ import { TouchableOpacity, View, Text, useWindowDimensions } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { ActiveOrderBar } from '@/src/components/order/ActiveOrderBar';
 import { SvgProps } from "react-native-svg";
+import { useOrders } from '@/src/context/OrderContext';
 
 import HomeIcon from "@/assets/icons/casa.svg";
 import SearchIcon from "@/assets/icons/lupa.svg";
@@ -59,11 +59,13 @@ function SideItem({
   label,
   active,
   onPress,
+  badge = false,
 }: {
   icon: IconComponent;
   label: string;
   active: boolean;
   onPress: () => void;
+  badge?: boolean;
 }) {
   return (
     <TouchableOpacity
@@ -71,11 +73,19 @@ function SideItem({
       activeOpacity={0.7}
       className="flex-1 items-center justify-center gap-1 py-1"
     >
-      <Icon
-        width={26}
-        height={26}
-        color={active ? ACTIVE : INACTIVE}
-      />
+      <View>
+        <Icon
+          width={26}
+          height={26}
+          color={active ? ACTIVE : INACTIVE}
+        />
+        {badge && (
+          <View
+            className="absolute rounded-full bg-brand-red"
+            style={{ top: -2, right: -3, width: 10, height: 10, borderWidth: 1.5, borderColor: BAR_SURFACE }}
+          />
+        )}
+      </View>
 
       <Text
         className={`text-[12px] font-lemon-bold uppercase ${
@@ -133,6 +143,8 @@ function FloatingMenuButton({ onPress }: { onPress: () => void }) {
 
 function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const { width } = useWindowDimensions();
+  const { activeOrders } = useOrders();
+  const hasActiveOrder = activeOrders.length > 0;
   const currentName = state.routes[state.index]?.name;
 
   // El layout raíz ya aplica paddingBottom: insets.bottom a toda la app, por eso
@@ -163,7 +175,6 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
-      <ActiveOrderBar />
       <View style={{ width, height: totalH }}>
         <Svg width={width} height={totalH} style={{ position: 'absolute', top: 0, left: 0 }}>
           <Path d={buildBarPath(width, totalH)} fill={BAR_SURFACE} stroke={BAR_BORDER} strokeWidth={1} />
@@ -174,7 +185,7 @@ function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           className="flex-row items-end px-2"
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, paddingBottom: bottomPad }}
         >
-          <SideItem icon={HomeIcon} label="Inicio" active={currentName === 'index'} onPress={() => goToTab('index')} />
+          <SideItem icon={HomeIcon} label="Inicio" active={currentName === 'index'} badge={hasActiveOrder} onPress={() => goToTab('index')} />
           <SideItem icon={SearchIcon} label="Buscar" active={currentName === 'search'} onPress={() => goToTab('search')} />
           <CenterLabel active={currentName === 'menu'} />
           <SideItem icon={TagIcon} label="Ofertas" active={false} onPress={goToOfertas} />

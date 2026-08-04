@@ -1,4 +1,6 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { memo } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors } from '@/src/theme/theme';
 import type { Product } from '../../types/product.types';
@@ -58,7 +60,7 @@ function CartAction({ product, quantity, onAdd, onRemove, onOpenDetail }: Produc
   );
 }
 
-export function ProductCard({ product, quantity, onAdd, onRemove, onOpenDetail }: ProductCardProps) {
+function ProductCardBase({ product, quantity, onAdd, onRemove, onOpenDetail }: ProductCardProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -68,7 +70,13 @@ export function ProductCard({ product, quantity, onAdd, onRemove, onOpenDetail }
     >
       <View>
         {product.imageUrl ? (
-          <Image source={{ uri: product.imageUrl }} style={{ width: '100%', aspectRatio: 1 }} resizeMode="cover" />
+          <Image
+            source={product.imageUrl}
+            style={{ width: '100%', aspectRatio: 1 }}
+            contentFit="cover"
+            transition={150}
+            cachePolicy="memory-disk"
+          />
         ) : (
           <View
             className="items-center justify-center"
@@ -133,3 +141,7 @@ export function ProductCard({ product, quantity, onAdd, onRemove, onOpenDetail }
     </TouchableOpacity>
   );
 }
+
+// Memoizado: en el menú (ScrollView largo) evita re-renderizar todas las cards
+// cuando cambia el scroll-spy o el carrito de otro producto.
+export const ProductCard = memo(ProductCardBase);

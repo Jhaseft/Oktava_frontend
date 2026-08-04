@@ -15,7 +15,6 @@
     },
     "ios": {
       "bundleIdentifier": "com.oktava.app",
-      "googleServicesFile": "./google-services.json",
       "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -56,7 +55,8 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.269848220574-lsoamkckpg0tleiu8o3u469sgr3bpt04"
         }
-      ]
+      ],
+      "./plugins/withModularHeaders"
     ],
     "extra": {
       "router": {},

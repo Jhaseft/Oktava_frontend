@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import type { FlatList, ViewToken } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { productService } from '@/src/services/product.service';
 import { useCart } from '@/src/context/CartContext';
-import { buildSections, activeSectionId } from '@/src/lib/menuSections';
+import { buildSections, type MenuSection } from '@/src/lib/menuSections';
 import type { Product, Category } from '@/src/types/product.types';
 import type { SelectedOptionGroup } from '@/src/types/cart.types';
 
@@ -24,8 +24,7 @@ export function useMenu() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [detailProduct, setDetailProduct] = useState<Product | null>(null);
 
-  const scrollRef = useRef<ScrollView>(null);
-  const sectionOffsets = useRef<Record<string, number>>({});
+  const scrollRef = useRef<FlatList<MenuSection>>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -67,27 +66,40 @@ export function useMenu() {
 
   const sections = useMemo(() => buildSections(filtered, categories), [filtered, categories]);
 
-  const registerSection = useCallback((id: string, y: number) => {
-    sectionOffsets.current[id] = y;
-  }, []);
-
   const scrollToCategory = useCallback((id: string) => {
     setActiveCategory(id);
     if (id === 'all') {
-      scrollRef.current?.scrollTo({ y: 0, animated: true });
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
       return;
     }
-    const y = sectionOffsets.current[id];
-    if (y != null) scrollRef.current?.scrollTo({ y: Math.max(y - SCROLL_GAP, 0), animated: true });
-  }, []);
+    const index = sections.findIndex((s) => s.category.id === id);
+    if (index >= 0) scrollRef.current?.scrollToIndex({ index, animated: true, viewOffset: SCROLL_GAP });
+  }, [sections]);
 
-  const onScroll = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const current = activeSectionId(sections, sectionOffsets.current, e.nativeEvent.contentOffset.y + SCROLL_GAP);
-      setActiveCategory((prev) => (prev === current ? prev : current));
+  // Con virtualización, scrollToIndex puede fallar si la sección aún no se midió:
+  // saltamos por aproximación y reintentamos al render siguiente.
+  const onScrollToIndexFailed = useCallback(
+    (info: { index: number; averageItemLength: number }) => {
+      scrollRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+      setTimeout(() => {
+        scrollRef.current?.scrollToIndex({ index: info.index, animated: true, viewOffset: SCROLL_GAP });
+      }, 120);
     },
-    [sections],
+    [],
   );
+
+  // Scroll-spy con virtualización: la primera sección visible marca la categoría
+  // activa. (Los offsets por onLayout no sirven en FlatList: son relativos a la celda.)
+  // Refs estables: FlatList no permite cambiar estos props en caliente.
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      const first = viewableItems.find((v) => v.isViewable);
+      if (!first) return;
+      const id = (first.item as MenuSection).category.id;
+      setActiveCategory((prev) => (prev === id ? prev : id));
+    },
+  ).current;
 
   // Atajo "Ofertas" (u otra categoría): al llegar con ?category=... baja a la sección.
   useEffect(() => {
@@ -145,8 +157,9 @@ export function useMenu() {
     activeCategory,
     scrollRef,
     scrollToCategory,
-    onScroll,
-    registerSection,
+    onViewableItemsChanged,
+    viewabilityConfig,
+    onScrollToIndexFailed,
     getQuantity,
     handleAdd,
     handleRemove,

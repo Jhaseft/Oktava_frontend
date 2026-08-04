@@ -8,6 +8,7 @@ import type { Category } from '@/src/types/product.types';
 import { HomeHeader } from '@/src/components/home/HomeHeader';
 import { PromoCarousel } from '@/src/components/home/PromoCarousel';
 import { StoreStatusBanner } from '@/src/components/home/StoreStatusBanner';
+import { ActiveOrderCard } from '@/src/components/home/ActiveOrderCard';
 import { SearchBarButton } from '@/src/components/home/SearchBarButton';
 import { CategoryGrid } from '@/src/components/home/CategoryGrid';
 import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
@@ -64,7 +65,11 @@ export default function HomeScreen() {
       >
         <PromoCarousel images={HOME_BANNERS} />
 
-        <StoreStatusBanner />
+           <ActiveOrderCard />
+
+            <StoreStatusBanner />
+
+     
 
         <SearchBarButton onPress={() => router.push('/(cliente)/search')} />
 

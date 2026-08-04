@@ -91,8 +91,8 @@ function OptionCard({ option, isSelected, box, onToggle }: Readonly<{ option: Op
       className="rounded-2xl overflow-hidden"
       style={{ width: cardWidth, borderWidth: 2, borderColor: isSelected ? '#c1121f' : '#e6e6e6', backgroundColor: isSelected ? 'rgba(193,18,31,0.06)' : '#f6f6f6' }}
     >
-      <View style={{ aspectRatio: 4 / 3, width: '100%' }}>
-        <Image source={{ uri: option.imageUrl ?? OPTION_PLACEHOLDER }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+      <View style={{ aspectRatio: 4 / 3, width: '100%', backgroundColor: '#ffffff' }}>
+        <Image source={{ uri: option.imageUrl ?? OPTION_PLACEHOLDER }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
         <View
           className="absolute items-center justify-center"
           style={{ top: 8, right: 8, width: 26, height: 26, borderRadius: box ? 6 : 13, borderWidth: 2, borderColor: isSelected ? '#c1121f' : 'rgba(255,255,255,0.6)', backgroundColor: isSelected ? '#c1121f' : 'rgba(0,0,0,0.4)' }}

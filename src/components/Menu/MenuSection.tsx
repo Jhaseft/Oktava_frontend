@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { View } from 'react-native';
 import { SectionTitle } from '@/src/components/home/SectionTitle';
 import { ProductCard } from '@/src/components/Menu/ProductCard';
@@ -10,12 +11,11 @@ type Props = {
   onAdd: (p: Product) => void;
   onRemove: (p: Product) => void;
   onOpenDetail: (p: Product) => void;
-  onLayoutY: (y: number) => void;
 };
 
-export function MenuSection({ section, getQuantity, onAdd, onRemove, onOpenDetail, onLayoutY }: Props) {
+function MenuSectionBase({ section, getQuantity, onAdd, onRemove, onOpenDetail }: Props) {
   return (
-    <View onLayout={(e) => onLayoutY(e.nativeEvent.layout.y)} style={{ marginBottom: 24 }}>
+    <View style={{ marginBottom: 24 }}>
       <SectionTitle title={section.category.name} />
       <View style={{ paddingHorizontal: 16, gap: 12 }}>
         {toPairs(section.products).map(([left, right]) => (
@@ -48,3 +48,7 @@ export function MenuSection({ section, getQuantity, onAdd, onRemove, onOpenDetai
     </View>
   );
 }
+
+// Memoizado: durante el scroll (scroll-spy) las props se mantienen estables, así
+// que las secciones fuera del cambio no se vuelven a renderizar.
+export const MenuSection = memo(MenuSectionBase);
