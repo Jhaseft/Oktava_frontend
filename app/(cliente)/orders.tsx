@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/src/context/AuthContext';
@@ -14,7 +14,15 @@ import { colors } from '@/src/theme/theme';
 export default function OrdersScreen() {
   const insets = useSafeAreaInsets();
   const { token } = useAuth();
+  const { from } = useLocalSearchParams<{ from?: string }>();
   const o = useOrders();
+
+  // Si venimos del flujo de pedido (checkout/pago), el checkout quedó vacío en el
+  // historial del Tabs, así que "atrás" vuelve al menú en vez de al checkout.
+  const handleBack = () => {
+    if (from === 'checkout') { router.navigate('/(cliente)/menu'); return; }
+    router.back();
+  };
 
   if (!token) return <AuthRequired icon="receipt-outline" message="Inicia sesión para ver tus pedidos" />;
   if (o.loading) return <LoadingState message="Cargando pedidos..." />;
@@ -22,7 +30,7 @@ export default function OrdersScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View className="flex-row items-center gap-3 px-4 pb-3" style={{ paddingTop: insets.top + 8 }}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Ionicons name="arrow-back" size={26} color={colors.black} />
         </TouchableOpacity>
         <Text className="font-lemon-bold uppercase text-brand-black" style={{ fontSize: 24 }}>Mis pedidos</Text>

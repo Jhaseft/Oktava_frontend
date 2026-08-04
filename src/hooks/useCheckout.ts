@@ -96,6 +96,13 @@ export function useCheckout() {
     ...(notes.trim() ? { notes: notes.trim() } : {}),
   });
 
+  // En un Tabs, router.replace no saca el checkout (ya vacío) del historial, así que
+  // el "atrás" de Pedidos caería en el checkout vacío. Vamos a Pedidos con from=checkout
+  // para que su botón atrás vuelva al menú en vez del checkout.
+  const goToOrdersAfterCheckout = () => {
+    router.navigate({ pathname: '/(cliente)/orders', params: { from: 'checkout' } });
+  };
+
   const handlePlace = async () => {
     if (!canPlace) return;
     setPlacing(true);
@@ -103,9 +110,9 @@ export function useCheckout() {
       const order = await orderService.createOrder(buildPayload());
       clearCart();
       if (paymentMethod === 'QR') {
-        router.replace({ pathname: '/(cliente)/qr-payment', params: { orderId: order.id, total: grandTotal.toFixed(2) } });
+        router.navigate({ pathname: '/(cliente)/qr-payment', params: { orderId: order.id, total: grandTotal.toFixed(2) } });
       } else {
-        router.replace('/(cliente)/orders');
+        goToOrdersAfterCheckout();
       }
     } catch (e: any) {
       const code = e?.response?.data?.code;
@@ -149,6 +156,6 @@ export function useCheckout() {
     handlePlace,
     maxDeliveryKm: MAX_DELIVERY_KM,
     goToMenu: () => router.push('/(cliente)/menu'),
-    goToAddresses: () => router.push('/(cliente)/addresses'),
+    goToAddresses: () => router.push('/(cliente)/addresses?from=checkout'),
   };
 }

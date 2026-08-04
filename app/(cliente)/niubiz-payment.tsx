@@ -173,7 +173,7 @@ export default function NiubizPaymentScreen() {
 
           if (result.success) {
             clearCart();
-            router.replace('/(cliente)/orders');
+            router.navigate({ pathname: '/(cliente)/orders', params: { from: 'checkout' } });
           } else {
             setAuthorizing(false);
             Alert.alert(

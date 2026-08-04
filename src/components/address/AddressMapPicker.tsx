@@ -1,10 +1,10 @@
 import { forwardRef } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import type { Region } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MAX_DELIVERY_KM } from '@/src/lib/maps';
+import { MAX_DELIVERY_KM, STORE_LAT, STORE_LNG } from '@/src/lib/maps';
 import { colors } from '@/src/theme/theme';
 
 type Props = {
@@ -53,7 +53,29 @@ export const AddressMapPicker = forwardRef<MapView, Props>(function AddressMapPi
           onRegionChangeComplete={onRegionChangeComplete}
           showsUserLocation
           showsMyLocationButton={false}
-        />
+        >
+          <Marker
+            coordinate={{ latitude: STORE_LAT, longitude: STORE_LNG }}
+            title="OKTAVA"
+            description="Nuestro local"
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <View
+              className="w-11 h-11 rounded-full bg-white items-center justify-center"
+              style={{
+                borderWidth: 2,
+                borderColor: colors.red,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              <Ionicons name="restaurant" size={22} color={colors.red} />
+            </View>
+          </Marker>
+        </MapView>
 
         <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
           <Ionicons name="location" size={44} color={colors.red} style={{ marginTop: -34 }} />

@@ -95,9 +95,13 @@ export default function QRPaymentScreen() {
   const seconds = String(secondsLeft % 60).padStart(2, '0');
   const expired  = secondsLeft <= 0;
 
+  const goToOrders = () => {
+    router.navigate({ pathname: '/(cliente)/orders', params: { from: 'checkout' } });
+  };
+
   const handleSimulatePaid = () => {
     setSimulated(true);
-    router.replace('/(cliente)/orders');
+    goToOrders();
   };
 
   return (
@@ -171,7 +175,7 @@ export default function QRPaymentScreen() {
         )}
 
         {/* Volver a pedidos */}
-        <Pressable onPress={() => router.replace('/(cliente)/orders')}>
+        <Pressable onPress={goToOrders}>
           <Text className="text-zinc-500 text-[13px] underline">
             Ver mis pedidos
           </Text>
