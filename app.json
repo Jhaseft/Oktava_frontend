@@ -3,7 +3,7 @@
     "name": "OKtava",
     "slug": "oktava",
     "scheme": "oktava",
-    "version": "13.0.0",
+    "version": "15.1.1",
     "orientation": "portrait",
     "icon": "./assets/logooficialapp.png",
     "userInterfaceStyle": "light",
