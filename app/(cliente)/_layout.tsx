@@ -195,6 +195,7 @@ export default function ClienteLayout() {
     <Tabs
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{ headerShown: false }}
+      backBehavior="history"
     >
       <Tabs.Screen name="index" options={{ title: 'Inicio' }} />
       <Tabs.Screen name="search" options={{ title: 'Buscar' }} />

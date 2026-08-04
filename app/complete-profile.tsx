@@ -1,6 +1,5 @@
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useCompleteProfile } from '@/src/hooks/useCompleteProfile';
-import { PhoneVerificationModal } from '@/src/components/phone/PhoneVerificationModal';
 import { PhoneNumberInput } from '@/src/components/phone/PhoneNumberInput';
 import { AuthLogo } from '@/src/components/auth/AuthLogo';
 import { AuthErrorBanner } from '@/src/components/auth/AuthErrorBanner';
@@ -45,12 +44,6 @@ export default function CompleteProfileScreen() {
           </View>
         </View>
       </ScrollView>
-
-      <PhoneVerificationModal
-        visible={f.showVerifyModal}
-        onVerified={f.closeVerify}
-        onClose={f.closeVerify}
-      />
     </KeyboardAvoidingView>
   );
 }

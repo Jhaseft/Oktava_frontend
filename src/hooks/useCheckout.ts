@@ -39,8 +39,6 @@ export function useCheckout() {
   const [notes, setNotes] = useState('');
   const [loadingAddresses, setLoadingAddresses] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [phoneJustVerified, setPhoneJustVerified] = useState(false);
 
   useEffect(() => {
     if (!token) router.replace('/login');
@@ -117,19 +115,13 @@ export function useCheckout() {
         return;
       }
       if (code === 'PHONE_NOT_VERIFIED') {
-        setShowOtpModal(true);
+        router.push('/verify-phone?from=checkout');
         return;
       }
       Alert.alert('Error', e?.response?.data?.message ?? 'No se pudo crear el pedido.');
     } finally {
       setPlacing(false);
     }
-  };
-
-  const handlePhoneVerified = () => {
-    setShowOtpModal(false);
-    setPhoneJustVerified(true);
-    setTimeout(() => setPhoneJustVerified(false), 5000);
   };
 
   return {
@@ -155,10 +147,6 @@ export function useCheckout() {
     canPlace,
     placing,
     handlePlace,
-    showOtpModal,
-    setShowOtpModal,
-    phoneJustVerified,
-    handlePhoneVerified,
     maxDeliveryKm: MAX_DELIVERY_KM,
     goToMenu: () => router.push('/(cliente)/menu'),
     goToAddresses: () => router.push('/(cliente)/addresses'),

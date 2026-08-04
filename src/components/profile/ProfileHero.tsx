@@ -11,13 +11,14 @@ type Props = {
   completionPct: number;
   isComplete: boolean;
   onComplete: () => void;
+  onPress: () => void;
 };
 
-export function ProfileHero({ fullName, initials, phone, email, completionPct, isComplete, onComplete }: Props) {
+export function ProfileHero({ fullName, initials, phone, email, completionPct, isComplete, onComplete, onPress }: Props) {
   return (
     <View className="mx-4 mt-4 rounded-3xl overflow-hidden">
       <LinearGradient colors={[colors.red, colors.redDark]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ paddingHorizontal: 22, paddingTop: 30, paddingBottom: 30 }}>
-        <View className="flex-row items-center gap-4">
+        <TouchableOpacity onPress={onPress} activeOpacity={0.8} className="flex-row items-center gap-4">
           <View className="w-24 h-24 rounded-full bg-white items-center justify-center">
             {initials ? (
               <Text className="text-brand-red font-lemon-bold text-3xl">{initials}</Text>
@@ -34,7 +35,8 @@ export function ProfileHero({ fullName, initials, phone, email, completionPct, i
               {email}
             </Text>
           </View>
-        </View>
+          <Ionicons name="chevron-forward" size={22} color="rgba(255,255,255,0.9)" />
+        </TouchableOpacity>
 
         <View className="h-2 rounded-full mt-7 overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }}>
           <View className="h-full rounded-full bg-white" style={{ width: `${completionPct}%` }} />

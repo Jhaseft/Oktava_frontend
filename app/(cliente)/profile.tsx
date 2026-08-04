@@ -33,6 +33,7 @@ export default function ProfileScreen() {
           completionPct={p.completionPct}
           isComplete={p.isComplete}
           onComplete={() => p.go('/complete-profile')}
+          onPress={() => p.go('/(modal)/MiCuenta')}
         />
         <ProfileMenu
           onAddresses={() => p.go('/(cliente)/addresses')}

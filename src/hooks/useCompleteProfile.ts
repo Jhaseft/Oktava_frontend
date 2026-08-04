@@ -10,7 +10,6 @@ export function useCompleteProfile() {
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
 
   const phoneIsValid = phone.length >= 7;
 
@@ -30,18 +29,12 @@ export function useCompleteProfile() {
       const e164 = toE164(dial, phone);
       await api.patch('/auth/profile', { phone: e164 });
       await updateUser({ phone: e164 });
-      setShowVerifyModal(true);
+      router.push('/verify-phone');
     } catch (err: any) {
       setError(err?.message ?? 'No se pudo guardar el número. Inténtalo nuevamente.');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const goHome = () => router.replace('/(cliente)/');
-  const closeVerify = () => {
-    setShowVerifyModal(false);
-    goHome();
   };
 
   return {
@@ -52,9 +45,7 @@ export function useCompleteProfile() {
     isLoading,
     error,
     phoneIsValid,
-    showVerifyModal,
     handleSave,
-    handleSkip: goHome,
-    closeVerify,
+    handleSkip: () => router.replace('/(cliente)/'),
   };
 }

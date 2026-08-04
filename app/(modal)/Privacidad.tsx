@@ -1,7 +1,6 @@
-import { Stack } from "expo-router";
-import { View, Text, ScrollView } from "react-native";
+import { LegalDocument, type LegalSection } from '@/src/components/legal/LegalDocument';
 
-const sections = [
+const sections: LegalSection[] = [
   { title: "1. Introducción", body: `En Oktava nos comprometemos a proteger tu privacidad. Esta Política describe qué información recopilamos, cómo la usamos y qué derechos tienes sobre ella.\n\nAl utilizar nuestra plataforma, aceptas las prácticas descritas en este documento.` },
   { title: "2. Datos que recopilamos", body: `Información que nos proporcionas directamente:\n• Nombre y apellido.\n• Número de teléfono.\n• Correo electrónico.\n• Dirección de entrega.\n\nInformación generada por el uso del servicio:\n• Historial de pedidos.\n• Preferencias de entrega.\n• Interacciones con la plataforma.\n\nInformación técnica:\n• Dirección IP y tipo de dispositivo.\n• Navegador y sistema operativo.` },
   { title: "3. Uso de los datos", body: `Utilizamos tu información para:\n\n• Procesar y gestionar tus pedidos.\n• Enviarte confirmaciones y actualizaciones del estado de tu pedido.\n• Mejorar nuestro servicio y la experiencia en la plataforma.\n• Comunicarnos contigo ante consultas o incidencias.\n\nNo utilizamos tu información para publicidad de terceros sin tu consentimiento.` },
@@ -15,34 +14,11 @@ const sections = [
 
 export default function PrivacidadScreen() {
   return (
-    <View style={{ flex: 1, backgroundColor: "#111" }}>
-      <Stack.Screen
-        options={{
-          headerStyle: { backgroundColor: "#111" },
-          headerTitleAlign: "center",
-          headerTintColor: "white",
-          headerTitle: "Política de privacidad",
-        }}
-      />
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 11, color: "#c1121f", fontWeight: "700", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Legal</Text>
-        <Text style={{ fontSize: 22, fontWeight: "800", color: "white", marginBottom: 4 }}>Política de privacidad</Text>
-        <Text style={{ fontSize: 12, color: "#555", marginBottom: 24 }}>Última actualización: Mayo 2025</Text>
-
-        <View style={{ backgroundColor: "#1a1200", borderWidth: 1, borderColor: "#3a2e00", borderRadius: 12, padding: 14, marginBottom: 24, flexDirection: "row", gap: 10 }}>
-          <Text style={{ fontSize: 16 }}>⚠️</Text>
-          <Text style={{ fontSize: 12, color: "#c8a600", lineHeight: 18, flex: 1 }}>
-            Este documento es un texto base con fines informativos. Debe ser revisado antes de su publicación definitiva.
-          </Text>
-        </View>
-
-        {sections.map((s, i) => (
-          <View key={i} style={{ backgroundColor: "#1a1a1a", borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#2a2a2a" }}>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "white", marginBottom: 8 }}>{s.title}</Text>
-            <Text style={{ fontSize: 13, color: "#888", lineHeight: 20 }}>{s.body}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+    <LegalDocument
+      headerTitle="Política de privacidad"
+      title="Política de privacidad"
+      updated="Mayo 2025"
+      sections={sections}
+    />
   );
 }

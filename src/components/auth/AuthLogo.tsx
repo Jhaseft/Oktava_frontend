@@ -1,6 +1,6 @@
 import { Image } from 'react-native';
 
-const logoImg = require('../../../assets/Logoiconoweb.png1');
+const logoImg = require('../../../assets/Logoweb.png');
 
 export function AuthLogo() {
   return (

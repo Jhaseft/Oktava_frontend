@@ -80,19 +80,19 @@ export function PhoneNumberInput({
 
   return (
     <>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View className="flex-row" style={{ gap: 8 }}>
         <Pressable
           onPress={() => {
             setShowPicker(true);
             setPickerSearch('');
           }}
           disabled={!editable}
-          className="flex-row items-center bg-white rounded-xl"
-          style={{ gap: 4, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 12, paddingVertical: 12 }}
+          className="flex-row items-center justify-center bg-white rounded-xl"
+          style={{ height: 52, gap: 6, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 14 }}
         >
-          <Text style={{ fontSize: 18 }}>{dial.flag}</Text>
-          <Text className="font-lemon text-brand-black" style={{ fontSize: 15, marginLeft: 2 }}>{dial.dial}</Text>
-          <ChevronDown size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
+          <Text style={{ fontSize: 20 }}>{dial.flag}</Text>
+          <Text className="font-lemon-medium text-brand-black" style={{ fontSize: 15 }}>{dial.dial}</Text>
+          <ChevronDown size={16} color={colors.textMuted} />
         </Pressable>
 
         <TextInput
@@ -104,7 +104,7 @@ export function PhoneNumberInput({
           editable={editable}
           maxLength={15}
           className="flex-1 bg-white rounded-xl text-brand-black font-lemon"
-          style={{ borderWidth: 1, borderColor, paddingHorizontal: 16, paddingVertical: 12, fontSize: 16 }}
+          style={{ height: 52, borderWidth: 1, borderColor, paddingHorizontal: 16, fontSize: 16, letterSpacing: 1 }}
         />
       </View>
 
@@ -113,7 +113,7 @@ export function PhoneNumberInput({
           <Pressable
             onPress={(e) => e.stopPropagation()}
             className="absolute bottom-0 left-0 right-0 bg-white"
-            style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: '70%', paddingTop: 12 }}
+            style={{ borderTopLeftRadius: 16, borderTopRightRadius: 16, height: '70%', paddingTop: 12 }}
           >
             <View style={{ alignItems: 'center', marginBottom: 12 }}>
               <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: colors.borderStrong }} />
@@ -140,36 +140,27 @@ export function PhoneNumberInput({
 
             <FlatList
               data={filtered}
+              style={{ flex: 1 }}
               keyExtractor={(item) => `${item.name}-${item.dial}`}
               keyboardShouldPersistTaps="handled"
-              renderItem={({ item }) => (
-                <Pressable
-                  onPress={() => {
-                    onChangeDial(item);
-                    setShowPicker(false);
-                  }}
-                  style={({ pressed }) => {
-                    let bg = 'transparent';
-                    if (pressed) bg = colors.surface;
-                    else if (item.name === dial.name) bg = 'rgba(193,18,31,0.06)';
-                    return {
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 12,
-                      paddingHorizontal: 16,
-                      paddingVertical: 14,
-                      backgroundColor: bg,
-                    };
-                  }}
-                >
-                  <Text style={{ fontSize: 22 }}>{item.flag}</Text>
-                  <Text className="flex-1 font-lemon text-brand-black" style={{ fontSize: 15 }}>{item.name}</Text>
-                  <Text className="font-lemon text-brand-muted" style={{ fontSize: 14 }}>{item.dial}</Text>
-                  {item.name === dial.name && (
-                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.red }} />
-                  )}
-                </Pressable>
-              )}
+              renderItem={({ item }) => {
+                const selected = item.name === dial.name;
+                return (
+                  <Pressable
+                    onPress={() => {
+                      onChangeDial(item);
+                      setShowPicker(false);
+                    }}
+                    className="flex-row items-center gap-3 px-4 py-3.5"
+                    style={{ backgroundColor: selected ? 'rgba(193,18,31,0.06)' : 'transparent' }}
+                  >
+                    <Text style={{ fontSize: 22 }}>{item.flag}</Text>
+                    <Text className="flex-1 font-lemon text-brand-black" style={{ fontSize: 15 }}>{item.name}</Text>
+                    <Text className="font-lemon-medium text-brand-muted" style={{ fontSize: 14 }}>{item.dial}</Text>
+                    {selected && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.red }} />}
+                  </Pressable>
+                );
+              }}
             />
           </Pressable>
         </Pressable>

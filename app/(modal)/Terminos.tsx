@@ -1,7 +1,6 @@
-import { Stack } from "expo-router";
-import { View, Text, ScrollView } from "react-native";
+import { LegalDocument, type LegalSection } from '@/src/components/legal/LegalDocument';
 
-const sections = [
+const sections: LegalSection[] = [
   { title: "1. Introducción", body: `Bienvenido a Oktava. Al acceder y utilizar este sitio web o nuestra plataforma de pedidos, aceptas cumplir y estar sujeto a los siguientes términos y condiciones. Si no estás de acuerdo con alguno de estos términos, te pedimos que no utilices el servicio.\n\nEstos términos se aplican a todos los usuarios del sitio, incluyendo visitantes, clientes registrados y cualquier persona que realice un pedido a través de nuestra plataforma.` },
   { title: "2. Uso del sitio", body: `El uso de este sitio está permitido exclusivamente para fines lícitos y personales. Queda prohibido:\n\n• Usar el sitio de manera que cause daño o sobrecarga en nuestros servidores.\n• Intentar acceder sin autorización a áreas restringidas del sistema.\n• Utilizar el sitio para actividades ilegales o fraudulentas.\n• Publicar o transmitir contenido ofensivo o difamatorio.\n\nOktava se reserva el derecho de restringir el acceso a usuarios que incumplan estas condiciones.` },
   { title: "3. Registro y cuenta", body: `Para realizar pedidos es necesario crear una cuenta. Al registrarte, te comprometes a:\n\n• Proporcionar información veraz, completa y actualizada.\n• Mantener la confidencialidad de tus credenciales.\n• Notificarnos de inmediato si sospechas de un acceso no autorizado.\n\nEres responsable de todas las actividades realizadas desde tu cuenta.` },
@@ -16,34 +15,11 @@ const sections = [
 
 export default function TerminosScreen() {
   return (
-    <View style={{ flex: 1, backgroundColor: "#111" }}>
-      <Stack.Screen
-        options={{
-          headerStyle: { backgroundColor: "#111" },
-          headerTitleAlign: "center",
-          headerTintColor: "white",
-          headerTitle: "Términos y condiciones",
-        }}
-      />
-      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-        <Text style={{ fontSize: 11, color: "#c1121f", fontWeight: "700", textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Legal</Text>
-        <Text style={{ fontSize: 22, fontWeight: "800", color: "white", marginBottom: 4 }}>Términos y condiciones</Text>
-        <Text style={{ fontSize: 12, color: "#555", marginBottom: 24 }}>Última actualización: Mayo 2025</Text>
-
-        <View style={{ backgroundColor: "#1a1200", borderWidth: 1, borderColor: "#3a2e00", borderRadius: 12, padding: 14, marginBottom: 24, flexDirection: "row", gap: 10 }}>
-          <Text style={{ fontSize: 16 }}>⚠️</Text>
-          <Text style={{ fontSize: 12, color: "#c8a600", lineHeight: 18, flex: 1 }}>
-            Este documento es un texto base con fines informativos. Debe ser revisado antes de su publicación definitiva.
-          </Text>
-        </View>
-
-        {sections.map((s, i) => (
-          <View key={i} style={{ backgroundColor: "#1a1a1a", borderRadius: 14, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: "#2a2a2a" }}>
-            <Text style={{ fontSize: 13, fontWeight: "700", color: "white", marginBottom: 8 }}>{s.title}</Text>
-            <Text style={{ fontSize: 13, color: "#888", lineHeight: 20 }}>{s.body}</Text>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+    <LegalDocument
+      headerTitle="Términos y condiciones"
+      title="Términos y condiciones"
+      updated="Mayo 2025"
+      sections={sections}
+    />
   );
 }
