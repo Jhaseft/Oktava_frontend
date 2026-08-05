@@ -5,11 +5,11 @@
     "scheme": "oktava",
     "version": "16.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logooficialapp.png",
+    "icon": "./assets/logoOFICIALAAP.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logooficialapp.png",
+      "image": "./assets/logoOFICIALAAP.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -20,9 +20,9 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "icon": "./assets/logooficialapp.png",
+      "icon": "./assets/logoOFICIALAAP.png",
       "splash": {
-        "image": "./assets/logooficialapp.png",
+        "image": "./assets/logoOFICIALAAP.png",
         "resizeMode": "contain",
         "backgroundColor": "#ffffff"
       }
@@ -30,14 +30,14 @@
     "android": {
       "package": "com.oktava.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logooficialapp.png",
+        "foregroundImage": "./assets/logoOFICIALAAP.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "favicon": "./assets/logooficialapp.png"
+      "favicon": "./assets/logoOFICIALAAP.png"
     },
     "plugins": [
       "expo-dev-client",
