@@ -14,7 +14,6 @@ import { ActiveOrderCard } from '@/src/components/home/ActiveOrderCard';
 import { SearchBarButton } from '@/src/components/home/SearchBarButton';
 import { CategoryGrid } from '@/src/components/home/CategoryGrid';
 import { DrawerMenu } from '@/src/components/ui/DrawerMenu';
-import { HOME_BANNERS } from '@/src/data/banners';
 
 export default function HomeScreen() {
   const { totalItems } = useCart();
@@ -36,7 +35,7 @@ export default function HomeScreen() {
   }, []);
 
   const bannerImages = useMemo<ImageSourcePropType[]>(
-    () => (banners.length > 0 ? banners.map((b) => ({ uri: b.imageUrl })) : HOME_BANNERS),
+    () => banners.map((b) => ({ uri: b.imageUrl })),
     [banners],
   );
 
