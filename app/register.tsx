@@ -8,6 +8,7 @@ import { AuthErrorBanner } from '@/src/components/auth/AuthErrorBanner';
 import { AuthPrimaryButton } from '@/src/components/auth/AuthPrimaryButton';
 import { AuthDivider } from '@/src/components/auth/AuthDivider';
 import { GoogleButton } from '@/src/components/auth/GoogleButton';
+import { AppleButton } from '@/src/components/auth/AppleButton';
 import { TermsCheckbox } from '@/src/components/auth/TermsCheckbox';
 
 export default function RegisterScreen() {
@@ -124,6 +125,8 @@ export default function RegisterScreen() {
 
               <GoogleButton onPress={f.handleGoogleSignIn} loading={f.isGoogleLoading} disabled={f.anyLoading} />
 
+              <AppleButton onPress={f.handleAppleSignIn} loading={f.isAppleLoading} disabled={f.anyLoading} />
+
               <Pressable onPress={() => router.push('/login')} disabled={f.isLoading}>
                 <Text className="text-center text-[13px] font-lemon text-brand-muted">
                   ¿Ya tienes cuenta? <Text className="text-brand-red font-lemon-bold">Inicia sesión</Text>
@@ -131,7 +134,7 @@ export default function RegisterScreen() {
               </Pressable>
 
               <Pressable onPress={() => router.replace('/(cliente)/')} disabled={f.isLoading} className="active:opacity-60">
-                <Text className="text-center text-[12px] font-lemon-medium text-brand-muted">Ver menú sin cuenta →</Text>
+                <Text className="text-center text-[12px] mb-10 font-lemon-medium text-brand-muted">Ver menú sin cuenta →</Text>
               </Pressable>
             </View>
           </View>

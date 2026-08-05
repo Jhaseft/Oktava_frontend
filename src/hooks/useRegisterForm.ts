@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import { authApi, ApiError, setPendingSignUp } from '@/src/services/authApi';
 import { useGoogleSignIn } from '@/src/hooks/useGoogleSignIn';
+import { useAppleSignIn } from '@/src/hooks/useAppleSignIn';
 import { DEFAULT_COUNTRY, toE164, type CountryCode } from '@/src/components/phone/PhoneNumberInput';
 
 function isValidEmail(email: string) {
@@ -10,6 +11,7 @@ function isValidEmail(email: string) {
 
 export function useRegisterForm() {
   const { handleGoogleSignIn, isGoogleLoading, googleError } = useGoogleSignIn();
+  const { handleAppleSignIn, isAppleLoading, appleError } = useAppleSignIn();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -103,10 +105,12 @@ export function useRegisterForm() {
     toggleTerms,
     canSubmit,
     isLoading,
-    anyLoading: isLoading || isGoogleLoading,
+    anyLoading: isLoading || isGoogleLoading || isAppleLoading,
     isGoogleLoading,
-    displayError: error ?? googleError,
+    isAppleLoading,
+    displayError: error ?? googleError ?? appleError,
     handleContinue,
     handleGoogleSignIn,
+    handleAppleSignIn,
   };
 }

@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { authApi, ApiError } from '@/src/services/authApi';
 import { useGoogleSignIn } from '@/src/hooks/useGoogleSignIn';
+import { useAppleSignIn } from '@/src/hooks/useAppleSignIn';
 
 function isValidEmail(email: string) {
   return /\S+@\S+\.\S+/.test(email.trim());
@@ -11,6 +12,7 @@ function isValidEmail(email: string) {
 export function useLoginForm() {
   const { signIn } = useAuth();
   const { handleGoogleSignIn, isGoogleLoading, googleError, clearGoogleError } = useGoogleSignIn();
+  const { handleAppleSignIn, isAppleLoading, appleError, clearAppleError } = useAppleSignIn();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,6 +33,7 @@ export function useLoginForm() {
     setEmail(t);
     setError(null);
     clearGoogleError();
+    clearAppleError();
     if (!emailTouched) setEmailTouched(true);
   };
 
@@ -38,6 +41,7 @@ export function useLoginForm() {
     setPassword(t);
     setError(null);
     clearGoogleError();
+    clearAppleError();
     if (!passwordTouched) setPasswordTouched(true);
   };
 
@@ -72,10 +76,12 @@ export function useLoginForm() {
     onChangePassword,
     canSubmit,
     isLoading,
-    anyLoading: isLoading || isGoogleLoading,
+    anyLoading: isLoading || isGoogleLoading || isAppleLoading,
     isGoogleLoading,
-    displayError: error ?? googleError,
+    isAppleLoading,
+    displayError: error ?? googleError ?? appleError,
     handleLogin,
     handleGoogleSignIn,
+    handleAppleSignIn,
   };
 }

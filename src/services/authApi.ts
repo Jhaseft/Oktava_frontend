@@ -113,6 +113,14 @@ export const authApi = {
   googleSignIn: (idToken: string) =>
     post<AuthResponse>('/auth/google/mobile', { idToken }),
 
+  appleSignIn: (payload: {
+    identityToken: string;
+    appleUserId: string;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+  }) => post<AuthResponse>('/auth/apple/mobile', payload),
+
   forgotPassword: (email: string) =>
     post<{ message: string }>('/auth/forgot-password', { email }),
 

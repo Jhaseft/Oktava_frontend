@@ -16,6 +16,7 @@
     "ios": {
       "bundleIdentifier": "com.oktava.app",
       "supportsTablet": true,
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
@@ -42,6 +43,7 @@
       "expo-dev-client",
       "expo-router",
       "expo-web-browser",
+      "expo-apple-authentication",
       [
         "expo-notifications",
         {
