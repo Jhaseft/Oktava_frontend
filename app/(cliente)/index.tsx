@@ -1,10 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, RefreshControl, Text } from 'react-native';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, ScrollView, RefreshControl, Text, type ImageSourcePropType } from 'react-native';
 import { router } from 'expo-router';
 import { productService } from '@/src/services/product.service';
+import { bannerService } from '@/src/services/banner.service';
 import { LoadingState } from '@/src/components/ui/LoadingState';
 import { useCart } from '@/src/context/CartContext';
 import type { Category } from '@/src/types/product.types';
+import type { Banner } from '@/src/types/banner.types';
 import { HomeHeader } from '@/src/components/home/HomeHeader';
 import { PromoCarousel } from '@/src/components/home/PromoCarousel';
 import { StoreStatusBanner } from '@/src/components/home/StoreStatusBanner';
@@ -18,17 +20,25 @@ export default function HomeScreen() {
   const { totalItems } = useCart();
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const load = useCallback(async () => {
-    try {
-      const cats = await productService.getCategories();
-      setCategories(Array.isArray(cats) ? cats : []);
-    } catch {}
+    const [cats, bnrs] = await Promise.all([
+      productService.getCategories().catch(() => []),
+      bannerService.getBanners().catch(() => []),
+    ]);
+    setCategories(Array.isArray(cats) ? cats : []);
+    setBanners(Array.isArray(bnrs) ? bnrs : []);
   }, []);
+
+  const bannerImages = useMemo<ImageSourcePropType[]>(
+    () => (banners.length > 0 ? banners.map((b) => ({ uri: b.imageUrl })) : HOME_BANNERS),
+    [banners],
+  );
 
   useEffect(() => {
     load().finally(() => setLoading(false));
@@ -63,7 +73,7 @@ export default function HomeScreen() {
         }
         contentContainerStyle={{ paddingBottom: 96 }}
       >
-        <PromoCarousel images={HOME_BANNERS} />
+        <PromoCarousel images={bannerImages} />
 
            <ActiveOrderCard />
 
